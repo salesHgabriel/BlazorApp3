@@ -574,7 +574,7 @@ body:has(.overlay-root) { overflow: hidden; }
 .auth-hero-footer { margin-top: auto; opacity: .7; font-size: .8rem; padding-top: 32px; }
 .brand-logo-light .brand-name { color: #fff; }
 .brand-logo-light .brand-mark { background: rgba(255,255,255,.2); }
-.auth-form-area { display: grid; place-items: center; padding: 32px 16px; background: #fff; }
+.auth-form-area { display: grid; place-items: center; padding: 32px 16px; background: #fff; position: relative; }
 .auth-card { width: 100%; max-width: 440px; }
 .demo-accounts { border-top: 1px solid var(--border); padding-top: 16px; }
 .demo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
@@ -606,3 +606,27 @@ body:has(.overlay-root) { overflow: hidden; }
 .tag-more:hover .tag-more-pop, .tag-more:focus-within .tag-more-pop { opacity: 1; visibility: visible; transform: none; }
 .tag-more-title { width: 100%; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 2px; }
 .tag-list .team-pill, .tag-list .color-badge, .tag-list .badge { white-space: nowrap; }
+
+/* =====================================================================
+   Seletor de idioma
+   ===================================================================== */
+.lang-btn { padding: 4px 12px; gap: 6px; }
+.lang-btn .bi { color: var(--brand-primary); }
+.lang-code {
+    width: 30px; height: 22px; border-radius: 6px; background: #eef1f6; color: var(--muted);
+    display: inline-grid; place-items: center; font-size: .7rem; font-weight: 700; letter-spacing: .04em; flex-shrink: 0;
+}
+.dropdown-panel-item.active .lang-code { background: var(--brand-primary); color: #fff; }
+.auth-lang { position: absolute; top: 16px; right: 16px; }
+.lang-inline { display: flex; align-items: center; gap: 4px; font-size: .8rem; color: var(--muted); }
+.lang-inline a {
+    padding: 3px 8px; border-radius: 999px; color: var(--muted); text-decoration: none; font-weight: 600; transition: background .15s, color .15s;
+}
+.lang-inline a:hover { background: #f3f5f9; color: var(--brand-primary); }
+.lang-inline a.active { background: rgba(var(--brand-primary-rgb), .12); color: var(--brand-primary); }
+
+/* Valores monetários (vitrine) */
+.money-summary { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; margin: 0; padding: 12px 14px; border-radius: 10px; background: #f6f7fb; }
+.money-summary dt { font-weight: 500; color: var(--muted); }
+.money-summary dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.money-input .input-group-text { min-width: 44px; justify-content: center; font-weight: 600; }

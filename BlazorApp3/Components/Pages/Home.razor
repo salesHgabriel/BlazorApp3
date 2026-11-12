@@ -3,9 +3,9 @@
 @inject UiDispatcher Ui
 @inject BrandingState Branding
 
-<AppPageTitle Title="Dashboard" />
+<AppPageTitle Title="@L["Dashboard"]" />
 
-<PageHeader Title="@($"Olá, {_firstName}!")" Subtitle="@($"Visão geral de {Branding.Effective.AppName}")" Icon="bi-grid-1x2" />
+<PageHeader Title="@L["Olá, {0}!", _firstName ?? ""]" Subtitle="@L["Visão geral de {0}", Branding.Effective.AppName]" Icon="bi-grid-1x2" />
 
 <Can Permission="@Perm.DashboardView">
     <ChildContent>
@@ -19,17 +19,17 @@
             }
             else
             {
-                <StatCard Icon="bi-people" Label="Usuários" Value="@_data.TotalUsers" Hint="@($"{_data.ActiveUsers} ativos")" Delay="0" />
-                <StatCard Icon="bi-person-plus" Label="Novos (30 dias)" Value="@_data.NewUsers30d" Hint="cadastros recentes" Delay="1" />
-                <StatCard Icon="bi-diagram-3" Label="Times" Value="@_data.TotalTeams" Hint="@($"{_data.ActiveTeams} ativos")" Delay="2" />
-                <StatCard Icon="bi-person-badge" Label="Papéis" Value="@_data.TotalRoles" Hint="roles dinâmicas" Delay="3" />
+                <StatCard Icon="bi-people" Label="@L["Usuários"]" Value="@_data.TotalUsers" Hint="@($"{_data.ActiveUsers} ativos")" Delay="0" />
+                <StatCard Icon="bi-person-plus" Label="@L["Novos (30 dias)"]" Value="@_data.NewUsers30d" Hint="@L["Cadastros recentes"].Value.ToLower()" Delay="1" />
+                <StatCard Icon="bi-diagram-3" Label="@L["Times"]" Value="@_data.TotalTeams" Hint="@($"{_data.ActiveTeams} ativos")" Delay="2" />
+                <StatCard Icon="bi-person-badge" Label="@L["Papéis"]" Value="@_data.TotalRoles" Hint="@L["roles dinâmicas"]" Delay="3" />
             }
         </div>
 
         <div class="row g-3 mt-1">
             <div class="col-lg-7">
                 <div class="card h-100">
-                    <div class="card-header-x"><h6><i class="bi bi-bar-chart me-2"></i>Usuários por departamento</h6></div>
+                    <div class="card-header-x"><h6><i class="bi bi-bar-chart me-2"></i>@L["Usuários por departamento"]</h6></div>
                     <div class="card-body">
                         @if (_data is null)
                         {
@@ -52,7 +52,7 @@
             </div>
             <div class="col-lg-5">
                 <div class="card h-100">
-                    <div class="card-header-x"><h6><i class="bi bi-trophy me-2"></i>Maiores times</h6></div>
+                    <div class="card-header-x"><h6><i class="bi bi-trophy me-2"></i>@L["Maiores times"]</h6></div>
                     <div class="card-body">
                         @if (_data is null)
                         {
@@ -66,7 +66,7 @@
                                     <li class="d-flex align-items-center gap-2 py-2">
                                         <span class="team-chip" style="background:@color">@Avatar.Initials(name)</span>
                                         <span class="flex-grow-1">@name</span>
-                                        <span class="badge rounded-pill text-bg-light border">@members membros</span>
+                                        <span class="badge rounded-pill text-bg-light border">@L["{0} membros", members]</span>
                                     </li>
                                 }
                             </ul>
@@ -77,8 +77,8 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header-x">
-                        <h6><i class="bi bi-clock-history me-2"></i>Cadastros recentes</h6>
-                        <Can Permission="@Perm.UsersView"><a href="users" class="small">Ver todos <i class="bi bi-arrow-right"></i></a></Can>
+                        <h6><i class="bi bi-clock-history me-2"></i>@L["Cadastros recentes"]</h6>
+                        <Can Permission="@Perm.UsersView"><a href="users" class="small">@L["Ver todos"] <i class="bi bi-arrow-right"></i></a></Can>
                     </div>
                     <div class="card-body">
                         @if (_data is null)
@@ -106,7 +106,7 @@
         </div>
     </ChildContent>
     <Fallback>
-        <EmptyState Icon="bi-emoji-smile" Title="Bem-vindo!" Message="Seu papel ainda não possui permissão para visualizar o dashboard. Peça a um administrador para conceder acesso." />
+        <EmptyState Icon="bi-emoji-smile" Title="@L["Bem-vindo!"]" Message="@L["Seu papel ainda não possui permissão para visualizar o dashboard. Peça a um administrador para conceder acesso."]" />
     </Fallback>
 </Can>
 

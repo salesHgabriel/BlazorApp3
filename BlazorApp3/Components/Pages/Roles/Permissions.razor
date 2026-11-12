@@ -2,20 +2,20 @@
 @attribute [HasPermission(Perm.PermissionsView)]
 @inject UiDispatcher Ui
 
-<AppPageTitle Title="Permissões" />
+<AppPageTitle Title="@L["Permissões"]" />
 
-<PageHeader Title="Permissões" Subtitle="Catálogo fixo (Id e nome definidos em código, sincronizados na inicialização)" Icon="bi-key" />
+<PageHeader Title="@L["Permissões"]" Subtitle="@L["Catálogo fixo (Id e nome definidos em código, sincronizados na inicialização)"]" Icon="bi-key" />
 
 <div class="card">
     <div class="filter-bar">
-        <SearchInput Value="@_search" ValueChanged="v => { _search = v; _page = 1; }" Placeholder="Buscar por nome ou descrição..." DebounceMs="200" Class="flex-grow-1" />
-        <MultiSelect TValue="string" Options="_groupOptions" @bind-Selected="_groups" @bind-Selected:after="() => _page = 1" Placeholder="Grupos" Icon="bi-collection" />
-        <MultiSelect TValue="string" Options="_roleOptions" @bind-Selected="_roles" @bind-Selected:after="() => _page = 1" Placeholder="Concedida a" Icon="bi-person-badge" />
+        <SearchInput Value="@_search" ValueChanged="v => { _search = v; _page = 1; }" Placeholder="@L["Buscar por nome ou descrição..."]" DebounceMs="200" Class="flex-grow-1" />
+        <MultiSelect TValue="string" Options="_groupOptions" @bind-Selected="_groups" @bind-Selected:after="() => _page = 1" Placeholder="@L["Grupos"]" Icon="bi-collection" />
+        <MultiSelect TValue="string" Options="_roleOptions" @bind-Selected="_roles" @bind-Selected:after="() => _page = 1" Placeholder="@L["Concedida a"]" Icon="bi-person-badge" />
     </div>
     <div class="table-responsive">
         <table class="table align-middle mb-0 data-table">
             <thead>
-                <tr><th style="width:70px">Id</th><th>Nome</th><th>Grupo</th><th class="d-none d-md-table-cell">Descrição</th><th>Papéis</th></tr>
+                <tr><th style="width:70px">@L["Id"]</th><th>@L["Nome"]</th><th>@L["Grupo"]</th><th class="d-none d-md-table-cell">@L["Descrição"]</th><th>@L["Papéis"]</th></tr>
             </thead>
             <tbody>
                 @if (_items is null)
@@ -30,8 +30,8 @@
                         <tr @key="p.Id" class="row-enter">
                             <td><span class="badge text-bg-light border">#@p.Id</span></td>
                             <td><code>@p.Name</code></td>
-                            <td>@p.Group</td>
-                            <td class="d-none d-md-table-cell small text-muted">@p.Description</td>
+                            <td>@L[p.Group]</td>
+                            <td class="d-none d-md-table-cell small text-muted">@L[p.Description]</td>
                             <td>
                                 @foreach (var r in p.Roles)
                                 {
@@ -42,7 +42,7 @@
                     }
                     @if (page.Count == 0)
                     {
-                        <tr><td colspan="5"><EmptyState Icon="bi-key" Title="Nenhuma permissão encontrada" /></td></tr>
+                        <tr><td colspan="5"><EmptyState Icon="bi-key" Title="@L["Nenhuma permissão encontrada"]" /></td></tr>
                     }
                 }
             </tbody>
@@ -64,14 +64,14 @@
     private int _pageSize = 10;
 
     private IEnumerable<PermissionCatalogItem> Filtered => (_items ?? []).Where(p =>
-        (string.IsNullOrWhiteSpace(_search) || p.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) || p.Description.Contains(_search, StringComparison.OrdinalIgnoreCase)) &&
+        (string.IsNullOrWhiteSpace(_search) || p.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) || L[p.Description].Value.Contains(_search, StringComparison.OrdinalIgnoreCase)) &&
         (_groups.Count == 0 || _groups.Contains(p.Group)) &&
         (_roles.Count == 0 || p.Roles.Any(r => _roles.Contains(r.Label))));
 
     protected override async Task OnInitializedAsync()
     {
         _items = await Ui.QueryAsync(new PermissionCatalogQuery());
-        _groupOptions = _items.Select(p => p.Group).Distinct().Select(g => new SelectOption<string>(g, g)).ToList();
+        _groupOptions = _items.Select(p => p.Group).Distinct().Select(g => new SelectOption<string>(g, L[g])).ToList();
         _roleOptions = (await Ui.QueryAsync(new RoleOptionsQuery())).Select(r => new SelectOption<string>(r.Label, r.Label, r.Color)).ToList();
     }
 }

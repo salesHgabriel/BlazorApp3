@@ -22,12 +22,12 @@
             @if (Options.Count > 7)
             {
                 <div class="ms-search">
-                    <input class="form-control form-control-sm" placeholder="Filtrar opções..." @bind="_filter" @bind:event="oninput" />
+                    <input class="form-control form-control-sm" placeholder="@L["Filtrar opções..."]" @bind="_filter" @bind:event="oninput" />
                 </div>
             }
             <div class="ms-actions">
-                <button type="button" class="btn btn-link btn-sm p-0" @onclick="SelectAll">Selecionar todos</button>
-                <button type="button" class="btn btn-link btn-sm p-0 text-muted" @onclick="ClearAll">Limpar</button>
+                <button type="button" class="btn btn-link btn-sm p-0" @onclick="SelectAll">@L["Selecionar todos"]</button>
+                <button type="button" class="btn btn-link btn-sm p-0 text-muted" @onclick="ClearAll">@L["Limpar"]</button>
             </div>
             <div class="ms-options">
                 @foreach (var opt in Filtered)
@@ -44,7 +44,7 @@
                 }
                 @if (!Filtered.Any())
                 {
-                    <div class="text-muted small p-2">Nenhuma opção</div>
+                    <div class="text-muted small p-2">@L["Nenhuma opção"]</div>
                 }
             </div>
         </div>
@@ -55,7 +55,7 @@
     [Parameter] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = [];
     [Parameter] public List<TValue> Selected { get; set; } = [];
     [Parameter] public EventCallback<List<TValue>> SelectedChanged { get; set; }
-    [Parameter] public string Placeholder { get; set; } = "Selecione";
+    [Parameter] public string Placeholder { get; set; } = AppText.Get("Selecione");
     [Parameter] public string? Icon { get; set; }
     [Parameter] public string? Class { get; set; }
 
@@ -75,7 +75,7 @@
             {
                 0 => Placeholder,
                 1 or 2 => string.Join(", ", labels),
-                _ => $"{Placeholder}: {labels.Count} selecionados"
+                _ => L["{0}: {1} selecionados", Placeholder, labels.Count]
             };
         }
     }

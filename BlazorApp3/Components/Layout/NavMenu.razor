@@ -13,39 +13,39 @@
 }
 
 <nav class="sidebar-nav">
-    <div class="nav-section">Visão geral</div>
-    <NavLink class="side-link" href="" Match="NavLinkMatch.All" title="Dashboard">
-        <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
+    <div class="nav-section">@L["Visão geral"]</div>
+    <NavLink class="side-link" href="" Match="NavLinkMatch.All" title="@L["Dashboard"]">
+        <i class="bi bi-grid-1x2"></i><span>@L["Dashboard"]</span>
     </NavLink>
 
     <Can Any="[Perm.UsersView, Perm.TeamsView]">
-        <div class="nav-section">Gestão</div>
+        <div class="nav-section">@L["Gestão"]</div>
     </Can>
     <Can Permission="@Perm.UsersView">
-        <NavLink class="side-link" href="users" title="Usuários"><i class="bi bi-people"></i><span>Usuários</span></NavLink>
+        <NavLink class="side-link" href="users" title="@L["Usuários"]"><i class="bi bi-people"></i><span>@L["Usuários"]</span></NavLink>
     </Can>
     <Can Permission="@Perm.TeamsView">
-        <NavLink class="side-link" href="teams" title="Times"><i class="bi bi-diagram-3"></i><span>Times</span></NavLink>
+        <NavLink class="side-link" href="teams" title="@L["Times"]"><i class="bi bi-diagram-3"></i><span>@L["Times"]</span></NavLink>
     </Can>
 
     <Can Any="[Perm.RolesView, Perm.PermissionsView]">
-        <div class="nav-section">Segurança</div>
+        <div class="nav-section">@L["Segurança"]</div>
     </Can>
     <Can Permission="@Perm.RolesView">
-        <NavLink class="side-link" href="roles" title="Papéis"><i class="bi bi-person-badge"></i><span>Papéis (roles)</span></NavLink>
+        <NavLink class="side-link" href="roles" title="@L["Papéis"]"><i class="bi bi-person-badge"></i><span>@L["Papéis (roles)"]</span></NavLink>
     </Can>
     <Can Permission="@Perm.PermissionsView">
-        <NavLink class="side-link" href="permissions" title="Permissões"><i class="bi bi-key"></i><span>Permissões</span></NavLink>
+        <NavLink class="side-link" href="permissions" title="@L["Permissões"]"><i class="bi bi-key"></i><span>@L["Permissões"]</span></NavLink>
     </Can>
 
     <Can Any="[Perm.BrandingView, Perm.ComponentsView]">
-        <div class="nav-section">Configurações</div>
+        <div class="nav-section">@L["Configurações"]</div>
     </Can>
     <Can Permission="@Perm.BrandingView">
-        <NavLink class="side-link" href="settings/branding" title="Whitelabel"><i class="bi bi-palette"></i><span>Whitelabel</span></NavLink>
+        <NavLink class="side-link" href="settings/branding" title="@L["Whitelabel"]"><i class="bi bi-palette"></i><span>@L["Whitelabel"]</span></NavLink>
     </Can>
     <Can Permission="@Perm.ComponentsView">
-        <NavLink class="side-link" href="components" title="Componentes"><i class="bi bi-boxes"></i><span>Componentes</span></NavLink>
+        <NavLink class="side-link" href="components" title="@L["Componentes"]"><i class="bi bi-boxes"></i><span>@L["Componentes"]</span></NavLink>
     </Can>
 </nav>
 

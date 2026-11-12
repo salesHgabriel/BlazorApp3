@@ -6,14 +6,14 @@
 @inject IJSRuntime JS
 @inject IAuthorizationService Authz
 
-<AppPageTitle Title="Whitelabel" />
+<AppPageTitle Title="@L["Whitelabel"]" />
 
-<PageHeader Title="Whitelabel" Subtitle="Personalize nome, logo, cores, fonte e efeitos da aplicação" Icon="bi-palette">
+<PageHeader Title="@L["Whitelabel"]" Subtitle="@L["Personalize nome, logo, cores, fonte e efeitos da aplicação"]" Icon="bi-palette">
     <Actions>
         @if (_canEdit)
         {
-            <button class="btn btn-outline-danger" @onclick="ResetAsync"><i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar padrão</button>
-            <LoadingButton Type="submit" form="branding-form" Loading="_saving" Icon="bi-check2" LoadingText="Salvando...">Salvar e aplicar</LoadingButton>
+            <button class="btn btn-outline-danger" @onclick="ResetAsync"><i class="bi bi-arrow-counterclockwise me-1"></i>@L["Restaurar padrão"]</button>
+            <LoadingButton Type="submit" form="branding-form" Loading="_saving" Icon="bi-check2" LoadingText="@L["Salvando..."]">@L["Salvar e aplicar"]</LoadingButton>
         }
     </Actions>
 </PageHeader>
@@ -26,7 +26,7 @@ else
 {
     @if (!_canEdit)
     {
-        <div class="alert alert-warning py-2"><i class="bi bi-eye me-1"></i>Modo somente leitura: você não possui a permissão <code>@Perm.BrandingEdit</code>.</div>
+        <div class="alert alert-warning py-2"><i class="bi bi-eye me-1"></i>@L["Modo somente leitura: você não possui a permissão"] <code>@Perm.BrandingEdit</code>.</div>
     }
     <div class="row g-3">
         <div class="col-xl-7">
@@ -34,24 +34,24 @@ else
                 <DataAnnotationsValidator />
                 <fieldset disabled="@(!_canEdit)">
                     <div class="card mb-3">
-                        <div class="card-header-x"><h6><i class="bi bi-type me-2"></i>Identidade</h6></div>
+                        <div class="card-header-x"><h6><i class="bi bi-type me-2"></i>@L["Identidade"]</h6></div>
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Nome da aplicação *</label>
+                                    <label class="form-label">@L["Nome da aplicação *"]</label>
                                     <InputText class="form-control" @bind-Value="_model.AppName" />
                                     <ValidationMessage For="() => _model.AppName" class="text-danger small" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Slogan</label>
+                                    <label class="form-label">@L["Slogan"]</label>
                                     <InputText class="form-control" @bind-Value="_model.Tagline" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Logo</label>
+                                    <label class="form-label">@L["Logo"]</label>
                                     <ImageUpload @bind-Value="_model.LogoUrl" Folder="branding" Size="64" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Favicon</label>
+                                    <label class="form-label">@L["Favicon"]</label>
                                     <ImageUpload @bind-Value="_model.FaviconUrl" Folder="branding" Size="48" Accept=".png,.ico,.svg" MaxSizeMb="0.5" />
                                 </div>
                             </div>
@@ -59,10 +59,10 @@ else
                     </div>
 
                     <div class="card mb-3">
-                        <div class="card-header-x"><h6><i class="bi bi-droplet-half me-2"></i>Cores e tipografia</h6></div>
+                        <div class="card-header-x"><h6><i class="bi bi-droplet-half me-2"></i>@L["Cores e tipografia"]</h6></div>
                         <div class="card-body">
                             <div class="preset-row mb-3">
-                                <span class="small text-muted me-1">Temas prontos:</span>
+                                <span class="small text-muted me-1">@L["Temas prontos:"]</span>
                                 @foreach (var p in Presets)
                                 {
                                     <button type="button" class="preset" title="@p.Name" @onclick="() => ApplyPreset(p)"
@@ -71,32 +71,32 @@ else
                             </div>
                             <div class="row g-3">
                                 <div class="col-sm-6 col-lg-3">
-                                    <label class="form-label">Primária</label>
+                                    <label class="form-label">@L["Primária"]</label>
                                     <ColorInput Value="@_model.PrimaryColor" ValueChanged="v => _model.PrimaryColor = v ?? _model.PrimaryColor" />
                                 </div>
                                 <div class="col-sm-6 col-lg-3">
-                                    <label class="form-label">Destaque</label>
+                                    <label class="form-label">@L["Destaque"]</label>
                                     <ColorInput Value="@_model.AccentColor" ValueChanged="v => _model.AccentColor = v ?? _model.AccentColor" />
                                 </div>
                                 <div class="col-sm-6 col-lg-3">
-                                    <label class="form-label">Menu lateral</label>
+                                    <label class="form-label">@L["Menu lateral"]</label>
                                     <ColorInput Value="@_model.SidebarColor" ValueChanged="v => _model.SidebarColor = v ?? _model.SidebarColor" />
                                 </div>
                                 <div class="col-sm-6 col-lg-3">
-                                    <label class="form-label">Texto do menu</label>
+                                    <label class="form-label">@L["Texto do menu"]</label>
                                     <ColorInput Value="@_model.SidebarTextColor" ValueChanged="v => _model.SidebarTextColor = v ?? _model.SidebarTextColor" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Fonte</label>
+                                    <label class="form-label">@L["Fonte"]</label>
                                     <InputSelect class="form-select" @bind-Value="_model.FontFamily">
                                         @foreach (var f in EffectiveBranding.Fonts.Keys)
                                         {
-                                            <option value="@f">@f</option>
+                                            <option value="@f">@L[f]</option>
                                         }
                                     </InputSelect>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Arredondamento: <strong>@_model.BorderRadius px</strong></label>
+                                    <label class="form-label">@L["Arredondamento:"] <strong>@_model.BorderRadius px</strong></label>
                                     <input type="range" class="form-range" min="0" max="20" @bind="_model.BorderRadius" @bind:event="oninput" />
                                 </div>
                             </div>
@@ -104,49 +104,49 @@ else
                     </div>
 
                     <div class="card mb-3">
-                        <div class="card-header-x"><h6><i class="bi bi-magic me-2"></i>Efeitos de página</h6></div>
+                        <div class="card-header-x"><h6><i class="bi bi-magic me-2"></i>@L["Efeitos de página"]</h6></div>
                         <div class="card-body">
                             <div class="transition-grid">
                                 @foreach (var (key, label) in EffectiveBranding.Transitions)
                                 {
                                     <label class="check-card @(_model.PageTransition == key ? "checked" : "")">
                                         <input type="radio" class="form-check-input" name="transition" checked="@(_model.PageTransition == key)" @onchange="() => _model.PageTransition = key" />
-                                        <span>@label</span>
+                                        <span>@L[label]</span>
                                     </label>
                                 }
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-secondary mt-3" @onclick="PreviewTransition"><i class="bi bi-play-circle me-1"></i>Testar efeito</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-3" @onclick="PreviewTransition"><i class="bi bi-play-circle me-1"></i>@L["Testar efeito"]</button>
                         </div>
                     </div>
 
                     <div class="card mb-3">
-                        <div class="card-header-x"><h6><i class="bi bi-box-arrow-in-right me-2"></i>Login, rodapé e times</h6></div>
+                        <div class="card-header-x"><h6><i class="bi bi-box-arrow-in-right me-2"></i>@L["Login, rodapé e times"]</h6></div>
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Título do login</label>
+                                    <label class="form-label">@L["Título do login"]</label>
                                     <InputText class="form-control" @bind-Value="_model.LoginTitle" />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">E-mail de suporte</label>
+                                    <label class="form-label">@L["E-mail de suporte"]</label>
                                     <InputText class="form-control" @bind-Value="_model.SupportEmail" />
                                     <ValidationMessage For="() => _model.SupportEmail" class="text-danger small" />
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Mensagem do login</label>
+                                    <label class="form-label">@L["Mensagem do login"]</label>
                                     <InputText class="form-control" @bind-Value="_model.LoginMessage" />
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label">Texto do rodapé</label>
+                                    <label class="form-label">@L["Texto do rodapé"]</label>
                                     <InputText class="form-control" @bind-Value="_model.FooterText" />
                                 </div>
                                 <div class="col-12">
                                     <div class="branding-toggle">
                                         <div class="form-check form-switch">
                                             <InputCheckbox class="form-check-input" id="allow-team" @bind-Value="_model.AllowTeamBranding" />
-                                            <label class="form-check-label fw-semibold" for="allow-team">Permitir branding personalizado por time</label>
+                                            <label class="form-check-label fw-semibold" for="allow-team">@L["Permitir branding personalizado por time"]</label>
                                         </div>
-                                        <div class="small text-muted">Times com “branding próprio” sobrescrevem nome, logo e cores quando selecionados no seletor de time.</div>
+                                        <div class="small text-muted">@L["Times com “branding próprio” sobrescrevem nome, logo e cores quando selecionados no seletor de time."]</div>
                                     </div>
                                 </div>
                             </div>
@@ -160,7 +160,7 @@ else
         <div class="col-xl-5">
             <div class="sticky-preview">
                 <div class="card">
-                    <div class="card-header-x"><h6><i class="bi bi-display me-2"></i>Pré-visualização</h6><small class="text-muted">atualiza enquanto você edita</small></div>
+                    <div class="card-header-x"><h6><i class="bi bi-display me-2"></i>@L["Pré-visualização"]</h6><small class="text-muted">@L["atualiza enquanto você edita"]</small></div>
                     <div class="card-body">
                         <div class="live-preview" style="@PreviewStyle">
                             <div class="lp-side">
@@ -175,19 +175,19 @@ else
                                     }
                                     <span>@_model.AppName</span>
                                 </div>
-                                <div class="lp-link active"><i class="bi bi-grid-1x2"></i> Dashboard</div>
-                                <div class="lp-link"><i class="bi bi-people"></i> Usuários</div>
-                                <div class="lp-link"><i class="bi bi-diagram-3"></i> Times</div>
+                                <div class="lp-link active"><i class="bi bi-grid-1x2"></i> @L["Dashboard"]</div>
+                                <div class="lp-link"><i class="bi bi-people"></i> @L["Usuários"]</div>
+                                <div class="lp-link"><i class="bi bi-diagram-3"></i> @L["Times"]</div>
                             </div>
                             <div class="lp-main">
                                 <div class="lp-top"></div>
                                 <div class="lp-content">
-                                    <div class="lp-title">@(_model.Tagline ?? "Dashboard")</div>
+                                    <div class="lp-title">@(_model.Tagline ?? L["Dashboard"])</div>
                                     <div class="lp-card">
-                                        <div class="lp-stat"><i class="bi bi-people"></i><div><small>Usuários</small><strong>1.248</strong></div></div>
+                                        <div class="lp-stat"><i class="bi bi-people"></i><div><small>@L["Usuários"]</small><strong>1.248</strong></div></div>
                                         <div class="d-flex gap-2 mt-2">
-                                            <span class="lp-btn">Primário</span>
-                                            <span class="lp-btn lp-btn-accent">Destaque</span>
+                                            <span class="lp-btn">@L["Primário"]</span>
+                                            <span class="lp-btn lp-btn-accent">@L["Destaque"]</span>
                                         </div>
                                     </div>
                                 </div>
@@ -199,8 +199,8 @@ else
                 <div class="card mt-3">
                     <div class="card-body small text-muted">
                         <i class="bi bi-info-circle me-1"></i>
-                        Última alteração: @_model.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm").
-                        As mudanças são aplicadas instantaneamente para todos os usuários conectados após recarregar a página (e imediatamente para você).
+                        @L["Última alteração: {0}.", _model.UpdatedAt.ToLocalTime().ToString("g")]
+                        @L["As mudanças são aplicadas instantaneamente para todos os usuários conectados após recarregar a página (e imediatamente para você)."]
                     </div>
                 </div>
             </div>
@@ -259,13 +259,13 @@ else
         _saving = true;
         try
         {
-            var result = await Ui.SendAsync(new SaveBrandingCommand(_model), "Whitelabel atualizado", "O novo tema já está aplicado.", errorTitle: "Erro ao salvar");
+            var result = await Ui.SendAsync(new SaveBrandingCommand(_model), L["Whitelabel atualizado"], L["O novo tema já está aplicado."], errorTitle: L["Erro ao salvar"]);
             if (!result.Succeeded) return;
 
             await State.ReloadAsync();
             _model = State.Global.Clone();
             if (State.ActiveTeam is { UseCustomBranding: true } t && _model.AllowTeamBranding)
-                Toast.Info("Branding do time ativo", $"Você está no time \"{t.Name}\", que sobrescreve algumas cores. Selecione \"Padrão da plataforma\" para ver o tema global.");
+                Toast.Info(L["Branding do time ativo"], L["Você está no time “{0}”, que sobrescreve algumas cores. Selecione “Padrão da plataforma” para ver o tema global.", t.Name]);
         }
         finally
         {
@@ -277,13 +277,13 @@ else
     {
         var confirm = new ConfirmOptions
         {
-            Title = "Restaurar padrão",
-            Message = new MarkupString("Todas as configurações de whitelabel voltarão aos <strong>valores padrão</strong>."),
-            ConfirmText = "Restaurar",
+            Title = L["Restaurar padrão"],
+            Message = new MarkupString(L["Todas as configurações de whitelabel voltarão aos <strong>valores padrão</strong>."]),
+            ConfirmText = L["Restaurar"],
             Icon = "bi-arrow-counterclockwise",
             Danger = true
         };
-        if (await Ui.ConfirmAndSendAsync(confirm, new ResetBrandingCommand(), "Padrão restaurado", loadingText: "Restaurando..."))
+        if (await Ui.ConfirmAndSendAsync(confirm, new ResetBrandingCommand(), L["Padrão restaurado"], loadingText: L["Restaurando..."]))
         {
             await State.ReloadAsync();
             _model = State.Global.Clone();

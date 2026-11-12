@@ -1,7 +1,5 @@
 namespace BlazorApp3.Security;
 
-public sealed record PermissionDefinition(int Id, string Name, string Group, string Description);
-
 /// <summary>
 /// Catálogo de permissões FIXAS (Id e nome imutáveis). Sincronizado com o banco na inicialização.
 /// Roles são dinâmicas e apenas agrupam estas permissões.

@@ -7,22 +7,22 @@
 @inject IJSRuntime JS
 @inject BrandingState Branding
 
-<AppPageTitle Title="Componentes" />
+<AppPageTitle Title="@L["Componentes"]" />
 
-<PageHeader Title="Vitrine de componentes" Subtitle="Teste todos os componentes reutilizáveis da aplicação" Icon="bi-boxes" />
+<PageHeader Title="@L["Vitrine de componentes"]" Subtitle="@L["Teste todos os componentes reutilizáveis da aplicação"]" Icon="bi-boxes" />
 
 <div class="row g-3">
     @* ---------------- Toasts *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-bell me-2"></i>Toasts</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-bell me-2"></i>@L["Toasts"]</h6></div>
             <div class="card-body d-flex flex-wrap gap-2 align-items-start align-content-start">
-                <button class="btn btn-success" @onclick='() => Toast.Success("Salvo com sucesso", "O registro foi atualizado.")'>Sucesso</button>
-                <button class="btn btn-danger" @onclick='() => Toast.Error("Falha na operação", "Não foi possível conectar ao servidor.")'>Erro</button>
-                <button class="btn btn-warning" @onclick='() => Toast.Warning("Atenção", "Sua sessão expira em 5 minutos.")'>Aviso</button>
-                <button class="btn btn-info text-white" @onclick='() => Toast.Info("Novidade", "Confira os novos relatórios.")'>Info</button>
-                <button class="btn btn-outline-secondary" @onclick="Burst">Rajada (5)</button>
-                <button class="btn btn-outline-secondary" @onclick='() => Toast.Show(ToastLevel.Info, "Persistente", "Só fecha manualmente.", 0)'>Sem auto-fechar</button>
+                <button class="btn btn-success" @onclick='() => Toast.Success(L["Salvo com sucesso"], L["O registro foi atualizado."])'>@L["Sucesso"]</button>
+                <button class="btn btn-danger" @onclick='() => Toast.Error(L["Falha na operação"], L["Não foi possível conectar ao servidor."])'>@L["Erro"]</button>
+                <button class="btn btn-warning" @onclick='() => Toast.Warning(L["Atenção"], L["Sua sessão expira em 5 minutos."])'>@L["Aviso"]</button>
+                <button class="btn btn-info text-white" @onclick='() => Toast.Info(L["Novidade"], L["Confira os novos relatórios."])'>@L["Info"]</button>
+                <button class="btn btn-outline-secondary" @onclick="Burst">@L["Rajada (5)"]</button>
+                <button class="btn btn-outline-secondary" @onclick='() => Toast.Show(ToastLevel.Info, L["Persistente"], L["Só fecha manualmente."], 0)'>@L["Sem auto-fechar"]</button>
             </div>
         </div>
     </div>
@@ -30,15 +30,15 @@
     @* ---------------- Loadings *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-hourglass-split me-2"></i>Loadings</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-hourglass-split me-2"></i>@L["Loadings"]</h6></div>
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-2 mb-3">
-                    <button class="btn btn-primary" @onclick="GlobalLoading">Overlay global (2s)</button>
-                    <LoadingButton Loading="_btnLoading" OnClick="ButtonLoading" Class="btn-outline-primary" Icon="bi-cloud-download" LoadingText="Processando...">Botão com loading</LoadingButton>
-                    <button class="btn btn-outline-secondary" @onclick="ToggleSkeleton">Recarregar skeleton</button>
+                    <button class="btn btn-primary" @onclick="GlobalLoading">@L["Overlay global (2s)"]</button>
+                    <LoadingButton Loading="_btnLoading" OnClick="ButtonLoading" Class="btn-outline-primary" Icon="bi-cloud-download" LoadingText="@L["Processando..."]">@L["Botão com loading"]</LoadingButton>
+                    <button class="btn btn-outline-secondary" @onclick="ToggleSkeleton">@L["Recarregar skeleton"]</button>
                 </div>
                 <div class="d-flex align-items-center gap-4 mb-3">
-                    <Spinner Size="sm" /><Spinner /><Spinner Size="lg" /><Spinner Text="Carregando dados..." />
+                    <Spinner Size="sm" /><Spinner /><Spinner Size="lg" /><Spinner Text="@L["Carregando dados..."]" />
                 </div>
                 @if (_skeleton)
                 {
@@ -46,7 +46,7 @@
                 }
                 else
                 {
-                    <div class="d-flex gap-3 page-enter"><Avatar Name="Conteúdo Carregado" Size="48" /><div><strong>Conteúdo carregado!</strong><div class="text-muted small">O skeleton é exibido enquanto os dados chegam.</div></div></div>
+                    <div class="d-flex gap-3 page-enter"><Avatar Name="Conteúdo Carregado" Size="48" /><div><strong>@L["Conteúdo carregado!"]</strong><div class="text-muted small">@L["O skeleton é exibido enquanto os dados chegam."]</div></div></div>
                 }
             </div>
         </div>
@@ -55,14 +55,14 @@
     @* ---------------- Dialogs *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-window-stack me-2"></i>Dialogs (central e lateral)</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-window-stack me-2"></i>@L["Dialogs (central e lateral)"]</h6></div>
             <div class="card-body d-flex flex-wrap gap-2 align-items-start align-content-start">
-                <button class="btn btn-outline-primary" @onclick='() => OpenModal("sm")'>Modal pequeno</button>
-                <button class="btn btn-outline-primary" @onclick='() => OpenModal("md")'>Modal médio</button>
-                <button class="btn btn-outline-primary" @onclick='() => OpenModal("lg")'>Modal grande</button>
-                <button class="btn btn-outline-primary" @onclick='() => OpenModal("xl")'>Modal XL</button>
-                <button class="btn btn-outline-secondary" @onclick='() => OpenDrawer("end")'>Lateral direita</button>
-                <button class="btn btn-outline-secondary" @onclick='() => OpenDrawer("start")'>Lateral esquerda</button>
+                <button class="btn btn-outline-primary" @onclick='() => OpenModal("sm")'>@L["Modal pequeno"]</button>
+                <button class="btn btn-outline-primary" @onclick='() => OpenModal("md")'>@L["Modal médio"]</button>
+                <button class="btn btn-outline-primary" @onclick='() => OpenModal("lg")'>@L["Modal grande"]</button>
+                <button class="btn btn-outline-primary" @onclick='() => OpenModal("xl")'>@L["Modal XL"]</button>
+                <button class="btn btn-outline-secondary" @onclick='() => OpenDrawer("end")'>@L["Lateral direita"]</button>
+                <button class="btn btn-outline-secondary" @onclick='() => OpenDrawer("start")'>@L["Lateral esquerda"]</button>
             </div>
         </div>
     </div>
@@ -70,14 +70,14 @@
     @* ---------------- Confirmações *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-patch-question me-2"></i>Confirmação de exclusão</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-patch-question me-2"></i>@L["Confirmação de exclusão"]</h6></div>
             <div class="card-body d-flex flex-wrap gap-2 align-items-start align-content-start">
-                <button class="btn btn-outline-danger" @onclick="SimpleDelete"><i class="bi bi-trash3 me-1"></i>Excluir simples</button>
-                <button class="btn btn-danger" @onclick="CriticalDelete"><i class="bi bi-exclamation-octagon me-1"></i>Excluir crítico (digitar nome)</button>
-                <button class="btn btn-outline-secondary" @onclick="GenericConfirm">Confirmação genérica</button>
+                <button class="btn btn-outline-danger" @onclick="SimpleDelete"><i class="bi bi-trash3 me-1"></i>@L["Excluir simples"]</button>
+                <button class="btn btn-danger" @onclick="CriticalDelete"><i class="bi bi-exclamation-octagon me-1"></i>@L["Excluir crítico (digitar nome)"]</button>
+                <button class="btn btn-outline-secondary" @onclick="GenericConfirm">@L["Confirmação genérica"]</button>
                 @if (_confirmResult is not null)
                 {
-                    <div class="w-100 small text-muted">Resultado: <strong>@_confirmResult</strong></div>
+                    <div class="w-100 small text-muted">@L["Resultado:"] <strong>@_confirmResult</strong></div>
                 }
             </div>
         </div>
@@ -86,11 +86,11 @@
     @* ---------------- Upload *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-cloud-arrow-up me-2"></i>Upload de arquivos</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-cloud-arrow-up me-2"></i>@L["Upload de arquivos"]</h6></div>
             <div class="card-body">
                 <FileUpload Folder="showcase" Multiple="true" MaxFiles="5" MaxSizeMb="10" OnUploaded="f => _uploaded.Add(f)" />
                 <div class="mt-3">
-                    <label class="form-label small">Upload de imagem com preview</label>
+                    <label class="form-label small">@L["Upload de imagem com preview"]</label>
                     <ImageUpload @bind-Value="_image" Folder="showcase" Shape="circle" Size="80" />
                 </div>
             </div>
@@ -100,9 +100,9 @@
     @* ---------------- Busca lazy *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-search me-2"></i>Busca lazy</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-search me-2"></i>@L["Busca lazy"]</h6></div>
             <div class="card-body">
-                <label class="form-label small">Autocomplete paginado (consulta o banco sob demanda)</label>
+                <label class="form-label small">@L["Autocomplete paginado (consulta o banco sob demanda)"]</label>
                 <LazyAutocomplete TItem="UserLookup" SearchFunc="(t, p, s) => Ui.QueryAsync(new LookupUsersQuery(t, p, s))" OnSelected="u => _picked = u" PageSize="6">
                     <ItemTemplate Context="u">
                         <Avatar Name="@u.FullName" Size="28" />
@@ -111,10 +111,10 @@
                 </LazyAutocomplete>
                 @if (_picked is not null)
                 {
-                    <div class="alert alert-light border mt-2 py-2 small"><i class="bi bi-check2-circle text-success me-1"></i>Selecionado: <strong>@_picked.FullName</strong> (@_picked.Department)</div>
+                    <div class="alert alert-light border mt-2 py-2 small"><i class="bi bi-check2-circle text-success me-1"></i>@L["Selecionado:"] <strong>@_picked.FullName</strong> (@_picked.Department)</div>
                 }
 
-                <label class="form-label small mt-3">Lista virtualizada com rolagem infinita (carrega lotes conforme rola)</label>
+                <label class="form-label small mt-3">@L["Lista virtualizada com rolagem infinita (carrega lotes conforme rola)"]</label>
                 <div class="virtual-list">
                     <Virtualize ItemsProvider="LoadVirtual" ItemComparer="UserComparer" ItemSize="52" OverscanCount="6" Context="u">
                         <ItemContent>
@@ -128,7 +128,7 @@
                         </Placeholder>
                     </Virtualize>
                 </div>
-                <small class="text-muted">Lotes carregados: @_virtualLoads</small>
+                <small class="text-muted">@L["Lotes carregados: {0}", _virtualLoads]</small>
             </div>
         </div>
     </div>
@@ -136,11 +136,11 @@
     @* ---------------- Paginação + multi filtros *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-funnel me-2"></i>Paginação e multi filtros</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-funnel me-2"></i>@L["Paginação e multi filtros"]</h6></div>
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-2 mb-3">
-                    <MultiSelect TValue="string" Options="_fruitOptions" @bind-Selected="_fruits" Placeholder="Categorias" Icon="bi-tags" />
-                    <SearchInput @bind-Value="_demoSearch" Placeholder="Filtrar..." DebounceMs="250" Class="flex-grow-1" />
+                    <MultiSelect TValue="string" Options="_fruitOptions" @bind-Selected="_fruits" Placeholder="@L["Categorias"]" Icon="bi-tags" />
+                    <SearchInput @bind-Value="_demoSearch" Placeholder="@L["Filtrar..."]" DebounceMs="250" Class="flex-grow-1" />
                 </div>
                 <ul class="list-group mb-3">
                     @foreach (var item in DemoPage)
@@ -154,16 +154,89 @@
         </div>
     </div>
 
+    @* ---------------- Valores monetários por idioma *@
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header-x">
+                <h6><i class="bi bi-cash-coin me-2"></i>@L["Valores e moedas por idioma"]</h6>
+                <span class="small text-muted">@L["Idioma atual: {0} · moeda padrão: {1}", AppCultures.Current.DisplayName, Money.DefaultCurrency()]</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label">@L["Moeda"]</label>
+                                <select class="form-select form-select-sm" value="@_currency" @onchange="e => _currency = e.Value?.ToString() ?? _currency">
+                                    @foreach (var c in Money.Currencies)
+                                    {
+                                        <option value="@c">@c (@Money.Symbol(c))</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">@L["Preço unitário"]</label>
+                                <MoneyInput @bind-Value="_price" Currency="@_currency" Min="0" Small="true" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">@L["Quantidade"]</label>
+                                <input type="number" min="1" class="form-control form-control-sm" @bind="_quantity" @bind:event="oninput" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">@L["Desconto"]</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" min="0" max="100" step="0.5" class="form-control text-end" @bind="_discountPercent" @bind:event="oninput" />
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <dl class="money-summary mt-3">
+                            <dt>@L["Subtotal"]</dt><dd>@Money.Format(Subtotal, _currency)</dd>
+                            <dt>@L["Desconto ({0})", (_discountPercent / 100m).ToString("P1")]</dt><dd class="text-danger">− @Money.Format(Discount, _currency)</dd>
+                            <dt class="fw-semibold">@L["Total"]</dt><dd class="fw-bold fs-5">@Money.Format(Total, _currency)</dd>
+                        </dl>
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-info-circle me-1"></i>@L["Digite no formato do idioma (ex.: {0}). A moeda padrão muda com o idioma; não há conversão de câmbio.", 1234.56m.ToString("N2")]
+                        </p>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="small text-muted mb-2">@L["O mesmo total exibido conforme cada idioma"]</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr><th>@L["Idioma"]</th><th class="text-end">@L["Total"]</th><th class="text-end">@L["Moeda do idioma"]</th><th class="text-end">@L["Número"]</th><th class="text-end">@L["Data"]</th></tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var c in AppCultures.All)
+                                    {
+                                        var ci = System.Globalization.CultureInfo.GetCultureInfo(c.Name);
+                                        <tr class="@(c == AppCultures.Current ? "table-active" : "")">
+                                            <td><span class="lang-code me-2">@c.Short</span>@c.DisplayName</td>
+                                            <td class="text-end font-monospace">@Money.Format(Total, _currency, ci)</td>
+                                            <td class="text-end font-monospace">@Money.Format(Total, c.Currency, ci)</td>
+                                            <td class="text-end font-monospace">@(1234567.891m.ToString("N2", ci))</td>
+                                            <td class="text-end font-monospace">@_sampleDate.ToString("d", ci)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @* ---------------- Efeitos *@
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header-x"><h6><i class="bi bi-stars me-2"></i>Efeitos de página</h6></div>
+            <div class="card-header-x"><h6><i class="bi bi-stars me-2"></i>@L["Efeitos de página"]</h6></div>
             <div class="card-body">
-                <p class="small text-muted">Transição atual (configurada no whitelabel): <strong>@EffectiveBranding.Transitions[Branding.Effective.PageTransition]</strong></p>
+                <p class="small text-muted">@L["Transição atual (configurada no whitelabel):"] <strong>@L[EffectiveBranding.Transitions[Branding.Effective.PageTransition]]</strong></p>
                 <div class="d-flex flex-wrap gap-2">
                     @foreach (var (key, label) in EffectiveBranding.Transitions)
                     {
-                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => JS.InvokeVoidAsync(GlobalFx, key)">@label</button>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => JS.InvokeVoidAsync(GlobalFx, key)">@L[label]</button>
                     }
                 </div>
                 <div class="fx-demo-grid mt-3">
@@ -172,39 +245,49 @@
                         <div @key="(_staggerKey, i)" class="fx-demo-box fx-stagger" style="--i:@i"></div>
                     }
                 </div>
-                <button class="btn btn-sm btn-link px-0" @onclick="() => _staggerKey++">Repetir animação em cascata</button>
+                <button class="btn btn-sm btn-link px-0" @onclick="() => _staggerKey++">@L["Repetir animação em cascata"]</button>
             </div>
         </div>
     </div>
 </div>
 
-<Modal @bind-Visible="_modalOpen" Title="@($"Modal {_modalSize.ToUpperInvariant()}")" Subtitle="Dialog central com animação" Icon="bi-window" Size="@_modalSize">
+<Modal @bind-Visible="_modalOpen" Title="@($"Modal {_modalSize.ToUpperInvariant()}")" Subtitle="@L["Dialog central com animação"]" Icon="bi-window" Size="@_modalSize">
     <ChildContent>
-        <p>Feche com <kbd>Esc</kbd>, clicando fora ou no botão. Dialogs podem ser empilhados:</p>
-        <button class="btn btn-outline-danger btn-sm" @onclick="SimpleDelete">Abrir confirmação por cima</button>
+        <p>@L["Feche com"] <kbd>@L["Esc"]</kbd>@L[", clicando fora ou no botão. Dialogs podem ser empilhados:"]</p>
+        <button class="btn btn-outline-danger btn-sm" @onclick="SimpleDelete">@L["Abrir confirmação por cima"]</button>
         @if (_modalSize is "lg" or "xl")
         {
             <div class="mt-3"><Skeleton Lines="6" /></div>
         }
     </ChildContent>
     <Footer>
-        <button class="btn btn-light" @onclick="() => _modalOpen = false">Fechar</button>
-        <button class="btn btn-primary" @onclick='() => { _modalOpen = false; Toast.Success("Confirmado!"); }'>OK</button>
+        <button class="btn btn-light" @onclick="() => _modalOpen = false">@L["Fechar"]</button>
+        <button class="btn btn-primary" @onclick='() => { _modalOpen = false; Toast.Success(L["Confirmado!"]); }'>@L["OK"]</button>
     </Footer>
 </Modal>
 
-<Drawer @bind-Visible="_drawerOpen" Position="@_drawerPos" Title="Dialog lateral" Subtitle="@(_drawerPos == "end" ? "Abre pela direita" : "Abre pela esquerda")" Icon="bi-layout-sidebar-reverse" Width="420px">
+<Drawer @bind-Visible="_drawerOpen" Position="@_drawerPos" Title="@L["Dialog lateral"]" Subtitle="@(_drawerPos == "end" ? L["Abre pela direita"] : L["Abre pela esquerda"])" Icon="bi-layout-sidebar-reverse" Width="420px">
     <ChildContent>
-        <p class="text-muted">Ideal para formulários de criação/edição sem perder o contexto da listagem.</p>
-        <div class="mb-3"><label class="form-label">Campo de exemplo</label><input class="form-control" placeholder="Digite algo..." /></div>
+        <p class="text-muted">@L["Ideal para formulários de criação/edição sem perder o contexto da listagem."]</p>
+        <div class="mb-3"><label class="form-label">@L["Campo de exemplo"]</label><input class="form-control" placeholder="@L["Digite algo..."]" /></div>
         <Skeleton Lines="5" />
     </ChildContent>
     <Footer>
-        <button class="btn btn-light" @onclick="() => _drawerOpen = false">Fechar</button>
+        <button class="btn btn-light" @onclick="() => _drawerOpen = false">@L["Fechar"]</button>
     </Footer>
 </Drawer>
 
 @code {
+    // ---- valores monetários
+    private string _currency = Money.DefaultCurrency();
+    private decimal? _price = 1234.56m;
+    private int _quantity = 3;
+    private decimal _discountPercent = 10;
+    private readonly DateTime _sampleDate = new(2026, 12, 31);
+    private decimal Subtotal => (_price ?? 0) * Math.Max(0, _quantity);
+    private decimal Discount => Math.Round(Subtotal * Math.Clamp(_discountPercent, 0, 100) / 100m, 2, MidpointRounding.AwayFromZero);
+    private decimal Total => Subtotal - Discount;
+
     private const string GlobalFx = "appFx.pageEnter";
     private static readonly IEqualityComparer<UserLookup> UserComparer = EqualityComparer<UserLookup>.Create((a, b) => a?.Id == b?.Id, u => u.Id.GetHashCode());
 
@@ -253,19 +336,19 @@
         var levels = Enum.GetValues<ToastLevel>();
         for (var i = 0; i < 5; i++)
         {
-            Toast.Show(levels[i % levels.Length], $"Notificação #{i + 1}", "Toasts empilham e saem com animação.");
+            Toast.Show(levels[i % levels.Length], L["Notificação #{0}", i + 1], L["Toasts empilham e saem com animação."]);
             await Task.Delay(150);
         }
     }
 
-    private Task GlobalLoading() => Loading.RunAsync(() => Task.Delay(2000), "Processando sua solicitação...");
+    private Task GlobalLoading() => Loading.RunAsync(() => Task.Delay(2000), L["Processando sua solicitação..."]);
 
     private async Task ButtonLoading()
     {
         _btnLoading = true;
         await Task.Delay(1800);
         _btnLoading = false;
-        Toast.Success("Concluído");
+        Toast.Success(L["Concluído"]);
     }
 
     private async Task ToggleSkeleton()
@@ -281,25 +364,25 @@
 
     private async Task SimpleDelete()
     {
-        var ok = await Confirm.DeleteAsync("Relatório Mensal.pdf");
+        var ok = await Confirm.DeleteAsync(L["Relatório Mensal.pdf"]);
         _confirmResult = ok ? "confirmado" : "cancelado";
-        if (ok) Toast.Success("Excluído", "Relatório Mensal.pdf");
+        if (ok) Toast.Success(L["Excluído"], L["Relatório Mensal.pdf"]);
     }
 
     private async Task CriticalDelete()
     {
-        var ok = await Confirm.DeleteAsync("Time Financeiro", "Todos os vínculos serão removidos permanentemente.", requireText: "Time Financeiro");
+        var ok = await Confirm.DeleteAsync(L["Time Financeiro"], L["Todos os vínculos serão removidos permanentemente."], requireText: L["Time Financeiro"]);
         _confirmResult = ok ? "confirmado (texto digitado)" : "cancelado";
-        if (ok) Toast.Success("Excluído", "Time Financeiro");
+        if (ok) Toast.Success(L["Excluído"], L["Time Financeiro"]);
     }
 
     private async Task GenericConfirm()
     {
         var ok = await Confirm.ShowAsync(new ConfirmOptions
         {
-            Title = "Publicar alterações?",
-            Message = new MarkupString("As alterações ficarão visíveis para <strong>todos os usuários</strong>."),
-            ConfirmText = "Publicar",
+            Title = L["Publicar alterações?"],
+            Message = new MarkupString(L["As alterações ficarão visíveis para <strong>todos os usuários</strong>."]),
+            ConfirmText = L["Publicar"],
             Icon = "bi-send"
         });
         _confirmResult = ok ? "publicado" : "cancelado";

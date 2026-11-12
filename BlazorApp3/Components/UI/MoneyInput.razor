@@ -1,0 +1,61 @@
+@using System.Globalization
+
+@*
+    Campo de valor monetário. Aceita o valor digitado no formato do idioma atual
+    ("1.234,56" em pt-BR/es-ES, "1,234.56" em en-US) e o reexibe formatado ao sair do campo.
+*@
+<div class="input-group @(Small ? "input-group-sm" : "") money-input">
+    <span class="input-group-text">@Money.Symbol(EffectiveCurrency)</span>
+    <input type="text" inputmode="decimal" class="form-control text-end @(_invalid ? "is-invalid" : "")"
+           value="@_text" placeholder="@Placeholder" disabled="@Disabled" @onchange="OnChange" />
+</div>
+@if (_invalid)
+{
+    <div class="invalid-feedback d-block">@L["Valor inválido. Exemplo: {0}", 1234.56m.ToString("N2", CultureInfo.CurrentCulture)]</div>
+}
+
+@code {
+    [Parameter] public decimal? Value { get; set; }
+    [Parameter] public EventCallback<decimal?> ValueChanged { get; set; }
+    /// <summary>ISO 4217 (BRL, USD, EUR). Se omitido, usa a moeda padrão do idioma.</summary>
+    [Parameter] public string? Currency { get; set; }
+    [Parameter] public decimal? Min { get; set; }
+    [Parameter] public decimal? Max { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Small { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+
+    private string? _text;
+    private bool _invalid;
+    private string EffectiveCurrency => Currency ?? Money.DefaultCurrency();
+
+    protected override void OnParametersSet()
+    {
+        if (!_invalid) _text = Value?.ToString("N2", CultureInfo.CurrentCulture);
+        Placeholder ??= 0m.ToString("N2", CultureInfo.CurrentCulture);
+    }
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        var text = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            _invalid = false;
+            _text = null;
+            await ValueChanged.InvokeAsync(null);
+            return;
+        }
+        if (!Money.TryParse(text, out var value, EffectiveCurrency))
+        {
+            _invalid = true;
+            _text = text;
+            return;
+        }
+        if (Min is { } min) value = Math.Max(min, value);
+        if (Max is { } max) value = Math.Min(max, value);
+        value = Math.Round(value, 2, MidpointRounding.AwayFromZero);
+        _invalid = false;
+        _text = value.ToString("N2", CultureInfo.CurrentCulture);
+        await ValueChanged.InvokeAsync(value);
+    }
+}

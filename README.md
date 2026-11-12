@@ -94,6 +94,25 @@ A página **Componentes** (`/components`) reúne todos os componentes reutilizá
 |---|---|
 | ![Toasts](docs/screenshots/19-componentes-toasts.png) | ![Loading](docs/screenshots/20-loading-global.png) |
 
+### Idiomas (português, inglês e espanhol)
+O seletor no topo (e no canto da tela de login) troca o idioma de toda a interface, incluindo mensagens de validação, erros de negócio, erros do Identity, toasts e o formato de datas e números.
+A escolha fica gravada em cookie.
+
+| Inglês | Espanhol |
+|---|---|
+| ![Inglês](docs/screenshots/22-idioma-ingles.png) | ![Espanhol](docs/screenshots/23-idioma-espanhol.png) |
+
+#### Valores monetários por idioma
+Em **/components**, o card *Valores e moedas por idioma* tem um pedido de exemplo com preço, quantidade e desconto:
+- **Moeda padrão por idioma:** real (R$) em português, dólar ($) em inglês e euro (€) em espanhol. O seletor permite trocar a moeda.
+- **Entrada:** o componente `<MoneyInput @bind-Value="..." Currency="BRL" />` aceita o valor digitado no formato do idioma (`2.500,75` ou `2,500.75`) e o reformata ao sair do campo. Valores inválidos são rejeitados.
+- **Comparação:** uma tabela mostra o mesmo total em cada idioma, com o formato de número e de data correspondente.
+- **Helper:** `Localization/Money.cs` (`Format`, `TryParse`, `Symbol`) pode ser usado em qualquer lugar.
+
+Só a formatação muda, e não há conversão de câmbio.
+
+![Valores por idioma](docs/screenshots/24-valores-por-idioma.png)
+
 ## Como rodar
 
 ```bash
@@ -130,21 +149,38 @@ Os 180 usuários gerados pelo seed usam a senha `Demo@123`.
 
 ## Arquitetura
 
+Cada arquivo `.cs` contém **um único tipo** (classe, record, enum ou interface), organizado por pasta:
+
 | Pasta | Conteúdo |
 |---|---|
-| `Data/` | Entidades, `AppDbContext` (Identity), `DbSeeder` |
-| `Security/` | `Perm` (catálogo fixo), policy provider dinâmico, handler, `PermissionService` (cache), revalidação do Identity |
-| `Application/Cqrs/` | CQRS próprio (sem pacotes, só DI): abstrações, `Dispatcher`, pipeline behaviors |
-| `Features/<Feature>/` | Queries, commands, DTOs e handlers de Users, Roles, Teams, Branding, Dashboard |
-| `Services/` | `UiDispatcher` + `PagedQueryState`, UI (Toast, Loading, Confirm, BrandingState), `EffectiveBranding`, FileStorage |
+| `Data/Entities/` | Uma entidade por arquivo (`AppUser`, `AppRole`, `Team`, `TeamMember`, `BrandingSettings`...) |
+| `Data/` | `AppDbContext` (Identity), `DbSeeder`, `Migrations/` |
+| `Security/` | `Perm` (catálogo fixo) e `PermissionDefinition` |
+| `Security/Authorization/` | `HasPermissionAttribute`, `PermissionRequirement`, `PermissionPolicyProvider`, `PermissionHandler`, `PermissionService` (cache) |
+| `Security/Identity/` | Revalidação do circuito, `AppClaimsPrincipalFactory`, `LocalizedIdentityErrorDescriber` |
+| `Application/Cqrs/` | CQRS próprio (sem pacotes, só DI): `Abstractions/`, `Behaviors/`, `Dispatching/` |
+| `Features/<Feature>/` | Fatias verticais: `Models/`, `Shared/`, `Queries/<Caso>/` e `Commands/<Caso>/` |
+| `Services/` | `Common/` (`AppException`, `PagedResult`...), `Ui/` (`UiDispatcher`, `PagedQueryState`), `Toasts/`, `Loading/`, `Confirm/`, `Branding/`, `Files/` |
+| `Localization/` | `SharedResource`, `AppCultures`, `AppText`, `ValidationMessages` |
+| `Resources/` | `SharedResource.resx` (pt-BR), `.en.resx`, `.es.resx` |
 | `Components/UI/` | Componentes reutilizáveis (incl. `EditorBase<T>` e `PagedPager`) |
 | `Components/Pages/` | Dashboard, Usuários, Papéis, Permissões, Times, Whitelabel, Vitrine |
 | `Components/Account/` | Login/Logout (SSR estático) |
 
+Exemplo de caso de uso:
+
+```
+Features/Users/
+├── Models/UserEditModel.cs, UserListItem.cs, ...
+├── Shared/UserAssignments.cs
+├── Queries/SearchUsers/SearchUsersQuery.cs + SearchUsersHandler.cs
+└── Commands/CreateUser/CreateUserCommand.cs + CreateUserHandler.cs
+```
+
 ### CQRS (commands e queries só com DI)
 
 - **Mensagens**: `IQuery<TResult>`, `ICommand<TResult>` e `ICommand` (que retorna `Unit`). Listagens herdam de `PagedQuery<TItem>` (Page/PageSize).
-- **Handlers**: `IQueryHandler<,>` / `ICommandHandler<,>`. Uma classe pode tratar várias mensagens (ex.: `UserQueryHandlers`).
+- **Handlers**: `IQueryHandler<,>` / `ICommandHandler<,>`, um handler por mensagem, no arquivo ao lado dela (ex.: `CreateUserCommand.cs` + `CreateUserHandler.cs`).
   `AddCqrs(assembly)` varre o assembly e registra tudo como *scoped*.
 - **`IDispatcher`** (singleton): cria **um escopo de DI por mensagem**, o que dá a cada query/command o seu próprio `DbContext`.
   Isso permite queries em paralelo no mesmo circuito Blazor. Os invokers tipados ficam em cache, e não há reflection por chamada.
@@ -157,7 +193,20 @@ Os 180 usuários gerados pelo seed usam a senha `Demo@123`.
   - `Ui.Paged(query, StateHasChanged)` → `PagedQueryState<T>`: loading inicial/refresh, descarte de respostas obsoletas, `ApplyAsync` (filtro → página 1), paginação; `<PagedPager State="..."/>` se liga direto a ele.
   - `EditorBase<TModel>`: ciclo abrir → carregar → salvar → fechar → `OnSaved` dos editores (usuário, papel, time).
 
-Para criar uma funcionalidade nova: declare o `record` da query/command, implemente o handler na mesma pasta e use `Ui.QueryAsync` / `Ui.SendAsync` na página. Não é preciso registrar nada.
+Para criar uma funcionalidade nova: crie a pasta do caso de uso, declare o `record` da query/command e o handler em arquivos separados, e use `Ui.QueryAsync` / `Ui.SendAsync` na página. Não é preciso registrar nada.
+
+### Idiomas (localization com resource files)
+- **Configuração** (`Program.cs`): `AddLocalization(ResourcesPath = "Resources")` + `UseRequestLocalization` com pt-BR (padrão), en-US e es-ES (lista em `Localization/AppCultures.cs`).
+  A cultura vem do cookie `.AspNetCore.Culture`, depois do `Accept-Language` e, por fim, do padrão. O circuito Blazor herda a cultura da conexão.
+- **Troca**: `GET /culture/set?culture=en-US&redirectUri=/users` grava o cookie e redireciona (só aceita caminhos locais).
+  O `LanguageSelector` usa links com `target="_top"`, então a página recarrega e o novo circuito já nasce no idioma escolhido.
+- **Textos**: as páginas usam `@L["texto"]` (`IStringLocalizer<SharedResource>`, injetado em `_Imports.razor`).
+  **A chave é o próprio texto em português**, então se faltar tradução aparece o original. Textos com valores usam placeholders: `L["Olá, {0}!", nome]`.
+- **Fora dos componentes** (handlers, serviços, `IdentityErrorDescriber`) usa-se `AppText.Get/Format`, que lê os mesmos `.resx`.
+  Nas DataAnnotations, `ErrorMessageResourceType = typeof(ValidationMessages)`.
+- **Novo texto**: use `L["..."]` no componente e adicione a mesma chave em `Resources/SharedResource.resx`, `.en.resx` e `.es.resx`.
+  **Novo idioma**: crie `SharedResource.<cultura>.resx` e inclua a cultura em `AppCultures.All`.
+- Dados cadastrados (nomes de times, departamentos, cargos, textos do whitelabel) não são traduzidos.
 
 ### Permissões e roles
 - **Permissões** têm `Id` e `Nome` fixos em `Security/Perm.cs` e são sincronizadas com a tabela `Permissions` a cada inicialização. Para adicionar uma, crie a constante e inclua-a em `Perm.All`.

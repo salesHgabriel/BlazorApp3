@@ -13,7 +13,7 @@
                     <div class="toast-msg">@t.Message</div>
                 }
             </div>
-            <button type="button" class="toast-close" aria-label="Fechar" @onclick="() => Toasts.DismissAsync(t.Id)"><i class="bi bi-x-lg"></i></button>
+            <button type="button" class="toast-close" aria-label="@L["Fechar"]" @onclick="() => Toasts.DismissAsync(t.Id)"><i class="bi bi-x-lg"></i></button>
             @if (t.DurationMs > 0)
             {
                 <div class="toast-progress" style="animation-duration:@(t.DurationMs)ms"></div>

@@ -46,7 +46,7 @@
             }
             else if (_items.Count > 0)
             {
-                <div class="ac-footer">@_total resultado(s)</div>
+                <div class="ac-footer">@L["{0} resultado(s)", _total]</div>
             }
         </div>
     }
@@ -56,8 +56,8 @@
     [Parameter, EditorRequired] public Func<string, int, int, Task<PagedResult<TItem>>> SearchFunc { get; set; } = default!;
     [Parameter, EditorRequired] public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
     [Parameter] public EventCallback<TItem> OnSelected { get; set; }
-    [Parameter] public string Placeholder { get; set; } = "Digite para buscar...";
-    [Parameter] public string EmptyText { get; set; } = "Nenhum resultado encontrado";
+    [Parameter] public string Placeholder { get; set; } = AppText.Get("Digite para buscar...");
+    [Parameter] public string EmptyText { get; set; } = AppText.Get("Nenhum resultado encontrado");
     [Parameter] public int PageSize { get; set; } = 8;
     [Parameter] public int DebounceMs { get; set; } = 300;
     [Parameter] public bool ClearOnSelect { get; set; } = true;

@@ -1,0 +1,58 @@
+@inject NavigationManager Nav
+
+@*
+    Seletor de idioma. Cada opção é um link para /culture/set, que grava o cookie de cultura e redireciona de volta.
+    target="_top" faz o router do Blazor ignorar o link → recarga completa, e o novo circuito nasce no idioma escolhido.
+    Inline = true: lista simples de links (páginas SSR estático, sem interatividade, como o login).
+*@
+@if (Inline)
+{
+    <nav class="lang-inline" aria-label="@L["Idioma"]">
+        <i class="bi bi-translate"></i>
+        @foreach (var c in AppCultures.All)
+        {
+            <a href="@SetUrl(c)" target="_top" class="@(c == Current ? "active" : "")" title="@c.DisplayName" hreflang="@c.Name">@c.Short</a>
+        }
+    </nav>
+}
+else
+{
+    <div class="lang-menu user-menu @(_open ? "open" : "")">
+        @if (_open)
+        {
+            <div class="dropdown-scrim" @onclick="() => _open = false"></div>
+        }
+        <button type="button" class="user-menu-btn lang-btn" title="@L["Idioma"]" @onclick="() => _open = !_open">
+            <i class="bi bi-translate"></i>
+            <span class="fw-semibold small">@Current.Short</span>
+        </button>
+        @if (_open)
+        {
+            <div class="dropdown-panel dropdown-panel-end" style="width:210px">
+                <div class="dropdown-panel-header">@L["Idioma"]</div>
+                @foreach (var c in AppCultures.All)
+                {
+                    <a href="@SetUrl(c)" target="_top" hreflang="@c.Name" aria-current="@(c == Current ? "true" : null)"
+                       class="dropdown-panel-item text-decoration-none @(c == Current ? "active" : "")">
+                        <span class="lang-code">@c.Short</span>
+                        <span class="flex-grow-1">@c.DisplayName</span>
+                        <i class="bi bi-check2 active-check"></i>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public bool Inline { get; set; }
+
+    private bool _open;
+    private AppCulture Current => AppCultures.Current;
+
+    private string SetUrl(AppCulture c)
+    {
+        var back = "/" + Nav.ToBaseRelativePath(Nav.Uri);
+        return $"culture/set?culture={Uri.EscapeDataString(c.Name)}&redirectUri={Uri.EscapeDataString(back)}";
+    }
+}

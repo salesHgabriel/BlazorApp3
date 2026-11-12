@@ -1,7 +1,9 @@
 using BlazorApp3.Application.Cqrs;
 using BlazorApp3.Components;
 using BlazorApp3.Data;
+using BlazorApp3.Localization;
 using BlazorApp3.Security;
+using Microsoft.AspNetCore.Localization;
 using BlazorApp3.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -15,6 +17,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+// ---------------- Idiomas (resource files em Resources/, cultura escolhida via cookie)
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(o =>
+{
+    o.SetDefaultCulture(AppCultures.Default)
+        .AddSupportedCultures(AppCultures.Names)
+        .AddSupportedUICultures(AppCultures.Names);
+    o.ApplyCurrentCultureToResponseHeaders = true;
+});
 
 // ---------------- Banco (SQLite) + Identity
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=app.db";
@@ -32,7 +44,7 @@ builder.Services.AddIdentity<AppUser, AppRole>(o =>
         o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     })
     .AddEntityFrameworkStores<AppDbContext>()
-    .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
+    .AddErrorDescriber<LocalizedIdentityErrorDescriber>()
     .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>()
     .AddDefaultTokenProviders();
 
@@ -92,6 +104,10 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = FileStorageService.RequestPath
 });
 
+// Define CurrentCulture/CurrentUICulture da requisição (cookie → Accept-Language → padrão).
+// O circuito Blazor herda a cultura da conexão, então tudo que roda nele usa o idioma escolhido.
+app.UseRequestLocalization();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
@@ -107,6 +123,22 @@ app.MapPost("/Account/PerformLogout", async (SignInManager<AppUser> signInManage
 {
     await signInManager.SignOutAsync();
     return TypedResults.LocalRedirect("~/Account/Login");
+});
+
+// Troca de idioma: grava o cookie de cultura e volta para a página (recarregada, o circuito novo nasce no idioma novo)
+app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext http) =>
+{
+    if (AppCultures.IsSupported(culture))
+    {
+        http.Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+            new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Lax, HttpOnly = true });
+    }
+    // Só aceita caminhos locais ("/x", não "//host" nem "/\host"): evita open redirect
+    var isLocal = !string.IsNullOrEmpty(redirectUri) && redirectUri[0] == '/' &&
+                  (redirectUri.Length == 1 || (redirectUri[1] != '/' && redirectUri[1] != '\\'));
+    return TypedResults.LocalRedirect(isLocal ? redirectUri! : "~/");
 });
 
 

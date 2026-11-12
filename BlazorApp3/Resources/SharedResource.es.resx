@@ -1,0 +1,1424 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- Español -->
+  <data name=" · máx. {0} arquivos" xml:space="preserve">
+    <value> · máx. {0} archivos</value>
+  </data>
+  <data name=", clicando fora ou no botão. Dialogs podem ser empilhados:" xml:space="preserve">
+    <value>, haciendo clic fuera o en el botón. Los diálogos se pueden apilar:</value>
+  </data>
+  <data name="(busca lazy paginada)" xml:space="preserve">
+    <value>(búsqueda lazy paginada)</value>
+  </data>
+  <data name="{0} · {1} permissões" xml:space="preserve">
+    <value>{0} · {1} permisos</value>
+  </data>
+  <data name="{0} · até {1:0.#} MB" xml:space="preserve">
+    <value>{0} · hasta {1:0.#} MB</value>
+  </data>
+  <data name="{0} / página" xml:space="preserve">
+    <value>{0} / página</value>
+  </data>
+  <data name="{0} agora é {1}" xml:space="preserve">
+    <value>{0} ahora es {1}</value>
+  </data>
+  <data name="{0} como {1}" xml:space="preserve">
+    <value>{0} como {1}</value>
+  </data>
+  <data name="{0} de {1}" xml:space="preserve">
+    <value>{0} de {1}</value>
+  </data>
+  <data name="{0} excede {1:0.#} MB." xml:space="preserve">
+    <value>{0} supera {1:0.#} MB.</value>
+  </data>
+  <data name="{0} membro(s) serão desvinculados." xml:space="preserve">
+    <value>{0} miembro(s) serán desvinculados.</value>
+  </data>
+  <data name="{0} membros" xml:space="preserve">
+    <value>{0} miembros</value>
+  </data>
+  <data name="{0} registro(s) atualizado(s)." xml:space="preserve">
+    <value>{0} registro(s) actualizado(s).</value>
+  </data>
+  <data name="{0} resultado(s)" xml:space="preserve">
+    <value>{0} resultado(s)</value>
+  </data>
+  <data name="{0} usuário(s) perderão este papel e suas permissões." xml:space="preserve">
+    <value>{0} usuario(s) perderán este rol y sus permisos.</value>
+  </data>
+  <data name="{0} usuário(s) removido(s)." xml:space="preserve">
+    <value>{0} usuario(s) eliminado(s).</value>
+  </data>
+  <data name="{0}: {1} selecionados" xml:space="preserve">
+    <value>{0}: {1} seleccionados</value>
+  </data>
+  <data name="{0}: use {1}" xml:space="preserve">
+    <value>{0}: use {1}</value>
+  </data>
+  <data name="A senha deve conter ao menos um caractere especial." xml:space="preserve">
+    <value>La contraseña debe contener al menos un carácter especial.</value>
+  </data>
+  <data name="A senha deve conter ao menos um número." xml:space="preserve">
+    <value>La contraseña debe contener al menos un número.</value>
+  </data>
+  <data name="A senha deve conter ao menos uma letra maiúscula." xml:space="preserve">
+    <value>La contraseña debe contener al menos una letra mayúscula.</value>
+  </data>
+  <data name="A senha deve conter ao menos uma letra minúscula." xml:space="preserve">
+    <value>La contraseña debe contener al menos una letra minúscula.</value>
+  </data>
+  <data name="A senha deve ter no mínimo {0} caracteres." xml:space="preserve">
+    <value>La contraseña debe tener al menos {0} caracteres.</value>
+  </data>
+  <data name="A senha deve ter no mínimo 6 caracteres" xml:space="preserve">
+    <value>La contraseña debe tener al menos 6 caracteres</value>
+  </data>
+  <data name="Abre pela direita" xml:space="preserve">
+    <value>Se abre por la derecha</value>
+  </data>
+  <data name="Abre pela esquerda" xml:space="preserve">
+    <value>Se abre por la izquierda</value>
+  </data>
+  <data name="Abrir" xml:space="preserve">
+    <value>Abrir</value>
+  </data>
+  <data name="Abrir confirmação por cima" xml:space="preserve">
+    <value>Abrir confirmación encima</value>
+  </data>
+  <data name="Ação não permitida" xml:space="preserve">
+    <value>Acción no permitida</value>
+  </data>
+  <data name="Acessar a vitrine de componentes" xml:space="preserve">
+    <value>Acceder al catálogo de componentes</value>
+  </data>
+  <data name="Acesso" xml:space="preserve">
+    <value>Acceso</value>
+  </data>
+  <data name="Acesso negado" xml:space="preserve">
+    <value>Acceso denegado</value>
+  </data>
+  <data name="Adicionar membro" xml:space="preserve">
+    <value>Agregar miembro</value>
+  </data>
+  <data name="Adicionar/remover membros" xml:space="preserve">
+    <value>Agregar/quitar miembros</value>
+  </data>
+  <data name="Administrador" xml:space="preserve">
+    <value>Administrador</value>
+  </data>
+  <data name="administradores" xml:space="preserve">
+    <value>administradores</value>
+  </data>
+  <data name="Agora você está em “{0}”." xml:space="preserve">
+    <value>Ahora estás en “{0}”.</value>
+  </data>
+  <data name="Aguarde..." xml:space="preserve">
+    <value>Espere...</value>
+  </data>
+  <data name="Ajuste a busca ou os filtros." xml:space="preserve">
+    <value>Ajuste la búsqueda o los filtros.</value>
+  </data>
+  <data name="Alterar configurações whitelabel" xml:space="preserve">
+    <value>Modificar la configuración whitelabel</value>
+  </data>
+  <data name="Anterior" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Arquivo muito grande" xml:space="preserve">
+    <value>Archivo demasiado grande</value>
+  </data>
+  <data name="Arraste e solte ou clique para selecionar" xml:space="preserve">
+    <value>Arrastre y suelte o haga clic para seleccionar</value>
+  </data>
+  <data name="Arredondamento:" xml:space="preserve">
+    <value>Redondeo:</value>
+  </data>
+  <data name="As alterações ficarão visíveis para &lt;strong&gt;todos os usuários&lt;/strong&gt;." xml:space="preserve">
+    <value>Los cambios serán visibles para &lt;strong&gt;todos los usuarios&lt;/strong&gt;.</value>
+  </data>
+  <data name="As mudanças são aplicadas instantaneamente para todos os usuários conectados após recarregar a página (e imediatamente para você)." xml:space="preserve">
+    <value>Los cambios se aplican a todos los usuarios conectados al recargar la página (y a usted de inmediato).</value>
+  </data>
+  <data name="até" xml:space="preserve">
+    <value>hasta</value>
+  </data>
+  <data name="Até:" xml:space="preserve">
+    <value>Hasta:</value>
+  </data>
+  <data name="Atenção" xml:space="preserve">
+    <value>Atención</value>
+  </data>
+  <data name="Ativando..." xml:space="preserve">
+    <value>Activando...</value>
+  </data>
+  <data name="Ativar" xml:space="preserve">
+    <value>Activar</value>
+  </data>
+  <data name="Ativo" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="Ativos" xml:space="preserve">
+    <value>Activos</value>
+  </data>
+  <data name="atualiza enquanto você edita" xml:space="preserve">
+    <value>se actualiza mientras edita</value>
+  </data>
+  <data name="Autocomplete paginado (consulta o banco sob demanda)" xml:space="preserve">
+    <value>Autocompletar paginado (consulta la base de datos bajo demanda)</value>
+  </data>
+  <data name="Aviso" xml:space="preserve">
+    <value>Aviso</value>
+  </data>
+  <data name="Bem-vindo!" xml:space="preserve">
+    <value>¡Bienvenido!</value>
+  </data>
+  <data name="Botão com loading" xml:space="preserve">
+    <value>Botón con carga</value>
+  </data>
+  <data name="Branding do time ativo" xml:space="preserve">
+    <value>Branding del equipo activo</value>
+  </data>
+  <data name="Branding global" xml:space="preserve">
+    <value>Branding global</value>
+  </data>
+  <data name="Branding padrão" xml:space="preserve">
+    <value>Branding predeterminado</value>
+  </data>
+  <data name="Branding próprio" xml:space="preserve">
+    <value>Branding propio</value>
+  </data>
+  <data name="Busca lazy" xml:space="preserve">
+    <value>Búsqueda lazy</value>
+  </data>
+  <data name="Buscar membros..." xml:space="preserve">
+    <value>Buscar miembros...</value>
+  </data>
+  <data name="Buscar papel..." xml:space="preserve">
+    <value>Buscar rol...</value>
+  </data>
+  <data name="Buscar por nome ou descrição..." xml:space="preserve">
+    <value>Buscar por nombre o descripción...</value>
+  </data>
+  <data name="Buscar por nome, e-mail ou cargo..." xml:space="preserve">
+    <value>Buscar por nombre, correo o cargo...</value>
+  </data>
+  <data name="Buscar times..." xml:space="preserve">
+    <value>Buscar equipos...</value>
+  </data>
+  <data name="Buscar..." xml:space="preserve">
+    <value>Buscar...</value>
+  </data>
+  <data name="Cadastrado de" xml:space="preserve">
+    <value>Registrado desde</value>
+  </data>
+  <data name="Cadastro" xml:space="preserve">
+    <value>Registro</value>
+  </data>
+  <data name="Cadastros recentes" xml:space="preserve">
+    <value>Registros recientes</value>
+  </data>
+  <data name="Campo de exemplo" xml:space="preserve">
+    <value>Campo de ejemplo</value>
+  </data>
+  <data name="Cancelar" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Cargo" xml:space="preserve">
+    <value>Cargo</value>
+  </data>
+  <data name="Carregando dados..." xml:space="preserve">
+    <value>Cargando datos...</value>
+  </data>
+  <data name="Carregando..." xml:space="preserve">
+    <value>Cargando...</value>
+  </data>
+  <data name="Catálogo fixo (Id e nome definidos em código, sincronizados na inicialização)" xml:space="preserve">
+    <value>Catálogo fijo (Id y nombre definidos en código, sincronizados al iniciar)</value>
+  </data>
+  <data name="Categorias" xml:space="preserve">
+    <value>Categorías</value>
+  </data>
+  <data name="Componentes" xml:space="preserve">
+    <value>Componentes</value>
+  </data>
+  <data name="Concedida a" xml:space="preserve">
+    <value>Concedido a</value>
+  </data>
+  <data name="Concluído" xml:space="preserve">
+    <value>Completado</value>
+  </data>
+  <data name="Configurações" xml:space="preserve">
+    <value>Configuración</value>
+  </data>
+  <data name="Confira os novos relatórios." xml:space="preserve">
+    <value>Consulte los nuevos informes.</value>
+  </data>
+  <data name="Confirmação de exclusão" xml:space="preserve">
+    <value>Confirmación de eliminación</value>
+  </data>
+  <data name="Confirmação genérica" xml:space="preserve">
+    <value>Confirmación genérica</value>
+  </data>
+  <data name="Confirmado!" xml:space="preserve">
+    <value>¡Confirmado!</value>
+  </data>
+  <data name="Confirmar" xml:space="preserve">
+    <value>Confirmar</value>
+  </data>
+  <data name="Confirmar ação" xml:space="preserve">
+    <value>Confirmar acción</value>
+  </data>
+  <data name="Confirmar exclusão" xml:space="preserve">
+    <value>Confirmar eliminación</value>
+  </data>
+  <data name="Confirmar saída" xml:space="preserve">
+    <value>Confirmar salida</value>
+  </data>
+  <data name="Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em alguns minutos." xml:space="preserve">
+    <value>Cuenta bloqueada temporalmente por exceso de intentos. Inténtelo de nuevo en unos minutos.</value>
+  </data>
+  <data name="Contas de demonstração (clique para preencher)" xml:space="preserve">
+    <value>Cuentas de demostración (haga clic para completar)</value>
+  </data>
+  <data name="Conteúdo carregado!" xml:space="preserve">
+    <value>¡Contenido cargado!</value>
+  </data>
+  <data name="Cor" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="Cor de destaque" xml:space="preserve">
+    <value>Color de acento</value>
+  </data>
+  <data name="Cor do menu lateral" xml:space="preserve">
+    <value>Color del menú lateral</value>
+  </data>
+  <data name="Cor inválida" xml:space="preserve">
+    <value>Color no válido</value>
+  </data>
+  <data name="Cor principal *" xml:space="preserve">
+    <value>Color principal *</value>
+  </data>
+  <data name="Cores e tipografia" xml:space="preserve">
+    <value>Colores y tipografía</value>
+  </data>
+  <data name="Criado em" xml:space="preserve">
+    <value>Creado el</value>
+  </data>
+  <data name="criado em {0}" xml:space="preserve">
+    <value>creado el {0}</value>
+  </data>
+  <data name="Criar papéis" xml:space="preserve">
+    <value>Crear roles</value>
+  </data>
+  <data name="Criar times" xml:space="preserve">
+    <value>Crear equipos</value>
+  </data>
+  <data name="Criar usuários" xml:space="preserve">
+    <value>Crear usuarios</value>
+  </data>
+  <data name="Dados e identidade visual do time" xml:space="preserve">
+    <value>Datos e identidad visual del equipo</value>
+  </data>
+  <data name="Dados pessoais" xml:space="preserve">
+    <value>Datos personales</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Panel</value>
+  </data>
+  <data name="Data" xml:space="preserve">
+    <value>Fecha</value>
+  </data>
+  <data name="de" xml:space="preserve">
+    <value>de</value>
+  </data>
+  <data name="Deixe em branco para manter a atual" xml:space="preserve">
+    <value>Déjelo en blanco para mantener la actual</value>
+  </data>
+  <data name="Departamento" xml:space="preserve">
+    <value>Departamento</value>
+  </data>
+  <data name="Departamentos" xml:space="preserve">
+    <value>Departamentos</value>
+  </data>
+  <data name="Depto:" xml:space="preserve">
+    <value>Depto:</value>
+  </data>
+  <data name="Desconto" xml:space="preserve">
+    <value>Descuento</value>
+  </data>
+  <data name="Desconto ({0})" xml:space="preserve">
+    <value>Descuento ({0})</value>
+  </data>
+  <data name="Descrição" xml:space="preserve">
+    <value>Descripción</value>
+  </data>
+  <data name="Desde" xml:space="preserve">
+    <value>Desde</value>
+  </data>
+  <data name="Desde:" xml:space="preserve">
+    <value>Desde:</value>
+  </data>
+  <data name="Desfoque" xml:space="preserve">
+    <value>Desenfoque</value>
+  </data>
+  <data name="Deslizar lateral" xml:space="preserve">
+    <value>Deslizamiento lateral</value>
+  </data>
+  <data name="Desmarcar" xml:space="preserve">
+    <value>Desmarcar</value>
+  </data>
+  <data name="Destaque" xml:space="preserve">
+    <value>Acento</value>
+  </data>
+  <data name="Detalhes" xml:space="preserve">
+    <value>Detalles</value>
+  </data>
+  <data name="Detalhes do usuário" xml:space="preserve">
+    <value>Detalles del usuario</value>
+  </data>
+  <data name="Dialog central com animação" xml:space="preserve">
+    <value>Diálogo central con animación</value>
+  </data>
+  <data name="Dialog lateral" xml:space="preserve">
+    <value>Diálogo lateral</value>
+  </data>
+  <data name="Dialogs (central e lateral)" xml:space="preserve">
+    <value>Diálogos (central y lateral)</value>
+  </data>
+  <data name="Digite" xml:space="preserve">
+    <value>Escriba</value>
+  </data>
+  <data name="Digite algo..." xml:space="preserve">
+    <value>Escriba algo...</value>
+  </data>
+  <data name="Digite no formato do idioma (ex.: {0}). A moeda padrão muda com o idioma; não há conversão de câmbio." xml:space="preserve">
+    <value>Escriba en el formato del idioma (ej.: {0}). La moneda predeterminada cambia con el idioma; no hay conversión de divisas.</value>
+  </data>
+  <data name="Digite nome ou e-mail do usuário..." xml:space="preserve">
+    <value>Escriba el nombre o correo del usuario...</value>
+  </data>
+  <data name="Digite para buscar..." xml:space="preserve">
+    <value>Escriba para buscar...</value>
+  </data>
+  <data name="E-mail" xml:space="preserve">
+    <value>Correo electrónico</value>
+  </data>
+  <data name="E-mail (login) *" xml:space="preserve">
+    <value>Correo (inicio de sesión) *</value>
+  </data>
+  <data name="E-mail de suporte" xml:space="preserve">
+    <value>Correo de soporte</value>
+  </data>
+  <data name="E-mail inválido" xml:space="preserve">
+    <value>Correo no válido</value>
+  </data>
+  <data name="E-mail ou senha inválidos." xml:space="preserve">
+    <value>Correo o contraseña no válidos.</value>
+  </data>
+  <data name="Editar" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Editar papéis e suas permissões" xml:space="preserve">
+    <value>Editar roles y sus permisos</value>
+  </data>
+  <data name="Editar papel" xml:space="preserve">
+    <value>Editar rol</value>
+  </data>
+  <data name="Editar time" xml:space="preserve">
+    <value>Editar equipo</value>
+  </data>
+  <data name="Editar times e branding do time" xml:space="preserve">
+    <value>Editar equipos y su branding</value>
+  </data>
+  <data name="Editar usuário" xml:space="preserve">
+    <value>Editar usuario</value>
+  </data>
+  <data name="Editar usuários, ativar/inativar" xml:space="preserve">
+    <value>Editar usuarios, activar/desactivar</value>
+  </data>
+  <data name="Efeitos de página" xml:space="preserve">
+    <value>Efectos de página</value>
+  </data>
+  <data name="Entrar" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="Enviado" xml:space="preserve">
+    <value>Enviado</value>
+  </data>
+  <data name="Enviar" xml:space="preserve">
+    <value>Subir</value>
+  </data>
+  <data name="Erro" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Erro ao carregar dados" xml:space="preserve">
+    <value>Error al cargar los datos</value>
+  </data>
+  <data name="Erro ao salvar" xml:space="preserve">
+    <value>Error al guardar</value>
+  </data>
+  <data name="Esc" xml:space="preserve">
+    <value>Esc</value>
+  </data>
+  <data name="Escolher cor" xml:space="preserve">
+    <value>Elegir color</value>
+  </data>
+  <data name="Este usuário já é membro do time." xml:space="preserve">
+    <value>Este usuario ya es miembro del equipo.</value>
+  </data>
+  <data name="Excluído" xml:space="preserve">
+    <value>Eliminado</value>
+  </data>
+  <data name="Excluído com sucesso" xml:space="preserve">
+    <value>Eliminado correctamente</value>
+  </data>
+  <data name="Excluindo {0} usuário(s)..." xml:space="preserve">
+    <value>Eliminando {0} usuario(s)...</value>
+  </data>
+  <data name="Excluindo..." xml:space="preserve">
+    <value>Eliminando...</value>
+  </data>
+  <data name="Excluir" xml:space="preserve">
+    <value>Eliminar</value>
+  </data>
+  <data name="Excluir {0}" xml:space="preserve">
+    <value>Eliminar {0}</value>
+  </data>
+  <data name="Excluir crítico (digitar nome)" xml:space="preserve">
+    <value>Eliminación crítica (escribir nombre)</value>
+  </data>
+  <data name="Excluir papéis" xml:space="preserve">
+    <value>Eliminar roles</value>
+  </data>
+  <data name="Excluir simples" xml:space="preserve">
+    <value>Eliminación simple</value>
+  </data>
+  <data name="Excluir times" xml:space="preserve">
+    <value>Eliminar equipos</value>
+  </data>
+  <data name="Excluir usuários" xml:space="preserve">
+    <value>Eliminar usuarios</value>
+  </data>
+  <data name="Excluir usuários em lote" xml:space="preserve">
+    <value>Eliminar usuarios en lote</value>
+  </data>
+  <data name="Exclusão concluída" xml:space="preserve">
+    <value>Eliminación completada</value>
+  </data>
+  <data name="Exibe como “{0}”" xml:space="preserve">
+    <value>Se muestra como “{0}”</value>
+  </data>
+  <data name="Exibindo" xml:space="preserve">
+    <value>Mostrando</value>
+  </data>
+  <data name="Fade" xml:space="preserve">
+    <value>Desvanecer</value>
+  </data>
+  <data name="Fade + subir" xml:space="preserve">
+    <value>Desvanecer + subir</value>
+  </data>
+  <data name="Falha ao enviar o arquivo." xml:space="preserve">
+    <value>Error al subir el archivo.</value>
+  </data>
+  <data name="Falha na operação" xml:space="preserve">
+    <value>Error en la operación</value>
+  </data>
+  <data name="Falha no upload" xml:space="preserve">
+    <value>Error en la subida</value>
+  </data>
+  <data name="Favicon" xml:space="preserve">
+    <value>Favicon</value>
+  </data>
+  <data name="Fechar" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="Feche com" xml:space="preserve">
+    <value>Cierre con</value>
+  </data>
+  <data name="Filtrar opções..." xml:space="preserve">
+    <value>Filtrar opciones...</value>
+  </data>
+  <data name="Filtrar..." xml:space="preserve">
+    <value>Filtrar...</value>
+  </data>
+  <data name="Filtros:" xml:space="preserve">
+    <value>Filtros:</value>
+  </data>
+  <data name="Fonte" xml:space="preserve">
+    <value>Fuente</value>
+  </data>
+  <data name="Formatos aceitos: {0}" xml:space="preserve">
+    <value>Formatos aceptados: {0}</value>
+  </data>
+  <data name="Foto" xml:space="preserve">
+    <value>Foto</value>
+  </data>
+  <data name="gerado do nome" xml:space="preserve">
+    <value>generado a partir del nombre</value>
+  </data>
+  <data name="Gerencie contas, papéis e vínculos com times" xml:space="preserve">
+    <value>Gestione cuentas, roles y vínculos con equipos</value>
+  </data>
+  <data name="Gestão" xml:space="preserve">
+    <value>Gestión</value>
+  </data>
+  <data name="Gestão de times com branding próprio" xml:space="preserve">
+    <value>Gestión de equipos con branding propio</value>
+  </data>
+  <data name="Grupo" xml:space="preserve">
+    <value>Grupo</value>
+  </data>
+  <data name="Grupos" xml:space="preserve">
+    <value>Grupos</value>
+  </data>
+  <data name="Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Ideal para formulários de criação/edição sem perder o contexto da listagem." xml:space="preserve">
+    <value>Ideal para formularios de creación/edición sin perder el contexto del listado.</value>
+  </data>
+  <data name="Identidade" xml:space="preserve">
+    <value>Identidad</value>
+  </data>
+  <data name="Identidade visual" xml:space="preserve">
+    <value>Identidad visual</value>
+  </data>
+  <data name="Identificador (slug)" xml:space="preserve">
+    <value>Identificador (slug)</value>
+  </data>
+  <data name="Idioma" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+  <data name="Idioma atual: {0} · moeda padrão: {1}" xml:space="preserve">
+    <value>Idioma actual: {0} · moneda predeterminada: {1}</value>
+  </data>
+  <data name="Imagem muito grande" xml:space="preserve">
+    <value>Imagen demasiado grande</value>
+  </data>
+  <data name="Inativando..." xml:space="preserve">
+    <value>Desactivando...</value>
+  </data>
+  <data name="Inativar" xml:space="preserve">
+    <value>Desactivar</value>
+  </data>
+  <data name="Inativo" xml:space="preserve">
+    <value>Inactivo</value>
+  </data>
+  <data name="Inativos" xml:space="preserve">
+    <value>Inactivos</value>
+  </data>
+  <data name="Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Informações" xml:space="preserve">
+    <value>Información</value>
+  </data>
+  <data name="Informe a cor" xml:space="preserve">
+    <value>Indique el color</value>
+  </data>
+  <data name="Informe a senha" xml:space="preserve">
+    <value>Indique la contraseña</value>
+  </data>
+  <data name="Informe o e-mail" xml:space="preserve">
+    <value>Indique el correo</value>
+  </data>
+  <data name="Informe o nome" xml:space="preserve">
+    <value>Indique el nombre</value>
+  </data>
+  <data name="Informe o nome do papel" xml:space="preserve">
+    <value>Indique el nombre del rol</value>
+  </data>
+  <data name="Informe o nome do time" xml:space="preserve">
+    <value>Indique el nombre del equipo</value>
+  </data>
+  <data name="Informe uma senha para o novo usuário." xml:space="preserve">
+    <value>Indique una contraseña para el nuevo usuario.</value>
+  </data>
+  <data name="Ir para o início" xml:space="preserve">
+    <value>Ir al inicio</value>
+  </data>
+  <data name="Itens por página" xml:space="preserve">
+    <value>Elementos por página</value>
+  </data>
+  <data name="Já existe um papel chamado '{0}'." xml:space="preserve">
+    <value>Ya existe un rol llamado '{0}'.</value>
+  </data>
+  <data name="Já existe um time com o identificador '{0}'." xml:space="preserve">
+    <value>Ya existe un equipo con el identificador '{0}'.</value>
+  </data>
+  <data name="Lateral direita" xml:space="preserve">
+    <value>Lateral derecho</value>
+  </data>
+  <data name="Lateral esquerda" xml:space="preserve">
+    <value>Lateral izquierdo</value>
+  </data>
+  <data name="Limpar" xml:space="preserve">
+    <value>Limpiar</value>
+  </data>
+  <data name="Limpar filtros" xml:space="preserve">
+    <value>Limpiar filtros</value>
+  </data>
+  <data name="Limpar todos" xml:space="preserve">
+    <value>Limpiar todo</value>
+  </data>
+  <data name="Lista virtualizada com rolagem infinita (carrega lotes conforme rola)" xml:space="preserve">
+    <value>Lista virtualizada con desplazamiento infinito (carga lotes al desplazarse)</value>
+  </data>
+  <data name="Listar e visualizar papéis (roles)" xml:space="preserve">
+    <value>Listar y ver roles</value>
+  </data>
+  <data name="Listar e visualizar times" xml:space="preserve">
+    <value>Listar y ver equipos</value>
+  </data>
+  <data name="Listar e visualizar usuários" xml:space="preserve">
+    <value>Listar y ver usuarios</value>
+  </data>
+  <data name="Loadings" xml:space="preserve">
+    <value>Indicadores de carga</value>
+  </data>
+  <data name="Login, rodapé e times" xml:space="preserve">
+    <value>Inicio de sesión, pie y equipos</value>
+  </data>
+  <data name="Logo" xml:space="preserve">
+    <value>Logo</value>
+  </data>
+  <data name="Logo do time" xml:space="preserve">
+    <value>Logo del equipo</value>
+  </data>
+  <data name="Lotes carregados: {0}" xml:space="preserve">
+    <value>Lotes cargados: {0}</value>
+  </data>
+  <data name="Maiores times" xml:space="preserve">
+    <value>Equipos más grandes</value>
+  </data>
+  <data name="Manter conectado" xml:space="preserve">
+    <value>Mantener la sesión iniciada</value>
+  </data>
+  <data name="Marcar todas" xml:space="preserve">
+    <value>Marcar todas</value>
+  </data>
+  <data name="Membro" xml:space="preserve">
+    <value>Miembro</value>
+  </data>
+  <data name="Membro adicionado" xml:space="preserve">
+    <value>Miembro agregado</value>
+  </data>
+  <data name="Membro não encontrado." xml:space="preserve">
+    <value>Miembro no encontrado.</value>
+  </data>
+  <data name="Membro removido" xml:space="preserve">
+    <value>Miembro quitado</value>
+  </data>
+  <data name="membros" xml:space="preserve">
+    <value>miembros</value>
+  </data>
+  <data name="membros comuns" xml:space="preserve">
+    <value>miembros comunes</value>
+  </data>
+  <data name="Mensagem do login" xml:space="preserve">
+    <value>Mensaje de inicio de sesión</value>
+  </data>
+  <data name="Menu" xml:space="preserve">
+    <value>Menú</value>
+  </data>
+  <data name="Menu lateral" xml:space="preserve">
+    <value>Menú lateral</value>
+  </data>
+  <data name="Meus times" xml:space="preserve">
+    <value>Mis equipos</value>
+  </data>
+  <data name="Minhas permissões" xml:space="preserve">
+    <value>Mis permisos</value>
+  </data>
+  <data name="Mínimo 6 caracteres, com maiúscula e número" xml:space="preserve">
+    <value>Mínimo 6 caracteres, con mayúscula y número</value>
+  </data>
+  <data name="Modal grande" xml:space="preserve">
+    <value>Modal grande</value>
+  </data>
+  <data name="Modal médio" xml:space="preserve">
+    <value>Modal mediano</value>
+  </data>
+  <data name="Modal pequeno" xml:space="preserve">
+    <value>Modal pequeño</value>
+  </data>
+  <data name="Modal XL" xml:space="preserve">
+    <value>Modal XL</value>
+  </data>
+  <data name="Modo somente leitura: você não possui a permissão" xml:space="preserve">
+    <value>Modo de solo lectura: no tiene el permiso</value>
+  </data>
+  <data name="Moeda" xml:space="preserve">
+    <value>Moneda</value>
+  </data>
+  <data name="Moeda do idioma" xml:space="preserve">
+    <value>Moneda del idioma</value>
+  </data>
+  <data name="Muitos arquivos" xml:space="preserve">
+    <value>Demasiados archivos</value>
+  </data>
+  <data name="Nada por aqui" xml:space="preserve">
+    <value>Nada por aquí</value>
+  </data>
+  <data name="Não foi possível adicionar" xml:space="preserve">
+    <value>No se pudo agregar</value>
+  </data>
+  <data name="Não foi possível alterar" xml:space="preserve">
+    <value>No se pudo modificar</value>
+  </data>
+  <data name="Não foi possível concluir" xml:space="preserve">
+    <value>No se pudo completar</value>
+  </data>
+  <data name="Não foi possível conectar ao servidor." xml:space="preserve">
+    <value>No se pudo conectar con el servidor.</value>
+  </data>
+  <data name="Não foi possível enviar a imagem." xml:space="preserve">
+    <value>No se pudo subir la imagen.</value>
+  </data>
+  <data name="Não foi possível excluir" xml:space="preserve">
+    <value>No se pudo eliminar</value>
+  </data>
+  <data name="Não foi possível gerar um identificador para o time." xml:space="preserve">
+    <value>No se pudo generar un identificador para el equipo.</value>
+  </data>
+  <data name="Nenhum (padrão da plataforma)" xml:space="preserve">
+    <value>Ninguno (predeterminado de la plataforma)</value>
+  </data>
+  <data name="Nenhum membro encontrado" xml:space="preserve">
+    <value>No se encontraron miembros</value>
+  </data>
+  <data name="Nenhum papel encontrado" xml:space="preserve">
+    <value>No se encontraron roles</value>
+  </data>
+  <data name="Nenhum registro" xml:space="preserve">
+    <value>Sin registros</value>
+  </data>
+  <data name="Nenhum resultado encontrado" xml:space="preserve">
+    <value>No se encontraron resultados</value>
+  </data>
+  <data name="Nenhum time encontrado" xml:space="preserve">
+    <value>No se encontraron equipos</value>
+  </data>
+  <data name="Nenhum usuário encontrado" xml:space="preserve">
+    <value>No se encontraron usuarios</value>
+  </data>
+  <data name="Nenhuma" xml:space="preserve">
+    <value>Ninguna</value>
+  </data>
+  <data name="Nenhuma opção" xml:space="preserve">
+    <value>Sin opciones</value>
+  </data>
+  <data name="Nenhuma permissão encontrada" xml:space="preserve">
+    <value>No se encontraron permisos</value>
+  </data>
+  <data name="Nome" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="Nome *" xml:space="preserve">
+    <value>Nombre *</value>
+  </data>
+  <data name="Nome completo *" xml:space="preserve">
+    <value>Nombre completo *</value>
+  </data>
+  <data name="Nome da aplicação *" xml:space="preserve">
+    <value>Nombre de la aplicación *</value>
+  </data>
+  <data name="Nome de papel inválido: '{0}'." xml:space="preserve">
+    <value>Nombre de rol no válido: '{0}'.</value>
+  </data>
+  <data name="Nome exibido" xml:space="preserve">
+    <value>Nombre mostrado</value>
+  </data>
+  <data name="Notificação #{0}" xml:space="preserve">
+    <value>Notificación #{0}</value>
+  </data>
+  <data name="Novidade" xml:space="preserve">
+    <value>Novedad</value>
+  </data>
+  <data name="Novo papel" xml:space="preserve">
+    <value>Nuevo rol</value>
+  </data>
+  <data name="Novo time" xml:space="preserve">
+    <value>Nuevo equipo</value>
+  </data>
+  <data name="Novo usuário" xml:space="preserve">
+    <value>Nuevo usuario</value>
+  </data>
+  <data name="Novos (30 dias)" xml:space="preserve">
+    <value>Nuevos (30 días)</value>
+  </data>
+  <data name="Número" xml:space="preserve">
+    <value>Número</value>
+  </data>
+  <data name="Nunca" xml:space="preserve">
+    <value>Nunca</value>
+  </data>
+  <data name="O conteúdo que você procura não existe ou foi movido." xml:space="preserve">
+    <value>El contenido que busca no existe o fue movido.</value>
+  </data>
+  <data name="O e-mail '{0}' é inválido." xml:space="preserve">
+    <value>El correo '{0}' no es válido.</value>
+  </data>
+  <data name="O e-mail '{0}' já está em uso." xml:space="preserve">
+    <value>El correo '{0}' ya está en uso.</value>
+  </data>
+  <data name="O limite é {0:0.#} MB." xml:space="preserve">
+    <value>El límite es {0:0.#} MB.</value>
+  </data>
+  <data name="O login '{0}' já está em uso." xml:space="preserve">
+    <value>El usuario '{0}' ya está en uso.</value>
+  </data>
+  <data name="O mesmo total exibido conforme cada idioma" xml:space="preserve">
+    <value>El mismo total mostrado según cada idioma</value>
+  </data>
+  <data name="O nome deve ter entre 2 e 100 caracteres" xml:space="preserve">
+    <value>El nombre debe tener entre 2 y 100 caracteres</value>
+  </data>
+  <data name="O nome deve ter entre 3 e 150 caracteres" xml:space="preserve">
+    <value>El nombre debe tener entre 3 y 150 caracteres</value>
+  </data>
+  <data name="O nome deve ter entre 3 e 60 caracteres" xml:space="preserve">
+    <value>El nombre debe tener entre 3 y 60 caracteres</value>
+  </data>
+  <data name="O novo tema já está aplicado." xml:space="preserve">
+    <value>El nuevo tema ya está aplicado.</value>
+  </data>
+  <data name="O registro foi atualizado." xml:space="preserve">
+    <value>El registro fue actualizado.</value>
+  </data>
+  <data name="O skeleton é exibido enquanto os dados chegam." xml:space="preserve">
+    <value>El skeleton se muestra mientras llegan los datos.</value>
+  </data>
+  <data name="O time precisa ter pelo menos um proprietário." xml:space="preserve">
+    <value>El equipo debe tener al menos un propietario.</value>
+  </data>
+  <data name="Ocorreu um erro inesperado. Tente novamente." xml:space="preserve">
+    <value>Ocurrió un error inesperado. Inténtelo de nuevo.</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+  <data name="Olá, {0}!" xml:space="preserve">
+    <value>¡Hola, {0}!</value>
+  </data>
+  <data name="Ops! Algo deu errado" xml:space="preserve">
+    <value>¡Ups! Algo salió mal</value>
+  </data>
+  <data name="Ordenar: mais recentes" xml:space="preserve">
+    <value>Ordenar: más recientes</value>
+  </data>
+  <data name="Ordenar: membros" xml:space="preserve">
+    <value>Ordenar: miembros</value>
+  </data>
+  <data name="Ordenar: nome" xml:space="preserve">
+    <value>Ordenar: nombre</value>
+  </data>
+  <data name="Overlay global (2s)" xml:space="preserve">
+    <value>Overlay global (2s)</value>
+  </data>
+  <data name="padrão" xml:space="preserve">
+    <value>predeterminado</value>
+  </data>
+  <data name="Padrão da plataforma" xml:space="preserve">
+    <value>Predeterminado de la plataforma</value>
+  </data>
+  <data name="Padrão restaurado" xml:space="preserve">
+    <value>Valores predeterminados restaurados</value>
+  </data>
+  <data name="Página não encontrada" xml:space="preserve">
+    <value>Página no encontrada</value>
+  </data>
+  <data name="Paginação" xml:space="preserve">
+    <value>Paginación</value>
+  </data>
+  <data name="Paginação e multi filtros" xml:space="preserve">
+    <value>Paginación y filtros múltiples</value>
+  </data>
+  <data name="Papéis" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="Papéis (roles)" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="Papéis de sistema não podem ser excluídos." xml:space="preserve">
+    <value>Los roles del sistema no se pueden eliminar.</value>
+  </data>
+  <data name="Papéis de sistema não podem ser renomeados." xml:space="preserve">
+    <value>Los roles del sistema no se pueden renombrar.</value>
+  </data>
+  <data name="Papel" xml:space="preserve">
+    <value>Rol</value>
+  </data>
+  <data name="Papel atualizado" xml:space="preserve">
+    <value>Rol actualizado</value>
+  </data>
+  <data name="Papel criado" xml:space="preserve">
+    <value>Rol creado</value>
+  </data>
+  <data name="Papel de sistema" xml:space="preserve">
+    <value>Rol del sistema</value>
+  </data>
+  <data name="Papel de sistema: possui todas as permissões automaticamente." xml:space="preserve">
+    <value>Rol del sistema: tiene todos los permisos automáticamente.</value>
+  </data>
+  <data name="Papel excluído" xml:space="preserve">
+    <value>Rol eliminado</value>
+  </data>
+  <data name="Papel não encontrado." xml:space="preserve">
+    <value>Rol no encontrado.</value>
+  </data>
+  <data name="Papel no time" xml:space="preserve">
+    <value>Rol en el equipo</value>
+  </data>
+  <data name="Papel:" xml:space="preserve">
+    <value>Rol:</value>
+  </data>
+  <data name="para confirmar:" xml:space="preserve">
+    <value>para confirmar:</value>
+  </data>
+  <data name="Período" xml:space="preserve">
+    <value>Período</value>
+  </data>
+  <data name="Permissões" xml:space="preserve">
+    <value>Permisos</value>
+  </data>
+  <data name="Permitir branding personalizado por time" xml:space="preserve">
+    <value>Permitir branding personalizado por equipo</value>
+  </data>
+  <data name="Persistente" xml:space="preserve">
+    <value>Persistente</value>
+  </data>
+  <data name="Personalize nome, logo, cores, fonte e efeitos da aplicação" xml:space="preserve">
+    <value>Personalice el nombre, logo, colores, fuente y efectos de la aplicación</value>
+  </data>
+  <data name="Pré-visualização" xml:space="preserve">
+    <value>Vista previa</value>
+  </data>
+  <data name="Preço unitário" xml:space="preserve">
+    <value>Precio unitario</value>
+  </data>
+  <data name="Preencha os dados de acesso" xml:space="preserve">
+    <value>Complete los datos de acceso</value>
+  </data>
+  <data name="Primária" xml:space="preserve">
+    <value>Primario</value>
+  </data>
+  <data name="Primário" xml:space="preserve">
+    <value>Primario</value>
+  </data>
+  <data name="Primeira" xml:space="preserve">
+    <value>Primera</value>
+  </data>
+  <data name="Processando sua solicitação..." xml:space="preserve">
+    <value>Procesando su solicitud...</value>
+  </data>
+  <data name="Processando..." xml:space="preserve">
+    <value>Procesando...</value>
+  </data>
+  <data name="Proprietário" xml:space="preserve">
+    <value>Propietario</value>
+  </data>
+  <data name="proprietários" xml:space="preserve">
+    <value>propietarios</value>
+  </data>
+  <data name="Próxima" xml:space="preserve">
+    <value>Siguiente</value>
+  </data>
+  <data name="Publicar" xml:space="preserve">
+    <value>Publicar</value>
+  </data>
+  <data name="Publicar alterações?" xml:space="preserve">
+    <value>¿Publicar los cambios?</value>
+  </data>
+  <data name="Qualquer branding" xml:space="preserve">
+    <value>Cualquier branding</value>
+  </data>
+  <data name="Quando um membro seleciona este time, a aplicação assume o nome, logo e cores do time (se permitido no whitelabel global)." xml:space="preserve">
+    <value>Cuando un miembro selecciona este equipo, la aplicación adopta el nombre, logo y colores del equipo (si el whitelabel global lo permite).</value>
+  </data>
+  <data name="Quantidade" xml:space="preserve">
+    <value>Cantidad</value>
+  </data>
+  <data name="Rajada (5)" xml:space="preserve">
+    <value>Ráfaga (5)</value>
+  </data>
+  <data name="Recarregar skeleton" xml:space="preserve">
+    <value>Recargar skeleton</value>
+  </data>
+  <data name="Recolher menu" xml:space="preserve">
+    <value>Contraer menú</value>
+  </data>
+  <data name="Registro não encontrado" xml:space="preserve">
+    <value>Registro no encontrado</value>
+  </data>
+  <data name="Relatório Mensal.pdf" xml:space="preserve">
+    <value>Informe Mensual.pdf</value>
+  </data>
+  <data name="Remover" xml:space="preserve">
+    <value>Quitar</value>
+  </data>
+  <data name="Remover &lt;strong&gt;{0}&lt;/strong&gt; do time &lt;strong&gt;{1}&lt;/strong&gt;?" xml:space="preserve">
+    <value>¿Quitar a &lt;strong&gt;{0}&lt;/strong&gt; del equipo &lt;strong&gt;{1}&lt;/strong&gt;?</value>
+  </data>
+  <data name="Remover da lista" xml:space="preserve">
+    <value>Quitar de la lista</value>
+  </data>
+  <data name="Remover do time" xml:space="preserve">
+    <value>Quitar del equipo</value>
+  </data>
+  <data name="Remover membro" xml:space="preserve">
+    <value>Quitar miembro</value>
+  </data>
+  <data name="Repetir animação em cascata" xml:space="preserve">
+    <value>Repetir animación en cascada</value>
+  </data>
+  <data name="Restaurando..." xml:space="preserve">
+    <value>Restaurando...</value>
+  </data>
+  <data name="Restaurar" xml:space="preserve">
+    <value>Restaurar</value>
+  </data>
+  <data name="Restaurar padrão" xml:space="preserve">
+    <value>Restaurar valores predeterminados</value>
+  </data>
+  <data name="Resultado:" xml:space="preserve">
+    <value>Resultado:</value>
+  </data>
+  <data name="roles dinâmicas" xml:space="preserve">
+    <value>roles dinámicos</value>
+  </data>
+  <data name="Roles dinâmicas com permissões fixas" xml:space="preserve">
+    <value>Roles dinámicos con permisos fijos</value>
+  </data>
+  <data name="Roles são criadas dinamicamente e agrupam permissões fixas do sistema" xml:space="preserve">
+    <value>Los roles se crean dinámicamente y agrupan permisos fijos del sistema</value>
+  </data>
+  <data name="Saindo..." xml:space="preserve">
+    <value>Cerrando sesión...</value>
+  </data>
+  <data name="Sair" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="Salvando..." xml:space="preserve">
+    <value>Guardando...</value>
+  </data>
+  <data name="Salvar" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Salvar e aplicar" xml:space="preserve">
+    <value>Guardar y aplicar</value>
+  </data>
+  <data name="Salvo com sucesso" xml:space="preserve">
+    <value>Guardado correctamente</value>
+  </data>
+  <data name="Segurança" xml:space="preserve">
+    <value>Seguridad</value>
+  </data>
+  <data name="Selecionado:" xml:space="preserve">
+    <value>Seleccionado:</value>
+  </data>
+  <data name="selecionado(s)" xml:space="preserve">
+    <value>seleccionado(s)</value>
+  </data>
+  <data name="Selecionar todos" xml:space="preserve">
+    <value>Seleccionar todos</value>
+  </data>
+  <data name="Selecione" xml:space="preserve">
+    <value>Seleccione</value>
+  </data>
+  <data name="Selecione as permissões que este papel concede" xml:space="preserve">
+    <value>Seleccione los permisos que concede este rol</value>
+  </data>
+  <data name="Selecione no máximo {0} arquivo(s)." xml:space="preserve">
+    <value>Seleccione como máximo {0} archivo(s).</value>
+  </data>
+  <data name="Sem auto-fechar" xml:space="preserve">
+    <value>Sin cierre automático</value>
+  </data>
+  <data name="Sem time" xml:space="preserve">
+    <value>Sin equipo</value>
+  </data>
+  <data name="Senha" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="Senha incorreta." xml:space="preserve">
+    <value>Contraseña incorrecta.</value>
+  </data>
+  <data name="Seu papel ainda não possui permissão para visualizar o dashboard. Peça a um administrador para conceder acesso." xml:space="preserve">
+    <value>Su rol aún no tiene permiso para ver el panel. Pida acceso a un administrador.</value>
+  </data>
+  <data name="Sistema" xml:space="preserve">
+    <value>Sistema</value>
+  </data>
+  <data name="Slogan" xml:space="preserve">
+    <value>Eslogan</value>
+  </data>
+  <data name="Só fecha manualmente." xml:space="preserve">
+    <value>Solo se cierra manualmente.</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Status:" xml:space="preserve">
+    <value>Estado:</value>
+  </data>
+  <data name="Sua conta está inativa. Contate o administrador." xml:space="preserve">
+    <value>Su cuenta está inactiva. Contacte al administrador.</value>
+  </data>
+  <data name="Sua própria conta foi ignorada na exclusão." xml:space="preserve">
+    <value>Su propia cuenta fue omitida en la eliminación.</value>
+  </data>
+  <data name="Sua sessão expira em 5 minutos." xml:space="preserve">
+    <value>Su sesión expira en 5 minutos.</value>
+  </data>
+  <data name="Subtotal" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="Sucesso" xml:space="preserve">
+    <value>Éxito</value>
+  </data>
+  <data name="Tem certeza que deseja excluir &lt;strong&gt;{0}&lt;/strong&gt;? Esta ação não pode ser desfeita." xml:space="preserve">
+    <value>¿Seguro que desea eliminar &lt;strong&gt;{0}&lt;/strong&gt;? Esta acción no se puede deshacer.</value>
+  </data>
+  <data name="Temas prontos:" xml:space="preserve">
+    <value>Temas predefinidos:</value>
+  </data>
+  <data name="Tentar novamente" xml:space="preserve">
+    <value>Intentar de nuevo</value>
+  </data>
+  <data name="Tente outra busca ou crie um novo time." xml:space="preserve">
+    <value>Pruebe otra búsqueda o cree un nuevo equipo.</value>
+  </data>
+  <data name="Testar efeito" xml:space="preserve">
+    <value>Probar efecto</value>
+  </data>
+  <data name="Teste todos os componentes reutilizáveis da aplicação" xml:space="preserve">
+    <value>Pruebe todos los componentes reutilizables de la aplicación</value>
+  </data>
+  <data name="Texto do menu" xml:space="preserve">
+    <value>Texto del menú</value>
+  </data>
+  <data name="Texto do rodapé" xml:space="preserve">
+    <value>Texto del pie de página</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Equipo</value>
+  </data>
+  <data name="Time alterado" xml:space="preserve">
+    <value>Equipo cambiado</value>
+  </data>
+  <data name="Time ativo" xml:space="preserve">
+    <value>Equipo activo</value>
+  </data>
+  <data name="Time atual" xml:space="preserve">
+    <value>Equipo actual</value>
+  </data>
+  <data name="Time atualizado" xml:space="preserve">
+    <value>Equipo actualizado</value>
+  </data>
+  <data name="Time criado" xml:space="preserve">
+    <value>Equipo creado</value>
+  </data>
+  <data name="Time excluído" xml:space="preserve">
+    <value>Equipo eliminado</value>
+  </data>
+  <data name="Time Financeiro" xml:space="preserve">
+    <value>Equipo Financiero</value>
+  </data>
+  <data name="Time não encontrado." xml:space="preserve">
+    <value>Equipo no encontrado.</value>
+  </data>
+  <data name="Time:" xml:space="preserve">
+    <value>Equipo:</value>
+  </data>
+  <data name="Times" xml:space="preserve">
+    <value>Equipos</value>
+  </data>
+  <data name="Times com “branding próprio” sobrescrevem nome, logo e cores quando selecionados no seletor de time." xml:space="preserve">
+    <value>Los equipos con “branding propio” reemplazan el nombre, logo y colores cuando se seleccionan en el selector de equipo.</value>
+  </data>
+  <data name="Times personalizados com identidade visual própria" xml:space="preserve">
+    <value>Equipos personalizados con identidad visual propia</value>
+  </data>
+  <data name="Tipo de arquivo não permitido: {0}" xml:space="preserve">
+    <value>Tipo de archivo no permitido: {0}</value>
+  </data>
+  <data name="Tipo não permitido" xml:space="preserve">
+    <value>Tipo no permitido</value>
+  </data>
+  <data name="Título do login" xml:space="preserve">
+    <value>Título del inicio de sesión</value>
+  </data>
+  <data name="Toasts" xml:space="preserve">
+    <value>Notificaciones</value>
+  </data>
+  <data name="Toasts empilham e saem com animação." xml:space="preserve">
+    <value>Las notificaciones se apilan y salen con animación.</value>
+  </data>
+  <data name="Todas as configurações de whitelabel voltarão aos &lt;strong&gt;valores padrão&lt;/strong&gt;." xml:space="preserve">
+    <value>Toda la configuración whitelabel volverá a los &lt;strong&gt;valores predeterminados&lt;/strong&gt;.</value>
+  </data>
+  <data name="Todos os papéis no time" xml:space="preserve">
+    <value>Todos los roles del equipo</value>
+  </data>
+  <data name="Todos os status" xml:space="preserve">
+    <value>Todos los estados</value>
+  </data>
+  <data name="Todos os vínculos serão removidos permanentemente." xml:space="preserve">
+    <value>Todos los vínculos se eliminarán permanentemente.</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Transição atual (configurada no whitelabel):" xml:space="preserve">
+    <value>Transición actual (configurada en whitelabel):</value>
+  </data>
+  <data name="Trocar" xml:space="preserve">
+    <value>Cambiar</value>
+  </data>
+  <data name="Trocar time" xml:space="preserve">
+    <value>Cambiar de equipo</value>
+  </data>
+  <data name="Última" xml:space="preserve">
+    <value>Última</value>
+  </data>
+  <data name="Última alteração: {0}." xml:space="preserve">
+    <value>Último cambio: {0}.</value>
+  </data>
+  <data name="Último acesso" xml:space="preserve">
+    <value>Último acceso</value>
+  </data>
+  <data name="Upload de arquivos" xml:space="preserve">
+    <value>Subida de archivos</value>
+  </data>
+  <data name="Upload de imagem com preview" xml:space="preserve">
+    <value>Subida de imagen con vista previa</value>
+  </data>
+  <data name="Usando o branding padrão da plataforma." xml:space="preserve">
+    <value>Usando el branding predeterminado de la plataforma.</value>
+  </data>
+  <data name="Usar branding próprio na aplicação" xml:space="preserve">
+    <value>Usar branding propio en la aplicación</value>
+  </data>
+  <data name="Usar padrão" xml:space="preserve">
+    <value>Usar predeterminado</value>
+  </data>
+  <data name="Use apenas letras minúsculas, números e hífens" xml:space="preserve">
+    <value>Use solo letras minúsculas, números y guiones</value>
+  </data>
+  <data name="Usuário" xml:space="preserve">
+    <value>Usuario</value>
+  </data>
+  <data name="Usuário ativo (pode fazer login)" xml:space="preserve">
+    <value>Usuario activo (puede iniciar sesión)</value>
+  </data>
+  <data name="Usuário atualizado" xml:space="preserve">
+    <value>Usuario actualizado</value>
+  </data>
+  <data name="Usuário criado" xml:space="preserve">
+    <value>Usuario creado</value>
+  </data>
+  <data name="Usuário excluído" xml:space="preserve">
+    <value>Usuario eliminado</value>
+  </data>
+  <data name="Usuário não encontrado." xml:space="preserve">
+    <value>Usuario no encontrado.</value>
+  </data>
+  <data name="Usuários" xml:space="preserve">
+    <value>Usuarios</value>
+  </data>
+  <data name="Usuários ativados" xml:space="preserve">
+    <value>Usuarios activados</value>
+  </data>
+  <data name="Usuários gerados pelo seed usam a senha" xml:space="preserve">
+    <value>Los usuarios generados por el seed usan la contraseña</value>
+  </data>
+  <data name="Usuários inativados" xml:space="preserve">
+    <value>Usuarios desactivados</value>
+  </data>
+  <data name="Usuários por departamento" xml:space="preserve">
+    <value>Usuarios por departamento</value>
+  </data>
+  <data name="Valor inválido. Exemplo: {0}" xml:space="preserve">
+    <value>Valor no válido. Ejemplo: {0}</value>
+  </data>
+  <data name="Valores e moedas por idioma" xml:space="preserve">
+    <value>Valores y monedas por idioma</value>
+  </data>
+  <data name="Ver todos" xml:space="preserve">
+    <value>Ver todos</value>
+  </data>
+  <data name="Ver usuários com este papel" xml:space="preserve">
+    <value>Ver usuarios con este rol</value>
+  </data>
+  <data name="Verifique os dados" xml:space="preserve">
+    <value>Verifique los datos</value>
+  </data>
+  <data name="Vínculos com {0} time(s) e {1} papel(is) também serão removidos." xml:space="preserve">
+    <value>También se eliminarán los vínculos con {0} equipo(s) y {1} rol(es).</value>
+  </data>
+  <data name="Visão geral" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="Visão geral de {0}" xml:space="preserve">
+    <value>Resumen de {0}</value>
+  </data>
+  <data name="Visualizar" xml:space="preserve">
+    <value>Ver</value>
+  </data>
+  <data name="Visualizar catálogo de permissões" xml:space="preserve">
+    <value>Ver catálogo de permisos</value>
+  </data>
+  <data name="Visualizar configurações whitelabel" xml:space="preserve">
+    <value>Ver configuración whitelabel</value>
+  </data>
+  <data name="Visualizar o dashboard" xml:space="preserve">
+    <value>Ver el panel</value>
+  </data>
+  <data name="Vitrine de componentes" xml:space="preserve">
+    <value>Catálogo de componentes</value>
+  </data>
+  <data name="Você ainda não participa de nenhum time." xml:space="preserve">
+    <value>Aún no participa en ningún equipo.</value>
+  </data>
+  <data name="Você está no time “{0}”, que sobrescreve algumas cores. Selecione “Padrão da plataforma” para ver o tema global." xml:space="preserve">
+    <value>Está en el equipo “{0}”, que reemplaza algunos colores. Seleccione “Predeterminado de la plataforma” para ver el tema global.</value>
+  </data>
+  <data name="Você está prestes a excluir &lt;strong&gt;{0} usuário(s)&lt;/strong&gt;. Esta ação não pode ser desfeita." xml:space="preserve">
+    <value>Está a punto de eliminar &lt;strong&gt;{0} usuario(s)&lt;/strong&gt;. Esta acción no se puede deshacer.</value>
+  </data>
+  <data name="Você não pode excluir a sua própria conta." xml:space="preserve">
+    <value>No puede eliminar su propia cuenta.</value>
+  </data>
+  <data name="Você não possui permissão para acessar esta página. Solicite acesso a um administrador." xml:space="preserve">
+    <value>No tiene permiso para acceder a esta página. Solicite acceso a un administrador.</value>
+  </data>
+  <data name="Você não tem permissão para acessar este recurso." xml:space="preserve">
+    <value>No tiene permiso para acceder a este recurso.</value>
+  </data>
+  <data name="voce@empresa.com" xml:space="preserve">
+    <value>usted@empresa.com</value>
+  </data>
+  <data name="Voltar ao início" xml:space="preserve">
+    <value>Volver al inicio</value>
+  </data>
+  <data name="Voltar para times" xml:space="preserve">
+    <value>Volver a equipos</value>
+  </data>
+  <data name="Whitelabel" xml:space="preserve">
+    <value>Whitelabel</value>
+  </data>
+  <data name="Whitelabel atualizado" xml:space="preserve">
+    <value>Whitelabel actualizado</value>
+  </data>
+  <data name="Whitelabel configurável em tempo real" xml:space="preserve">
+    <value>Whitelabel configurable en tiempo real</value>
+  </data>
+  <data name="Zoom" xml:space="preserve">
+    <value>Zoom</value>
+  </data>
+</root>

@@ -8,7 +8,7 @@
 @inject NavigationManager Nav
 @inject IDispatcher Dispatcher
 
-<PageTitle>Entrar · @_appName</PageTitle>
+<PageTitle>@L["Entrar"] · @_appName</PageTitle>
 
 <h1 class="h3 fw-bold mb-1">@_title</h1>
 <p class="text-muted mb-4">@_message</p>
@@ -23,15 +23,15 @@
 <EditForm Model="Input" method="post" OnValidSubmit="LoginAsync" FormName="login" Enhance="false">
     <DataAnnotationsValidator />
     <div class="mb-3">
-        <label for="email" class="form-label">E-mail</label>
+        <label for="email" class="form-label">@L["E-mail"]</label>
         <div class="input-icon">
             <i class="bi bi-envelope"></i>
-            <InputText id="email" @bind-Value="Input!.Email" class="form-control" autocomplete="username" placeholder="voce@empresa.com" />
+            <InputText id="email" @bind-Value="Input!.Email" class="form-control" autocomplete="username" placeholder="@L["voce@empresa.com"]" />
         </div>
         <ValidationMessage For="() => Input.Email" class="text-danger small" />
     </div>
     <div class="mb-3">
-        <label for="password" class="form-label">Senha</label>
+        <label for="password" class="form-label">@L["Senha"]</label>
         <div class="input-icon">
             <i class="bi bi-lock"></i>
             <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" placeholder="••••••••" />
@@ -40,15 +40,15 @@
     </div>
     <div class="form-check mb-4">
         <InputCheckbox id="remember" @bind-Value="Input.RememberMe" class="form-check-input" />
-        <label for="remember" class="form-check-label">Manter conectado</label>
+        <label for="remember" class="form-check-label">@L["Manter conectado"]</label>
     </div>
     <button type="submit" class="btn btn-primary w-100 py-2">
-        <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+        <i class="bi bi-box-arrow-in-right me-1"></i> @L["Entrar"]
     </button>
 </EditForm>
 
 <div class="demo-accounts mt-4">
-    <div class="small fw-semibold mb-2"><i class="bi bi-magic me-1"></i>Contas de demonstração (clique para preencher)</div>
+    <div class="small fw-semibold mb-2"><i class="bi bi-magic me-1"></i>@L["Contas de demonstração (clique para preencher)"]</div>
     <div class="demo-grid">
         @foreach (var acc in DbSeeder.DemoAccounts)
         {
@@ -57,12 +57,12 @@
                 <span>@acc.Email</span>
                 @if (!acc.Active)
                 {
-                    <em>inativo</em>
+                    <em>@L["Inativo"].Value.ToLower()</em>
                 }
             </button>
         }
     </div>
-    <div class="small text-muted mt-2">Usuários gerados pelo seed usam a senha <code>Demo@123</code>.</div>
+    <div class="small text-muted mt-2">@L["Usuários gerados pelo seed usam a senha"] <code>Demo@123</code>.</div>
 </div>
 
 @code {
@@ -79,7 +79,7 @@
         Input ??= new();
         var b = await Dispatcher.QueryAsync(new GetBrandingQuery());
         _appName = b.AppName;
-        _title = b.LoginTitle ?? "Entrar";
+        _title = b.LoginTitle ?? L["Entrar"];
         _message = b.LoginMessage ?? "";
     }
 
@@ -88,24 +88,24 @@
         var user = await UserManager.FindByEmailAsync(Input!.Email.Trim());
         if (user is null)
         {
-            _error = "E-mail ou senha inválidos.";
+            _error = L["E-mail ou senha inválidos."];
             return;
         }
         if (!user.IsActive)
         {
-            _error = "Sua conta está inativa. Contate o administrador.";
+            _error = L["Sua conta está inativa. Contate o administrador."];
             return;
         }
 
         var result = await SignInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: true);
         if (result.IsLockedOut)
         {
-            _error = "Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em alguns minutos.";
+            _error = L["Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em alguns minutos."];
             return;
         }
         if (!result.Succeeded)
         {
-            _error = "E-mail ou senha inválidos.";
+            _error = L["E-mail ou senha inválidos."];
             return;
         }
 
@@ -118,10 +118,10 @@
 
     private sealed class LoginInput
     {
-        [Required(ErrorMessage = "Informe o e-mail"), EmailAddress(ErrorMessage = "E-mail inválido")]
+        [Required(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.EmailRequired)), EmailAddress(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.EmailInvalid))]
         public string Email { get; set; } = "";
 
-        [Required(ErrorMessage = "Informe a senha")]
+        [Required(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.PasswordRequired))]
         public string Password { get; set; } = "";
 
         public bool RememberMe { get; set; }

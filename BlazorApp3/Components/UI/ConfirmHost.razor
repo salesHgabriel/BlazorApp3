@@ -16,7 +16,7 @@
             @if (!string.IsNullOrEmpty(_options.RequireText))
             {
                 <div class="text-start mt-3">
-                    <label class="form-label small">Digite <strong>@_options.RequireText</strong> para confirmar:</label>
+                    <label class="form-label small">@L["Digite"] <strong>@_options.RequireText</strong> @L["para confirmar:"]</label>
                     <input class="form-control" @bind="_typed" @bind:event="oninput" autocomplete="off" />
                 </div>
             }

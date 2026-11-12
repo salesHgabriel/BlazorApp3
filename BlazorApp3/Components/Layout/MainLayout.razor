@@ -14,13 +14,14 @@
 
     <div class="app-main">
         <header class="app-topbar">
-            <button type="button" class="icon-btn d-lg-none" title="Menu" @onclick="() => _sidebarOpen = !_sidebarOpen"><i class="bi bi-list"></i></button>
-            <button type="button" class="icon-btn d-none d-lg-inline-flex" title="Recolher menu" @onclick="() => _collapsed = !_collapsed">
+            <button type="button" class="icon-btn d-lg-none" title="@L["Menu"]" @onclick="() => _sidebarOpen = !_sidebarOpen"><i class="bi bi-list"></i></button>
+            <button type="button" class="icon-btn d-none d-lg-inline-flex" title="@L["Recolher menu"]" @onclick="() => _collapsed = !_collapsed">
                 <i class="bi @(_collapsed ? "bi-layout-sidebar-inset" : "bi-layout-sidebar")"></i>
             </button>
             <div class="topbar-spacer"></div>
             <AuthorizeView>
                 <Authorized>
+                    <LanguageSelector />
                     <TeamSwitcher />
                     <UserMenu />
                 </Authorized>
@@ -33,8 +34,8 @@
                 <ErrorBoundary @ref="_errorBoundary">
                     <ChildContent>@Body</ChildContent>
                     <ErrorContent Context="ex">
-                        <EmptyState Icon="bi-bug" Title="Ops! Algo deu errado" Message="@ex.Message">
-                            <button class="btn btn-primary" @onclick="() => _errorBoundary?.Recover()">Tentar novamente</button>
+                        <EmptyState Icon="bi-bug" Title="@L["Ops! Algo deu errado"]" Message="@ex.Message">
+                            <button class="btn btn-primary" @onclick="() => _errorBoundary?.Recover()">@L["Tentar novamente"]</button>
                         </EmptyState>
                     </ErrorContent>
                 </ErrorBoundary>

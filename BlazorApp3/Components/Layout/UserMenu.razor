@@ -18,14 +18,14 @@
                 <div class="small text-muted">@_email</div>
             </div>
             <div class="px-3 pb-2">
-                <div class="small text-muted mb-1">Minhas permissões</div>
-                <TagList Items="_permList" Max="4" Title="Minhas permissões" EmptyText="Nenhuma">
+                <div class="small text-muted mb-1">@L["Minhas permissões"]</div>
+                <TagList Items="_permList" Max="4" Title="@L["Minhas permissões"]" EmptyText="@L["Nenhuma"]">
                     <ItemTemplate Context="p"><span class="badge text-bg-light border fw-normal">@p</span></ItemTemplate>
                 </TagList>
             </div>
             <div class="dropdown-divider"></div>
             <div class="px-2 pb-2">
-                <a href="Account/Logout" data-enhance-nav="false" class="dropdown-panel-item text-danger text-decoration-none"><i class="bi bi-box-arrow-right"></i> Sair</a>
+                <a href="Account/Logout" data-enhance-nav="false" class="dropdown-panel-item text-danger text-decoration-none"><i class="bi bi-box-arrow-right"></i> @L["Sair"]</a>
             </div>
         </div>
     }

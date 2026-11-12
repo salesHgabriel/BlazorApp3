@@ -1,3 +1,4 @@
+using BlazorApp3.Localization;
 using BlazorApp3.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -35,7 +36,7 @@ public abstract class EditorBase<TModel> : ComponentBase where TModel : class
             Model = await LoadModelAsync();
             if (Model is null)
             {
-                Toast.Error("Registro não encontrado");
+                Toast.Error(AppText.Get("Registro não encontrado"));
                 await CloseAsync();
             }
         }

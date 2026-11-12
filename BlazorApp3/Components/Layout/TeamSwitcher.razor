@@ -8,7 +8,7 @@
     {
         <div class="dropdown-scrim" @onclick="() => _open = false"></div>
     }
-    <button type="button" class="team-switcher-btn" @onclick="() => _open = !_open" title="Trocar time">
+    <button type="button" class="team-switcher-btn" @onclick="() => _open = !_open" title="@L["Trocar time"]">
         @if (Branding.ActiveTeam is { } t)
         {
             <span class="dot" style="background:@t.PrimaryColor"></span>
@@ -17,7 +17,7 @@
         else
         {
             <i class="bi bi-diagram-3"></i>
-            <span class="d-none d-sm-inline">Sem time</span>
+            <span class="d-none d-sm-inline">@L["Sem time"]</span>
         }
         <i class="bi bi-chevron-down small opacity-50"></i>
     </button>
@@ -30,7 +30,7 @@
                 {
                     <span class="team-chip" style="background:@current.PrimaryColor">@Avatar.Initials(current.Name)</span>
                     <div class="min-w-0">
-                        <small class="text-muted d-block">Time atual</small>
+                        <small class="text-muted d-block">@L["Time atual"]</small>
                         <div class="fw-semibold text-truncate">@current.Name</div>
                     </div>
                 }
@@ -38,17 +38,17 @@
                 {
                     <span class="team-chip" style="background:#64748b"><i class="bi bi-globe2"></i></span>
                     <div class="min-w-0">
-                        <small class="text-muted d-block">Time atual</small>
-                        <div class="fw-semibold">Nenhum (padrão da plataforma)</div>
+                        <small class="text-muted d-block">@L["Time atual"]</small>
+                        <div class="fw-semibold">@L["Nenhum (padrão da plataforma)"]</div>
                     </div>
                 }
             </div>
-            <div class="dropdown-panel-header">Meus times</div>
+            <div class="dropdown-panel-header">@L["Meus times"]</div>
             <button type="button" class="dropdown-panel-item @(Branding.ActiveTeam is null ? "active" : "")" aria-current="@(Branding.ActiveTeam is null)" @onclick="() => Select(null)">
                 <i class="bi bi-globe2"></i>
                 <div class="flex-grow-1 text-start">
-                    <div>Padrão da plataforma</div>
-                    <small class="text-muted">Branding global</small>
+                    <div>@L["Padrão da plataforma"]</div>
+                    <small class="text-muted">@L["Branding global"]</small>
                 </div>
                 <i class="bi bi-check2 active-check"></i>
             </button>
@@ -63,7 +63,7 @@
                             @TeamRoles.Label(team.Role)
                             @if (team.UseCustomBranding && Branding.Global.AllowTeamBranding)
                             {
-                                <span> · <i class="bi bi-palette"></i> branding próprio</span>
+                                <span> · <i class="bi bi-palette"></i> @L["Branding próprio"].Value.ToLower()</span>
                             }
                         </small>
                     </div>
@@ -72,7 +72,7 @@
             }
             @if (Branding.MyTeams.Count == 0)
             {
-                <div class="px-3 py-2 small text-muted">Você ainda não participa de nenhum time.</div>
+                <div class="px-3 py-2 small text-muted">@L["Você ainda não participa de nenhum time."]</div>
             }
         </div>
     }
@@ -88,7 +88,7 @@
     {
         _open = false;
         await Branding.SetActiveTeamAsync(teamId);
-        Toast.Info("Time alterado", Branding.ActiveTeam is { } t ? $"Agora você está em \"{t.Name}\"." : "Usando o branding padrão da plataforma.");
+        Toast.Info(L["Time alterado"], Branding.ActiveTeam is { } t ? L["Agora você está em “{0}”.", t.Name] : L["Usando o branding padrão da plataforma."]);
     }
 
     public void Dispose() => Branding.Changed -= OnChanged;

@@ -1,8 +1,8 @@
 @inherits EditorBase<UserEditModel>
 
 @* Dialog lateral (Drawer) para criar/editar usuário *@
-<Drawer Visible="Visible" VisibleChanged="VisibleChanged" Title="@(UserId is null ? "Novo usuário" : "Editar usuário")"
-        Subtitle="@(UserId is null ? "Preencha os dados de acesso" : Model?.Email)" Icon="@(UserId is null ? "bi-person-plus" : "bi-pencil-square")"
+<Drawer Visible="Visible" VisibleChanged="VisibleChanged" Title="@(UserId is null ? L["Novo usuário"] : L["Editar usuário"])"
+        Subtitle="@(UserId is null ? L["Preencha os dados de acesso"] : Model?.Email)" Icon="@(UserId is null ? "bi-person-plus" : "bi-pencil-square")"
         Width="560px" CloseOnBackdrop="!Saving">
     <ChildContent>
         @if (Model is null)
@@ -15,27 +15,27 @@
             <EditForm id="user-form" Model="Model" OnValidSubmit="SubmitAsync">
                 <DataAnnotationsValidator />
 
-                <div class="form-section">Foto</div>
+                <div class="form-section">@L["Foto"]</div>
                 <ImageUpload @bind-Value="Model.AvatarUrl" Folder="avatars" Shape="circle" Size="72" />
 
-                <div class="form-section">Dados pessoais</div>
+                <div class="form-section">@L["Dados pessoais"]</div>
                 <div class="mb-3">
-                    <label class="form-label">Nome completo *</label>
+                    <label class="form-label">@L["Nome completo *"]</label>
                     <InputText class="form-control" @bind-Value="Model.FullName" />
                     <ValidationMessage For="() => Model.FullName" class="text-danger small" />
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">E-mail (login) *</label>
+                    <label class="form-label">@L["E-mail (login) *"]</label>
                     <InputText class="form-control" @bind-Value="Model.Email" type="email" />
                     <ValidationMessage For="() => Model.Email" class="text-danger small" />
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-sm-6">
-                        <label class="form-label">Cargo</label>
+                        <label class="form-label">@L["Cargo"]</label>
                         <InputText class="form-control" @bind-Value="Model.JobTitle" />
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label">Departamento</label>
+                        <label class="form-label">@L["Departamento"]</label>
                         <InputText class="form-control" @bind-Value="Model.Department" list="dept-list" />
                         <datalist id="dept-list">
                             @foreach (var d in Departments)
@@ -46,19 +46,19 @@
                     </div>
                 </div>
 
-                <div class="form-section">Acesso</div>
+                <div class="form-section">@L["Acesso"]</div>
                 <div class="mb-3">
                     <label class="form-label">@(UserId is null ? "Senha *" : "Nova senha")</label>
                     <InputText class="form-control" type="password" @bind-Value="Model.Password" autocomplete="new-password"
-                               placeholder="@(UserId is null ? "Mínimo 6 caracteres, com maiúscula e número" : "Deixe em branco para manter a atual")" />
+                               placeholder="@(UserId is null ? L["Mínimo 6 caracteres, com maiúscula e número"] : L["Deixe em branco para manter a atual"])" />
                     <ValidationMessage For="() => Model.Password" class="text-danger small" />
                 </div>
                 <div class="form-check form-switch mb-3">
                     <InputCheckbox class="form-check-input" id="active" @bind-Value="Model.IsActive" />
-                    <label class="form-check-label" for="active">Usuário ativo (pode fazer login)</label>
+                    <label class="form-check-label" for="active">@L["Usuário ativo (pode fazer login)"]</label>
                 </div>
 
-                <label class="form-label">Papéis (roles)</label>
+                <label class="form-label">@L["Papéis (roles)"]</label>
                 <div class="check-grid mb-3">
                     @foreach (var role in RoleOptions)
                     {
@@ -71,14 +71,14 @@
                     }
                 </div>
 
-                <label class="form-label">Times</label>
-                <MultiSelect TValue="int" Options="TeamOptions" @bind-Selected="Model.TeamIds" Placeholder="Times" Icon="bi-diagram-3" Class="w-100" />
+                <label class="form-label">@L["Times"]</label>
+                <MultiSelect TValue="int" Options="TeamOptions" @bind-Selected="Model.TeamIds" Placeholder="@L["Times"]" Icon="bi-diagram-3" Class="w-100" />
             </EditForm>
         }
     </ChildContent>
     <Footer>
-        <button type="button" class="btn btn-light" disabled="@Saving" @onclick="CloseAsync">Cancelar</button>
-        <LoadingButton Type="submit" form="user-form" Loading="Saving" LoadingText="Salvando..." Icon="bi-check2">Salvar</LoadingButton>
+        <button type="button" class="btn btn-light" disabled="@Saving" @onclick="CloseAsync">@L["Cancelar"]</button>
+        <LoadingButton Type="submit" form="user-form" Loading="Saving" LoadingText="@L["Salvando..."]" Icon="bi-check2">@L["Salvar"]</LoadingButton>
     </Footer>
 </Drawer>
 
@@ -92,8 +92,8 @@
         UserId is null ? Task.FromResult<UserEditModel?>(new UserEditModel()) : Ui.QueryAsync(new GetUserForEditQuery(UserId));
 
     protected override async Task<bool> SaveAsync(UserEditModel model) => model.Id is null
-        ? (await Ui.SendAsync(new CreateUserCommand(model), "Usuário criado", model.FullName, errorTitle: "Verifique os dados")).Succeeded
-        : (await Ui.SendAsync(new UpdateUserCommand(model), "Usuário atualizado", model.FullName, errorTitle: "Verifique os dados")).Succeeded;
+        ? (await Ui.SendAsync(new CreateUserCommand(model), L["Usuário criado"], model.FullName, errorTitle: L["Verifique os dados"])).Succeeded
+        : (await Ui.SendAsync(new UpdateUserCommand(model), L["Usuário atualizado"], model.FullName, errorTitle: L["Verifique os dados"])).Succeeded;
 
     private void ToggleRole(string id)
     {

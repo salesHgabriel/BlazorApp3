@@ -4,7 +4,7 @@
 <div class="loading-overlay @(Loading.IsLoading ? "show" : "")" aria-hidden="@(!Loading.IsLoading)">
     <div class="loading-card">
         <div class="loader-ring"><div></div><div></div><div></div></div>
-        <div class="loading-text">@(Loading.Message ?? "Carregando...")</div>
+        <div class="loading-text">@(Loading.Message ?? L["Carregando..."])</div>
     </div>
 </div>
 

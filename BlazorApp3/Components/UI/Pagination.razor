@@ -2,30 +2,30 @@
     <div class="pager-info">
         @if (TotalCount == 0)
         {
-            <span>Nenhum registro</span>
+            <span>@L["Nenhum registro"]</span>
         }
         else
         {
-            <span>Exibindo <strong>@From</strong>–<strong>@To</strong> de <strong>@TotalCount.ToString("N0")</strong></span>
+            <span>@L["Exibindo"] <strong>@From</strong>–<strong>@To</strong> @L["de"] <strong>@TotalCount.ToString("N0")</strong></span>
         }
     </div>
     <div class="pager-controls">
         @if (ShowPageSize)
         {
-            <select class="form-select form-select-sm pager-size" value="@PageSize" @onchange="OnPageSizeChange" aria-label="Itens por página">
+            <select class="form-select form-select-sm pager-size" value="@PageSize" @onchange="OnPageSizeChange" aria-label="@L["Itens por página"]">
                 @foreach (var size in PageSizeOptions)
                 {
-                    <option value="@size">@size / página</option>
+                    <option value="@size">@L["{0} / página", size]</option>
                 }
             </select>
         }
-        <nav aria-label="Paginação">
+        <nav aria-label="@L["Paginação"]">
             <ul class="pagination pagination-sm mb-0">
                 <li class="page-item @(Page <= 1 ? "disabled" : "")">
-                    <button type="button" class="page-link" title="Primeira" @onclick="() => Go(1)"><i class="bi bi-chevron-double-left"></i></button>
+                    <button type="button" class="page-link" title="@L["Primeira"]" @onclick="() => Go(1)"><i class="bi bi-chevron-double-left"></i></button>
                 </li>
                 <li class="page-item @(Page <= 1 ? "disabled" : "")">
-                    <button type="button" class="page-link" title="Anterior" @onclick="() => Go(Page - 1)"><i class="bi bi-chevron-left"></i></button>
+                    <button type="button" class="page-link" title="@L["Anterior"]" @onclick="() => Go(Page - 1)"><i class="bi bi-chevron-left"></i></button>
                 </li>
                 @foreach (var p in Pages())
                 {
@@ -42,10 +42,10 @@
                     }
                 }
                 <li class="page-item @(Page >= TotalPages ? "disabled" : "")">
-                    <button type="button" class="page-link" title="Próxima" @onclick="() => Go(Page + 1)"><i class="bi bi-chevron-right"></i></button>
+                    <button type="button" class="page-link" title="@L["Próxima"]" @onclick="() => Go(Page + 1)"><i class="bi bi-chevron-right"></i></button>
                 </li>
                 <li class="page-item @(Page >= TotalPages ? "disabled" : "")">
-                    <button type="button" class="page-link" title="Última" @onclick="() => Go(TotalPages)"><i class="bi bi-chevron-double-right"></i></button>
+                    <button type="button" class="page-link" title="@L["Última"]" @onclick="() => Go(TotalPages)"><i class="bi bi-chevron-double-right"></i></button>
                 </li>
             </ul>
         </nav>

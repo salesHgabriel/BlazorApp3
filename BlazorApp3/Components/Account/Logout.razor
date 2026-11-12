@@ -2,15 +2,15 @@
 @attribute [ExcludeFromInteractiveRouting]
 @layout AuthLayout
 
-<PageTitle>Sair</PageTitle>
+<PageTitle>@L["Sair"]</PageTitle>
 
 @* Página SSR estática: garante o token antiforgery e envia o logout automaticamente *@
 <form id="logout-form" action="Account/PerformLogout" method="post" data-enhance="false">
     <AntiforgeryToken />
     <div class="text-center py-4">
         <Spinner Size="lg" />
-        <h1 class="h5 mt-3">Saindo...</h1>
-        <noscript><button type="submit" class="btn btn-primary mt-2">Confirmar saída</button></noscript>
+        <h1 class="h5 mt-3">@L["Saindo..."]</h1>
+        <noscript><button type="submit" class="btn btn-primary mt-2">@L["Confirmar saída"]</button></noscript>
     </div>
 </form>
 <script>document.getElementById('logout-form').submit();</script>

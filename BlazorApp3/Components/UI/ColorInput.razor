@@ -1,9 +1,9 @@
 <div class="color-input">
-    <input type="color" value="@(Value ?? Fallback)" @onchange="OnChange" title="Escolher cor" />
+    <input type="color" value="@(Value ?? Fallback)" @onchange="OnChange" title="@L["Escolher cor"]" />
     <input type="text" class="form-control form-control-sm" value="@Value" placeholder="@Placeholder" maxlength="7" @onchange="OnChange" />
     @if (Clearable && !string.IsNullOrEmpty(Value))
     {
-        <button type="button" class="btn btn-sm btn-link text-muted px-1" title="Usar padrão" @onclick="() => ValueChanged.InvokeAsync(null)"><i class="bi bi-x-circle"></i></button>
+        <button type="button" class="btn btn-sm btn-link text-muted px-1" title="@L["Usar padrão"]" @onclick="() => ValueChanged.InvokeAsync(null)"><i class="bi bi-x-circle"></i></button>
     }
 </div>
 

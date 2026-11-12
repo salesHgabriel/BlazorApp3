@@ -13,7 +13,7 @@
         }
         else if (!string.IsNullOrEmpty(Value))
         {
-            <img src="@Value" alt="Pré-visualização" />
+            <img src="@Value" alt="@L["Pré-visualização"]" />
         }
         else
         {
@@ -22,12 +22,12 @@
     </div>
     <div class="image-actions">
         <label class="btn btn-sm btn-outline-secondary position-relative overflow-hidden mb-0">
-            <i class="bi bi-upload me-1"></i>@(string.IsNullOrEmpty(Value) ? "Enviar" : "Trocar")
+            <i class="bi bi-upload me-1"></i>@(string.IsNullOrEmpty(Value) ? L["Enviar"] : L["Trocar"])
             <InputFile @key="_key" OnChange="OnChange" accept="@Accept" class="stretched-input" disabled="@_uploading" />
         </label>
         @if (!string.IsNullOrEmpty(Value))
         {
-            <button type="button" class="btn btn-sm btn-link text-danger" @onclick="Remove"><i class="bi bi-trash3 me-1"></i>Remover</button>
+            <button type="button" class="btn btn-sm btn-link text-danger" @onclick="Remove"><i class="bi bi-trash3 me-1"></i>@L["Remover"]</button>
         }
         <div class="small text-muted">@Hint</div>
     </div>
@@ -49,7 +49,7 @@
     private int _key;
 
     protected override void OnParametersSet() =>
-        Hint ??= $"{Accept.Replace(".", "").ToUpperInvariant().Replace(",", ", ")} · até {MaxSizeMb:0.#} MB";
+        Hint ??= L["{0} · até {1:0.#} MB", Accept.Replace(".", "").ToUpperInvariant().Replace(",", ", "), MaxSizeMb];
 
     private async Task OnChange(InputFileChangeEventArgs e)
     {
@@ -57,14 +57,14 @@
         var allowed = Accept.Split(',', StringSplitOptions.TrimEntries);
         if (!allowed.Contains(Path.GetExtension(file.Name), StringComparer.OrdinalIgnoreCase))
         {
-            Toast.Warning("Tipo não permitido", $"Formatos aceitos: {Accept}");
+            Toast.Warning(L["Tipo não permitido"], L["Formatos aceitos: {0}", Accept]);
             _key++;
             return;
         }
         var maxBytes = (long)(MaxSizeMb * 1024 * 1024);
         if (file.Size > maxBytes)
         {
-            Toast.Warning("Imagem muito grande", $"O limite é {MaxSizeMb:0.#} MB.");
+            Toast.Warning(L["Imagem muito grande"], L["O limite é {0:0.#} MB.", MaxSizeMb]);
             _key++;
             return;
         }
@@ -83,7 +83,7 @@
         }
         catch (Exception ex)
         {
-            Toast.Error("Falha no upload", ex is AppException ? ex.Message : "Não foi possível enviar a imagem.");
+            Toast.Error(L["Falha no upload"], ex is AppException ? ex.Message : L["Não foi possível enviar a imagem."]);
         }
         finally
         {

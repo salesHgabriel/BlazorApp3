@@ -45,10 +45,10 @@
                     }
                     else
                     {
-                        <div class="small text-success"><i class="bi bi-check2-circle"></i> Enviado</div>
+                        <div class="small text-success"><i class="bi bi-check2-circle"></i> @L["Enviado"]</div>
                     }
                 </div>
-                <button type="button" class="icon-btn" title="Remover da lista" @onclick="() => _items.Remove(item)"><i class="bi bi-x"></i></button>
+                <button type="button" class="icon-btn" title="@L["Remover da lista"]" @onclick="() => _items.Remove(item)"><i class="bi bi-x"></i></button>
             </li>
         }
     </ul>
@@ -62,7 +62,7 @@
     [Parameter] public int MaxFiles { get; set; } = 10;
     [Parameter] public bool ShowList { get; set; } = true;
     [Parameter] public bool Disabled { get; set; }
-    [Parameter] public string Title { get; set; } = "Arraste e solte ou clique para selecionar";
+    [Parameter] public string Title { get; set; } = AppText.Get("Arraste e solte ou clique para selecionar");
     [Parameter] public string? Hint { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter] public EventCallback<UploadedFile> OnUploaded { get; set; }
@@ -87,8 +87,8 @@
 
     protected override void OnParametersSet()
     {
-        Hint ??= $"{string.Join(", ", AllowedExtensions.Select(e => e.TrimStart('.').ToUpperInvariant()))} · até {MaxSizeMb:0.#} MB" +
-                 (Multiple ? $" · máx. {MaxFiles} arquivos" : "");
+        Hint ??= L["{0} · até {1:0.#} MB", string.Join(", ", AllowedExtensions.Select(e => e.TrimStart('.').ToUpperInvariant())), MaxSizeMb] +
+                 (Multiple ? L[" · máx. {0} arquivos", MaxFiles] : "");
     }
 
     private async Task OnChange(InputFileChangeEventArgs e)
@@ -97,7 +97,7 @@
         IReadOnlyList<IBrowserFile> files;
         if (e.FileCount > (Multiple ? MaxFiles : 1))
         {
-            Toast.Warning("Muitos arquivos", $"Selecione no máximo {(Multiple ? MaxFiles : 1)} arquivo(s).");
+            Toast.Warning(L["Muitos arquivos"], L["Selecione no máximo {0} arquivo(s).", Multiple ? MaxFiles : 1]);
             _inputKey++;
             return;
         }
@@ -108,12 +108,12 @@
             var ext = Path.GetExtension(file.Name);
             if (!AllowedExtensions.Contains(ext))
             {
-                Toast.Warning("Tipo não permitido", $"{file.Name}: use {string.Join(", ", AllowedExtensions)}");
+                Toast.Warning(L["Tipo não permitido"], L["{0}: use {1}", file.Name, string.Join(", ", AllowedExtensions)]);
                 continue;
             }
             if (file.Size > MaxBytes)
             {
-                Toast.Warning("Arquivo muito grande", $"{file.Name} excede {MaxSizeMb:0.#} MB.");
+                Toast.Warning(L["Arquivo muito grande"], L["{0} excede {1:0.#} MB.", file.Name, MaxSizeMb]);
                 continue;
             }
 
@@ -141,7 +141,7 @@
             catch (Exception ex)
             {
                 item.Status = "error";
-                item.Error = ex is AppException ? ex.Message : "Falha ao enviar o arquivo.";
+                item.Error = ex is AppException ? ex.Message : L["Falha ao enviar o arquivo."];
             }
             StateHasChanged();
         }

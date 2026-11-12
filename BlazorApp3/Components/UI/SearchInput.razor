@@ -10,14 +10,14 @@
     }
     else if (!string.IsNullOrEmpty(_text))
     {
-        <button type="button" class="search-clear" title="Limpar" @onclick="Clear"><i class="bi bi-x-circle-fill"></i></button>
+        <button type="button" class="search-clear" title="@L["Limpar"]" @onclick="Clear"><i class="bi bi-x-circle-fill"></i></button>
     }
 </div>
 
 @code {
     [Parameter] public string? Value { get; set; }
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
-    [Parameter] public string Placeholder { get; set; } = "Buscar...";
+    [Parameter] public string Placeholder { get; set; } = AppText.Get("Buscar...");
     [Parameter] public int DebounceMs { get; set; } = 400;
     [Parameter] public bool Busy { get; set; }
     [Parameter] public string? Class { get; set; }
