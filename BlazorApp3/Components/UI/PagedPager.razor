@@ -1,0 +1,9 @@
+@typeparam TItem
+@* Paginação ligada diretamente a um PagedQueryState *@
+<Pagination Page="State.Result.Page" PageSize="State.Query.PageSize" TotalCount="State.Result.TotalCount"
+            PageSizeOptions="PageSizeOptions" PageChanged="State.GoToPageAsync" PageSizeChanged="State.SetPageSizeAsync" />
+
+@code {
+    [Parameter, EditorRequired] public PagedQueryState<TItem> State { get; set; } = default!;
+    [Parameter] public int[] PageSizeOptions { get; set; } = [10, 20, 50];
+}

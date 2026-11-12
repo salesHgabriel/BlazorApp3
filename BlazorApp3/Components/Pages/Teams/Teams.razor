@@ -1,0 +1,152 @@
+@page "/teams"
+@attribute [HasPermission(Perm.TeamsView)]
+@inject UiDispatcher Ui
+@inject BrandingState Branding
+
+<AppPageTitle Title="Times" />
+
+<PageHeader Title="Times" Subtitle="Times personalizados com identidade visual própria" Icon="bi-diagram-3">
+    <Actions>
+        <Can Permission="@Perm.TeamsCreate">
+            <button class="btn btn-primary" @onclick="() => OpenEditor(null)"><i class="bi bi-plus-lg me-1"></i>Novo time</button>
+        </Can>
+    </Actions>
+</PageHeader>
+
+<div class="card mb-3">
+    <div class="filter-bar">
+        <SearchInput Value="@_query.Search" ValueChanged="v => _list.ApplyAsync(() => _query.Search = v)" Placeholder="Buscar times..." Busy="_list.Loading" Class="flex-grow-1" />
+        <select class="form-select form-select-sm filter-select" @onchange="e => _list.ApplyAsync(() => _query.IsActive = ParseBool(e))">
+            <option value="">Todos os status</option>
+            <option value="true">Ativos</option>
+            <option value="false">Inativos</option>
+        </select>
+        <select class="form-select form-select-sm filter-select" @onchange="e => _list.ApplyAsync(() => _query.CustomBranding = ParseBool(e))">
+            <option value="">Qualquer branding</option>
+            <option value="true">Branding próprio</option>
+            <option value="false">Branding padrão</option>
+        </select>
+        <select class="form-select form-select-sm filter-select" @onchange="OnSortChange">
+            <option value="name">Ordenar: nome</option>
+            <option value="members">Ordenar: membros</option>
+            <option value="created">Ordenar: mais recentes</option>
+        </select>
+    </div>
+</div>
+
+<div class="team-grid @(_list.IsRefreshing ? "is-refreshing" : "")">
+    @if (_list.IsInitialLoad)
+    {
+        @for (var i = 0; i < _query.PageSize; i++)
+        {
+            <div class="card team-card"><Skeleton Type="rect" Height="70px" /><div class="p-3"><Skeleton Lines="3" /></div></div>
+        }
+    }
+    else
+    {
+        var i = 0;
+        @foreach (var t in _list.Items)
+        {
+            <div @key="t.Id" class="card team-card fx-stagger @(t.IsActive ? "" : "inactive")" style="--i:@(i++)">
+                <div class="team-banner" style="background:linear-gradient(135deg, @t.PrimaryColor, @(t.AccentColor ?? t.PrimaryColor))">
+                    @if (!t.IsActive)
+                    {
+                        <span class="badge text-bg-dark">Inativo</span>
+                    }
+                    @if (t.UseCustomBranding)
+                    {
+                        <span class="badge bg-white text-dark"><i class="bi bi-palette me-1"></i>Branding próprio</span>
+                    }
+                </div>
+                <div class="team-body">
+                    <div class="team-logo">
+                        @if (t.LogoUrl is not null)
+                        {
+                            <img src="@t.LogoUrl" alt="@t.Name" />
+                        }
+                        else
+                        {
+                            <span style="background:@t.PrimaryColor">@Avatar.Initials(t.Name)</span>
+                        }
+                    </div>
+                    <h6 class="mb-0"><a href="teams/@t.Id">@t.Name</a></h6>
+                    @if (t.DisplayName is not null)
+                    {
+                        <div class="small text-muted">Exibe como “@t.DisplayName”</div>
+                    }
+                    <p class="small text-muted team-desc">@t.Description</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="avatar-stack">
+                            @foreach (var m in t.TopMembers)
+                            {
+                                <Avatar Name="@m.FullName" Url="@m.AvatarUrl" Size="28" />
+                            }
+                            @if (t.MemberCount > t.TopMembers.Count)
+                            {
+                                <span class="avatar-more">+@(t.MemberCount - t.TopMembers.Count)</span>
+                            }
+                        </div>
+                        <div class="text-nowrap">
+                            <a class="icon-btn" href="teams/@t.Id" title="Abrir"><i class="bi bi-box-arrow-up-right"></i></a>
+                            <Can Permission="@Perm.TeamsEdit">
+                                <button class="icon-btn" title="Editar" @onclick="() => OpenEditor(t.Id)"><i class="bi bi-pencil"></i></button>
+                            </Can>
+                            <Can Permission="@Perm.TeamsDelete">
+                                <button class="icon-btn text-danger" title="Excluir" @onclick="() => DeleteAsync(t)"><i class="bi bi-trash3"></i></button>
+                            </Can>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+@if (_list.IsEmpty)
+{
+    <div class="card"><EmptyState Icon="bi-diagram-3" Title="Nenhum time encontrado" Message="Tente outra busca ou crie um novo time." /></div>
+}
+
+<div class="card mt-3">
+    <div class="card-footer-x">
+        <PagedPager State="_list" PageSizeOptions="[6, 9, 12, 24]" />
+    </div>
+</div>
+
+<TeamEditor @bind-Visible="_editorOpen" TeamId="_editingId" OnSaved="OnChangedAsync" />
+
+@code {
+    private readonly SearchTeamsQuery _query = new();
+    private PagedQueryState<TeamListItem> _list = default!;
+    private bool _editorOpen;
+    private int? _editingId;
+
+    protected override Task OnInitializedAsync()
+    {
+        _list = Ui.Paged(_query, StateHasChanged);
+        return _list.LoadAsync();
+    }
+
+    private Task OnSortChange(ChangeEventArgs e) => _list.ApplyAsync(() => _query.SortBy = e.Value?.ToString() ?? "name");
+
+    private static bool? ParseBool(ChangeEventArgs e) => bool.TryParse(e.Value?.ToString(), out var b) ? b : null;
+
+    private void OpenEditor(int? id)
+    {
+        _editingId = id;
+        _editorOpen = true;
+    }
+
+    private async Task OnChangedAsync()
+    {
+        await Branding.ReloadAsync(); // reflete o branding caso o time ativo tenha sido alterado
+        await _list.LoadAsync();
+    }
+
+    private async Task DeleteAsync(TeamListItem team)
+    {
+        // Exclusão crítica: exige digitar o nome do time
+        if (await Ui.DeleteAsync(new DeleteTeamCommand(team.Id), team.Name, $"{team.MemberCount} membro(s) serão desvinculados.",
+                requireText: team.Name, success: "Time excluído"))
+            await OnChangedAsync();
+    }
+}

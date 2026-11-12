@@ -1,0 +1,41 @@
+@typeparam TItem
+@* Mostra até Max itens; o restante vira um "… +N" que exibe a lista completa ao passar o mouse (ou focar via teclado). *@
+<span class="tag-list @Class">
+    @foreach (var item in Visible)
+    {
+        @ItemTemplate(item)
+    }
+    @if (Hidden > 0)
+    {
+        <span class="tag-more">
+            <button type="button" class="tag-more-btn" aria-label="Ver todos (@Items.Count)">… +@Hidden</button>
+            <span class="tag-more-pop" role="tooltip">
+                @if (Title is not null)
+                {
+                    <span class="tag-more-title">@Title (@Items.Count)</span>
+                }
+                @foreach (var item in Items)
+                {
+                    @ItemTemplate(item)
+                }
+            </span>
+        </span>
+    }
+    @if (Items.Count == 0 && EmptyText is not null)
+    {
+        <span class="small text-muted">@EmptyText</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = [];
+    [Parameter, EditorRequired] public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
+    [Parameter] public int Max { get; set; } = 3;
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? EmptyText { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private int Shown => Math.Min(Max, Items.Count);
+    private IEnumerable<TItem> Visible => Items.Take(Shown);
+    private int Hidden => Items.Count - Shown;
+}

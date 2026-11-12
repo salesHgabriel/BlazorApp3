@@ -1,0 +1,124 @@
+﻿@page "/"
+@attribute [Authorize]
+@inject UiDispatcher Ui
+@inject BrandingState Branding
+
+<AppPageTitle Title="Dashboard" />
+
+<PageHeader Title="@($"Olá, {_firstName}!")" Subtitle="@($"Visão geral de {Branding.Effective.AppName}")" Icon="bi-grid-1x2" />
+
+<Can Permission="@Perm.DashboardView">
+    <ChildContent>
+        <div class="stat-grid">
+            @if (_data is null)
+            {
+                @for (var i = 0; i < 4; i++)
+                {
+                    <div class="card stat-card"><Skeleton Type="circle" Width="44px" Height="44px" /><div class="flex-grow-1"><Skeleton Lines="2" /></div></div>
+                }
+            }
+            else
+            {
+                <StatCard Icon="bi-people" Label="Usuários" Value="@_data.TotalUsers" Hint="@($"{_data.ActiveUsers} ativos")" Delay="0" />
+                <StatCard Icon="bi-person-plus" Label="Novos (30 dias)" Value="@_data.NewUsers30d" Hint="cadastros recentes" Delay="1" />
+                <StatCard Icon="bi-diagram-3" Label="Times" Value="@_data.TotalTeams" Hint="@($"{_data.ActiveTeams} ativos")" Delay="2" />
+                <StatCard Icon="bi-person-badge" Label="Papéis" Value="@_data.TotalRoles" Hint="roles dinâmicas" Delay="3" />
+            }
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-lg-7">
+                <div class="card h-100">
+                    <div class="card-header-x"><h6><i class="bi bi-bar-chart me-2"></i>Usuários por departamento</h6></div>
+                    <div class="card-body">
+                        @if (_data is null)
+                        {
+                            <Skeleton Lines="6" />
+                        }
+                        else
+                        {
+                            var max = Math.Max(1, _data.UsersByDepartment.Select(d => d.Count).DefaultIfEmpty(1).Max());
+                            @foreach (var (label, count) in _data.UsersByDepartment)
+                            {
+                                <div class="bar-row">
+                                    <span class="bar-label">@label</span>
+                                    <div class="bar-track"><div class="bar-fill" style="width:@(count * 100 / max)%"></div></div>
+                                    <span class="bar-value">@count</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card h-100">
+                    <div class="card-header-x"><h6><i class="bi bi-trophy me-2"></i>Maiores times</h6></div>
+                    <div class="card-body">
+                        @if (_data is null)
+                        {
+                            <Skeleton Lines="6" />
+                        }
+                        else
+                        {
+                            <ul class="list-plain">
+                                @foreach (var (name, color, members) in _data.TopTeams)
+                                {
+                                    <li class="d-flex align-items-center gap-2 py-2">
+                                        <span class="team-chip" style="background:@color">@Avatar.Initials(name)</span>
+                                        <span class="flex-grow-1">@name</span>
+                                        <span class="badge rounded-pill text-bg-light border">@members membros</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header-x">
+                        <h6><i class="bi bi-clock-history me-2"></i>Cadastros recentes</h6>
+                        <Can Permission="@Perm.UsersView"><a href="users" class="small">Ver todos <i class="bi bi-arrow-right"></i></a></Can>
+                    </div>
+                    <div class="card-body">
+                        @if (_data is null)
+                        {
+                            <Skeleton Lines="3" />
+                        }
+                        else
+                        {
+                            <div class="recent-grid">
+                                @foreach (var u in _data.RecentUsers)
+                                {
+                                    <div class="recent-user">
+                                        <Avatar Name="@u.FullName" Url="@u.AvatarUrl" Size="40" />
+                                        <div class="min-w-0">
+                                            <div class="fw-semibold text-truncate">@u.FullName</div>
+                                            <div class="small text-muted text-truncate">@u.Department · @u.Email</div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ChildContent>
+    <Fallback>
+        <EmptyState Icon="bi-emoji-smile" Title="Bem-vindo!" Message="Seu papel ainda não possui permissão para visualizar o dashboard. Peça a um administrador para conceder acesso." />
+    </Fallback>
+</Can>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+    private DashboardData? _data;
+    private string _firstName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+        _firstName = (user.FindFirstValue("full_name") ?? user.Identity?.Name ?? "").Split(' ')[0];
+        _data = await Ui.QueryAsync(new GetDashboardQuery());
+    }
+}

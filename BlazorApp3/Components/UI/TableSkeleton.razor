@@ -1,0 +1,17 @@
+@for (var r = 0; r < Rows; r++)
+{
+    var row = r;
+    <tr class="skeleton-row">
+        @for (var c = 0; c < Columns; c++)
+        {
+            <td><div class="skeleton skeleton-text" style="width:@(Width(row, c))%"></div></td>
+        }
+    </tr>
+}
+
+@code {
+    [Parameter] public int Rows { get; set; } = 8;
+    [Parameter] public int Columns { get; set; } = 5;
+
+    private static int Width(int r, int c) => c == 0 ? 80 : 40 + (r * 13 + c * 17) % 50;
+}

@@ -1,0 +1,16 @@
+<th class="sortable @Class @(Current == Field ? "sorted" : "")" @onclick="Click" style="@Style">
+    <span>@Label</span>
+    <i class="bi @(Current != Field ? "bi-arrow-down-up" : Desc ? "bi-sort-down" : "bi-sort-up")"></i>
+</th>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Field { get; set; } = "";
+    [Parameter] public string Current { get; set; } = "";
+    [Parameter] public bool Desc { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public EventCallback<(string Field, bool Desc)> OnSort { get; set; }
+
+    private Task Click() => OnSort.InvokeAsync((Field, Current == Field ? !Desc : false));
+}

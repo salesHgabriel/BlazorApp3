@@ -1,0 +1,229 @@
+@page "/teams/{Id:int}"
+@attribute [HasPermission(Perm.TeamsView)]
+@inject UiDispatcher Ui
+@inject BrandingState Branding
+@inject IAuthorizationService Authz
+
+<AppPageTitle Title="@(_team?.Name ?? "Time")" />
+
+<div class="mb-3"><a href="teams" class="small"><i class="bi bi-arrow-left"></i> Voltar para times</a></div>
+
+@if (_team is null)
+{
+    <div class="card overflow-hidden"><Skeleton Type="rect" Height="140px" /><div class="p-4"><Skeleton Lines="3" /></div></div>
+}
+else
+{
+    <div class="card team-hero mb-3">
+        <div class="team-hero-banner" style="background:linear-gradient(120deg, @_team.PrimaryColor, @(_team.AccentColor ?? _team.PrimaryColor))"></div>
+        <div class="team-hero-body">
+            <div class="team-logo lg">
+                @if (_team.LogoUrl is not null)
+                {
+                    <img src="@_team.LogoUrl" alt="@_team.Name" />
+                }
+                else
+                {
+                    <span style="background:@_team.PrimaryColor">@Avatar.Initials(_team.Name)</span>
+                }
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <h1 class="h4 mb-0">@_team.Name</h1>
+                <div class="text-muted small">/@_team.Slug · criado em @_team.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                <p class="mb-0 mt-1">@_team.Description</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-start">
+                <span class="status-badge @(_team.IsActive ? "on" : "off")">@(_team.IsActive ? "Ativo" : "Inativo")</span>
+                @if (_team.UseCustomBranding)
+                {
+                    <span class="badge rounded-pill text-bg-light border"><i class="bi bi-palette me-1"></i>@(_team.DisplayName ?? _team.Name)</span>
+                }
+                <Can Permission="@Perm.TeamsEdit">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => _editorOpen = true"><i class="bi bi-pencil me-1"></i>Editar</button>
+                </Can>
+            </div>
+        </div>
+        <div class="team-hero-stats">
+            <div><strong>@_team.MemberCount</strong><span>membros</span></div>
+            <div><strong>@_roleCounts.GetValueOrDefault(TeamRole.Owner)</strong><span>proprietários</span></div>
+            <div><strong>@_roleCounts.GetValueOrDefault(TeamRole.Admin)</strong><span>administradores</span></div>
+            <div><strong>@_roleCounts.GetValueOrDefault(TeamRole.Member)</strong><span>membros comuns</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="filter-bar">
+            <SearchInput Value="@_membersQuery.Search" ValueChanged="v => _members.ApplyAsync(() => _membersQuery.Search = v)" Placeholder="Buscar membros..." Busy="_members.Loading" Class="flex-grow-1" />
+            <select class="form-select form-select-sm filter-select" @onchange="OnRoleFilter">
+                <option value="">Todos os papéis no time</option>
+                @foreach (var r in Enum.GetValues<TeamRole>().Reverse())
+                {
+                    <option value="@r">@TeamRoles.Label(r)</option>
+                }
+            </select>
+        </div>
+
+        @if (_canManage)
+        {
+            <div class="add-member">
+                <div class="small fw-semibold mb-1"><i class="bi bi-person-plus me-1"></i>Adicionar membro <span class="text-muted fw-normal">(busca lazy paginada)</span></div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <LazyAutocomplete @ref="_autocomplete" TItem="UserLookup" Class="flex-grow-1" Placeholder="Digite nome ou e-mail do usuário..."
+                                      SearchFunc="SearchUsers" OnSelected="AddMember">
+                        <ItemTemplate Context="u">
+                            <Avatar Name="@u.FullName" Url="@u.AvatarUrl" Size="30" />
+                            <div class="min-w-0 text-start">
+                                <div class="text-truncate">@u.FullName</div>
+                                <small class="text-muted text-truncate d-block">@u.Email · @u.Department</small>
+                            </div>
+                        </ItemTemplate>
+                    </LazyAutocomplete>
+                    <select class="form-select" style="max-width:180px" @bind="_newRole">
+                        @foreach (var r in Enum.GetValues<TeamRole>())
+                        {
+                            <option value="@r">@TeamRoles.Label(r)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 data-table">
+                <thead><tr><th>Membro</th><th class="d-none d-md-table-cell">Cargo</th><th>Papel no time</th><th class="d-none d-lg-table-cell">Desde</th><th></th></tr></thead>
+                <tbody class="@(_members.IsRefreshing ? "is-refreshing" : "")">
+                    @if (_members.IsInitialLoad)
+                    {
+                        <TableSkeleton Rows="6" Columns="5" />
+                    }
+                    else if (_members.IsEmpty)
+                    {
+                        <tr><td colspan="5"><EmptyState Icon="bi-people" Title="Nenhum membro encontrado" /></td></tr>
+                    }
+                    @foreach (var m in _members.Items)
+                    {
+                        <tr @key="m.UserId" class="row-enter">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <Avatar Name="@m.FullName" Url="@m.AvatarUrl" />
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-truncate">@m.FullName @if (!m.IsActive) { <span class="status-badge off ms-1">Inativo</span> }</div>
+                                        <div class="small text-muted text-truncate">@m.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="d-none d-md-table-cell small">@m.JobTitle</td>
+                            <td>
+                                @if (_canManage)
+                                {
+                                    <select class="form-select form-select-sm" style="max-width:170px" value="@m.Role" @onchange="e => ChangeRole(m, e)">
+                                        @foreach (var r in Enum.GetValues<TeamRole>())
+                                        {
+                                            <option value="@r">@TeamRoles.Label(r)</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <span class="team-role role-@m.Role.ToString().ToLowerInvariant()">@TeamRoles.Label(m.Role)</span>
+                                }
+                            </td>
+                            <td class="d-none d-lg-table-cell small text-muted">@m.JoinedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                            <td class="text-end">
+                                @if (_canManage)
+                                {
+                                    <button class="icon-btn text-danger" title="Remover do time" @onclick="() => RemoveMember(m)"><i class="bi bi-person-dash"></i></button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer-x">
+            <PagedPager State="_members" />
+        </div>
+    </div>
+
+    <TeamEditor @bind-Visible="_editorOpen" TeamId="Id" OnSaved="OnTeamSaved" />
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+    [Parameter] public int Id { get; set; }
+
+    private TeamListItem? _team;
+    private Dictionary<TeamRole, int> _roleCounts = [];
+    private TeamMembersQuery _membersQuery = default!;
+    private PagedQueryState<TeamMemberItem> _members = default!;
+    private TeamRole _newRole = TeamRole.Member;
+    private bool _canManage;
+    private bool _editorOpen;
+    private LazyAutocomplete<UserLookup>? _autocomplete;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _membersQuery = new TeamMembersQuery(Id);
+        _members = Ui.Paged(_membersQuery, StateHasChanged);
+
+        var user = (await AuthState).User;
+        _canManage = (await Authz.AuthorizeAsync(user, Perm.Policy(Perm.TeamsManageMembers))).Succeeded;
+        await Task.WhenAll(LoadTeamAsync(), _members.LoadAsync());
+    }
+
+    private async Task LoadTeamAsync()
+    {
+        var team = Ui.QueryAsync(new TeamSummaryQuery(Id));
+        var counts = Ui.QueryAsync(new TeamRoleCountsQuery(Id));
+        _team = await team;
+        _roleCounts = await counts;
+    }
+
+    private Task OnRoleFilter(ChangeEventArgs e) =>
+        _members.ApplyAsync(() => _membersQuery.Role = Enum.TryParse<TeamRole>(e.Value?.ToString(), out var r) ? r : null);
+
+    private Task<PagedResult<UserLookup>> SearchUsers(string term, int page, int size) =>
+        Ui.QueryAsync(new LookupUsersQuery(term, page, size, ExcludeTeamId: Id));
+
+    /// <summary>Após qualquer alteração de membros: recarrega cabeçalho, lista e branding (o time ativo pode ter mudado).</summary>
+    private async Task RefreshAsync()
+    {
+        _autocomplete?.Reset();
+        await Task.WhenAll(LoadTeamAsync(), _members.LoadAsync(), Branding.ReloadAsync());
+    }
+
+    private async Task AddMember(UserLookup user)
+    {
+        var result = await Ui.SendAsync(new AddTeamMemberCommand(Id, user.Id, _newRole),
+            "Membro adicionado", $"{user.FullName} como {TeamRoles.Label(_newRole)}", errorTitle: "Não foi possível adicionar");
+        if (result.Succeeded) await RefreshAsync();
+    }
+
+    private async Task ChangeRole(TeamMemberItem member, ChangeEventArgs e)
+    {
+        if (!Enum.TryParse<TeamRole>(e.Value?.ToString(), out var role)) return;
+        await Ui.SendAsync(new UpdateTeamMemberRoleCommand(Id, member.UserId, role),
+            "Papel atualizado", $"{member.FullName} agora é {TeamRoles.Label(role)}", errorTitle: "Não foi possível alterar");
+        await RefreshAsync(); // em caso de erro, restaura o valor do select
+    }
+
+    private async Task RemoveMember(TeamMemberItem member)
+    {
+        var confirm = new ConfirmOptions
+        {
+            Title = "Remover membro",
+            Message = new MarkupString($"Remover <strong>{System.Net.WebUtility.HtmlEncode(member.FullName)}</strong> do time <strong>{System.Net.WebUtility.HtmlEncode(_team!.Name)}</strong>?"),
+            ConfirmText = "Remover",
+            Icon = "bi-person-dash",
+            Danger = true
+        };
+        if (await Ui.ConfirmAndSendAsync(confirm, new RemoveTeamMemberCommand(Id, member.UserId), "Membro removido", member.FullName))
+            await RefreshAsync();
+    }
+
+    private async Task OnTeamSaved()
+    {
+        await LoadTeamAsync();
+        await Branding.ReloadAsync();
+    }
+}

@@ -1,0 +1,167 @@
+@inject FileStorageService Storage
+@inject ToastService Toast
+
+@* Upload com drag & drop, validação de tipo/tamanho, múltiplos arquivos e barra de progresso. *@
+<div class="uploader @(_dragOver ? "drag-over" : "") @(Disabled ? "disabled" : "") @Class"
+     @ondragenter="() => _dragOver = true" @ondragleave="() => _dragOver = false" @ondrop="() => _dragOver = false">
+    <InputFile @key="_inputKey" OnChange="OnChange" multiple="@Multiple" accept="@Accept" class="uploader-input" disabled="@Disabled" />
+    <div class="uploader-content">
+        <div class="uploader-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+        <div class="fw-semibold">@Title</div>
+        <div class="small text-muted">@Hint</div>
+    </div>
+</div>
+
+@if (ShowList && _items.Count > 0)
+{
+    <ul class="upload-list">
+        @foreach (var item in _items)
+        {
+            <li @key="item" class="upload-item @item.Status">
+                <div class="upload-file-icon"><i class="bi @FileIcon(item.Name)"></i></div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="d-flex justify-content-between gap-2">
+                        <span class="text-truncate">
+                            @if (item.Url is not null)
+                            {
+                                <a href="@item.Url" target="_blank">@item.Name</a>
+                            }
+                            else
+                            {
+                                @item.Name
+                            }
+                        </span>
+                        <span class="small text-muted text-nowrap">@FormatSize(item.Size)</span>
+                    </div>
+                    @if (item.Status == "uploading")
+                    {
+                        <div class="progress mt-1" style="height:6px">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:@((int)(item.Progress * 100))%"></div>
+                        </div>
+                    }
+                    else if (item.Status == "error")
+                    {
+                        <div class="small text-danger">@item.Error</div>
+                    }
+                    else
+                    {
+                        <div class="small text-success"><i class="bi bi-check2-circle"></i> Enviado</div>
+                    }
+                </div>
+                <button type="button" class="icon-btn" title="Remover da lista" @onclick="() => _items.Remove(item)"><i class="bi bi-x"></i></button>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter] public string Folder { get; set; } = "files";
+    [Parameter] public string Accept { get; set; } = ".png,.jpg,.jpeg,.webp,.gif,.svg,.pdf,.txt,.csv,.xlsx,.docx,.zip";
+    [Parameter] public double MaxSizeMb { get; set; } = 5;
+    [Parameter] public bool Multiple { get; set; }
+    [Parameter] public int MaxFiles { get; set; } = 10;
+    [Parameter] public bool ShowList { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string Title { get; set; } = "Arraste e solte ou clique para selecionar";
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public EventCallback<UploadedFile> OnUploaded { get; set; }
+
+    private sealed class UploadItem
+    {
+        public string Name { get; init; } = "";
+        public long Size { get; init; }
+        public double Progress { get; set; }
+        public string Status { get; set; } = "uploading";
+        public string? Error { get; set; }
+        public string? Url { get; set; }
+    }
+
+    private readonly List<UploadItem> _items = [];
+    private bool _dragOver;
+    private int _inputKey;
+
+    private long MaxBytes => (long)(MaxSizeMb * 1024 * 1024);
+    private HashSet<string> AllowedExtensions => Accept.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    protected override void OnParametersSet()
+    {
+        Hint ??= $"{string.Join(", ", AllowedExtensions.Select(e => e.TrimStart('.').ToUpperInvariant()))} · até {MaxSizeMb:0.#} MB" +
+                 (Multiple ? $" · máx. {MaxFiles} arquivos" : "");
+    }
+
+    private async Task OnChange(InputFileChangeEventArgs e)
+    {
+        _dragOver = false;
+        IReadOnlyList<IBrowserFile> files;
+        if (e.FileCount > (Multiple ? MaxFiles : 1))
+        {
+            Toast.Warning("Muitos arquivos", $"Selecione no máximo {(Multiple ? MaxFiles : 1)} arquivo(s).");
+            _inputKey++;
+            return;
+        }
+        files = Multiple ? e.GetMultipleFiles(MaxFiles) : [e.File];
+
+        foreach (var file in files)
+        {
+            var ext = Path.GetExtension(file.Name);
+            if (!AllowedExtensions.Contains(ext))
+            {
+                Toast.Warning("Tipo não permitido", $"{file.Name}: use {string.Join(", ", AllowedExtensions)}");
+                continue;
+            }
+            if (file.Size > MaxBytes)
+            {
+                Toast.Warning("Arquivo muito grande", $"{file.Name} excede {MaxSizeMb:0.#} MB.");
+                continue;
+            }
+
+            var item = new UploadItem { Name = file.Name, Size = file.Size };
+            _items.Insert(0, item);
+            StateHasChanged();
+
+            try
+            {
+                var lastRender = DateTime.MinValue;
+                await using var stream = file.OpenReadStream(MaxBytes);
+                var uploaded = await Storage.SaveAsync(stream, file.Name, file.ContentType, Folder, file.Size, p =>
+                {
+                    item.Progress = p;
+                    if ((DateTime.UtcNow - lastRender).TotalMilliseconds > 80)
+                    {
+                        lastRender = DateTime.UtcNow;
+                        _ = InvokeAsync(StateHasChanged);
+                    }
+                });
+                item.Status = "done";
+                item.Url = uploaded.Url;
+                await OnUploaded.InvokeAsync(uploaded);
+            }
+            catch (Exception ex)
+            {
+                item.Status = "error";
+                item.Error = ex is AppException ? ex.Message : "Falha ao enviar o arquivo.";
+            }
+            StateHasChanged();
+        }
+        _inputKey++; // recria o input para permitir reenviar o mesmo arquivo
+    }
+
+    public static string FormatSize(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024d:0.#} KB",
+        _ => $"{bytes / 1024d / 1024d:0.##} MB"
+    };
+
+    private static string FileIcon(string name) => Path.GetExtension(name).ToLowerInvariant() switch
+    {
+        ".png" or ".jpg" or ".jpeg" or ".gif" or ".webp" or ".svg" or ".ico" => "bi-file-earmark-image",
+        ".pdf" => "bi-file-earmark-pdf",
+        ".xlsx" or ".csv" => "bi-file-earmark-spreadsheet",
+        ".docx" or ".txt" => "bi-file-earmark-text",
+        ".zip" => "bi-file-earmark-zip",
+        _ => "bi-file-earmark"
+    };
+}

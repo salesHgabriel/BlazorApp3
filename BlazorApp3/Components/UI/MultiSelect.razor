@@ -1,0 +1,95 @@
+@typeparam TValue
+
+<div class="ms @(_open ? "open" : "") @Class">
+    @if (_open)
+    {
+        <div class="dropdown-scrim" @onclick="Close"></div>
+    }
+    <button type="button" class="ms-toggle form-select form-select-sm @(Selected.Count > 0 ? "has-value" : "")" @onclick="Toggle">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <i class="bi @Icon me-1 opacity-75"></i>
+        }
+        <span class="ms-label">@Summary</span>
+        @if (Selected.Count > 0)
+        {
+            <span class="ms-count">@Selected.Count</span>
+        }
+    </button>
+    @if (_open)
+    {
+        <div class="ms-panel">
+            @if (Options.Count > 7)
+            {
+                <div class="ms-search">
+                    <input class="form-control form-control-sm" placeholder="Filtrar opções..." @bind="_filter" @bind:event="oninput" />
+                </div>
+            }
+            <div class="ms-actions">
+                <button type="button" class="btn btn-link btn-sm p-0" @onclick="SelectAll">Selecionar todos</button>
+                <button type="button" class="btn btn-link btn-sm p-0 text-muted" @onclick="ClearAll">Limpar</button>
+            </div>
+            <div class="ms-options">
+                @foreach (var opt in Filtered)
+                {
+                    var selected = Selected.Contains(opt.Value);
+                    <button type="button" class="ms-option @(selected ? "selected" : "")" @onclick="() => ToggleOption(opt.Value)">
+                        <span class="ms-check"><i class="bi @(selected ? "bi-check-square-fill" : "bi-square")"></i></span>
+                        @if (opt.Color is not null)
+                        {
+                            <span class="dot" style="background:@opt.Color"></span>
+                        }
+                        <span>@opt.Label</span>
+                    </button>
+                }
+                @if (!Filtered.Any())
+                {
+                    <div class="text-muted small p-2">Nenhuma opção</div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = [];
+    [Parameter] public List<TValue> Selected { get; set; } = [];
+    [Parameter] public EventCallback<List<TValue>> SelectedChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Selecione";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private bool _open;
+    private string _filter = "";
+
+    private IEnumerable<SelectOption<TValue>> Filtered => string.IsNullOrWhiteSpace(_filter)
+        ? Options
+        : Options.Where(o => o.Label.Contains(_filter, StringComparison.CurrentCultureIgnoreCase));
+
+    private string Summary
+    {
+        get
+        {
+            var labels = Options.Where(o => Selected.Contains(o.Value)).Select(o => o.Label).ToList();
+            return labels.Count switch
+            {
+                0 => Placeholder,
+                1 or 2 => string.Join(", ", labels),
+                _ => $"{Placeholder}: {labels.Count} selecionados"
+            };
+        }
+    }
+
+    private void Toggle() { _open = !_open; _filter = ""; }
+    private void Close() => _open = false;
+
+    private Task ToggleOption(TValue value)
+    {
+        var list = Selected.ToList();
+        if (!list.Remove(value)) list.Add(value);
+        return SelectedChanged.InvokeAsync(list);
+    }
+
+    private Task SelectAll() => SelectedChanged.InvokeAsync(Selected.Union(Filtered.Select(o => o.Value)).ToList());
+    private Task ClearAll() => SelectedChanged.InvokeAsync([]);
+}

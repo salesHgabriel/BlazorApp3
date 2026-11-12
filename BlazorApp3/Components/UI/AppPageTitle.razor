@@ -1,0 +1,6 @@
+@inject BrandingState Branding
+<PageTitle>@Title · @Branding.Effective.AppName</PageTitle>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+}

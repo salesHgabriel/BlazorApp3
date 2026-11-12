@@ -1,0 +1,88 @@
+<div class="pager">
+    <div class="pager-info">
+        @if (TotalCount == 0)
+        {
+            <span>Nenhum registro</span>
+        }
+        else
+        {
+            <span>Exibindo <strong>@From</strong>–<strong>@To</strong> de <strong>@TotalCount.ToString("N0")</strong></span>
+        }
+    </div>
+    <div class="pager-controls">
+        @if (ShowPageSize)
+        {
+            <select class="form-select form-select-sm pager-size" value="@PageSize" @onchange="OnPageSizeChange" aria-label="Itens por página">
+                @foreach (var size in PageSizeOptions)
+                {
+                    <option value="@size">@size / página</option>
+                }
+            </select>
+        }
+        <nav aria-label="Paginação">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item @(Page <= 1 ? "disabled" : "")">
+                    <button type="button" class="page-link" title="Primeira" @onclick="() => Go(1)"><i class="bi bi-chevron-double-left"></i></button>
+                </li>
+                <li class="page-item @(Page <= 1 ? "disabled" : "")">
+                    <button type="button" class="page-link" title="Anterior" @onclick="() => Go(Page - 1)"><i class="bi bi-chevron-left"></i></button>
+                </li>
+                @foreach (var p in Pages())
+                {
+                    if (p is null)
+                    {
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    }
+                    else
+                    {
+                        var n = p.Value;
+                        <li class="page-item @(n == Page ? "active" : "")">
+                            <button type="button" class="page-link" @onclick="() => Go(n)">@n</button>
+                        </li>
+                    }
+                }
+                <li class="page-item @(Page >= TotalPages ? "disabled" : "")">
+                    <button type="button" class="page-link" title="Próxima" @onclick="() => Go(Page + 1)"><i class="bi bi-chevron-right"></i></button>
+                </li>
+                <li class="page-item @(Page >= TotalPages ? "disabled" : "")">
+                    <button type="button" class="page-link" title="Última" @onclick="() => Go(TotalPages)"><i class="bi bi-chevron-double-right"></i></button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Page { get; set; } = 1;
+    [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public int TotalCount { get; set; }
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+    [Parameter] public EventCallback<int> PageSizeChanged { get; set; }
+    [Parameter] public int[] PageSizeOptions { get; set; } = [10, 20, 50];
+    [Parameter] public bool ShowPageSize { get; set; } = true;
+    [Parameter] public int Window { get; set; } = 2;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)Math.Max(1, PageSize)));
+    private int From => TotalCount == 0 ? 0 : (Page - 1) * PageSize + 1;
+    private int To => Math.Min(Page * PageSize, TotalCount);
+
+    private IEnumerable<int?> Pages()
+    {
+        var start = Math.Max(1, Page - Window);
+        var end = Math.Min(TotalPages, Page + Window);
+        if (start > 1) { yield return 1; if (start > 2) yield return null; }
+        for (var i = start; i <= end; i++) yield return i;
+        if (end < TotalPages) { if (end < TotalPages - 1) yield return null; yield return TotalPages; }
+    }
+
+    private async Task Go(int page)
+    {
+        page = Math.Clamp(page, 1, TotalPages);
+        if (page != Page) await PageChanged.InvokeAsync(page);
+    }
+
+    private async Task OnPageSizeChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var size)) await PageSizeChanged.InvokeAsync(size);
+    }
+}

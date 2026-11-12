@@ -1,0 +1,292 @@
+@page "/settings/branding"
+@attribute [HasPermission(Perm.BrandingView)]
+@inject ToastService Toast
+@inject UiDispatcher Ui
+@inject BrandingState State
+@inject IJSRuntime JS
+@inject IAuthorizationService Authz
+
+<AppPageTitle Title="Whitelabel" />
+
+<PageHeader Title="Whitelabel" Subtitle="Personalize nome, logo, cores, fonte e efeitos da aplicação" Icon="bi-palette">
+    <Actions>
+        @if (_canEdit)
+        {
+            <button class="btn btn-outline-danger" @onclick="ResetAsync"><i class="bi bi-arrow-counterclockwise me-1"></i>Restaurar padrão</button>
+            <LoadingButton Type="submit" form="branding-form" Loading="_saving" Icon="bi-check2" LoadingText="Salvando...">Salvar e aplicar</LoadingButton>
+        }
+    </Actions>
+</PageHeader>
+
+@if (_model is null)
+{
+    <div class="row g-3"><div class="col-lg-7"><div class="card p-4"><Skeleton Lines="12" /></div></div><div class="col-lg-5"><div class="card p-4"><Skeleton Type="rect" Height="320px" /></div></div></div>
+}
+else
+{
+    @if (!_canEdit)
+    {
+        <div class="alert alert-warning py-2"><i class="bi bi-eye me-1"></i>Modo somente leitura: você não possui a permissão <code>@Perm.BrandingEdit</code>.</div>
+    }
+    <div class="row g-3">
+        <div class="col-xl-7">
+            <EditForm id="branding-form" Model="_model" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <fieldset disabled="@(!_canEdit)">
+                    <div class="card mb-3">
+                        <div class="card-header-x"><h6><i class="bi bi-type me-2"></i>Identidade</h6></div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nome da aplicação *</label>
+                                    <InputText class="form-control" @bind-Value="_model.AppName" />
+                                    <ValidationMessage For="() => _model.AppName" class="text-danger small" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Slogan</label>
+                                    <InputText class="form-control" @bind-Value="_model.Tagline" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Logo</label>
+                                    <ImageUpload @bind-Value="_model.LogoUrl" Folder="branding" Size="64" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Favicon</label>
+                                    <ImageUpload @bind-Value="_model.FaviconUrl" Folder="branding" Size="48" Accept=".png,.ico,.svg" MaxSizeMb="0.5" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header-x"><h6><i class="bi bi-droplet-half me-2"></i>Cores e tipografia</h6></div>
+                        <div class="card-body">
+                            <div class="preset-row mb-3">
+                                <span class="small text-muted me-1">Temas prontos:</span>
+                                @foreach (var p in Presets)
+                                {
+                                    <button type="button" class="preset" title="@p.Name" @onclick="() => ApplyPreset(p)"
+                                            style="background:linear-gradient(135deg,@p.Primary 50%,@p.Accent 50%);outline-color:@p.Sidebar"></button>
+                                }
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-sm-6 col-lg-3">
+                                    <label class="form-label">Primária</label>
+                                    <ColorInput Value="@_model.PrimaryColor" ValueChanged="v => _model.PrimaryColor = v ?? _model.PrimaryColor" />
+                                </div>
+                                <div class="col-sm-6 col-lg-3">
+                                    <label class="form-label">Destaque</label>
+                                    <ColorInput Value="@_model.AccentColor" ValueChanged="v => _model.AccentColor = v ?? _model.AccentColor" />
+                                </div>
+                                <div class="col-sm-6 col-lg-3">
+                                    <label class="form-label">Menu lateral</label>
+                                    <ColorInput Value="@_model.SidebarColor" ValueChanged="v => _model.SidebarColor = v ?? _model.SidebarColor" />
+                                </div>
+                                <div class="col-sm-6 col-lg-3">
+                                    <label class="form-label">Texto do menu</label>
+                                    <ColorInput Value="@_model.SidebarTextColor" ValueChanged="v => _model.SidebarTextColor = v ?? _model.SidebarTextColor" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Fonte</label>
+                                    <InputSelect class="form-select" @bind-Value="_model.FontFamily">
+                                        @foreach (var f in EffectiveBranding.Fonts.Keys)
+                                        {
+                                            <option value="@f">@f</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Arredondamento: <strong>@_model.BorderRadius px</strong></label>
+                                    <input type="range" class="form-range" min="0" max="20" @bind="_model.BorderRadius" @bind:event="oninput" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header-x"><h6><i class="bi bi-magic me-2"></i>Efeitos de página</h6></div>
+                        <div class="card-body">
+                            <div class="transition-grid">
+                                @foreach (var (key, label) in EffectiveBranding.Transitions)
+                                {
+                                    <label class="check-card @(_model.PageTransition == key ? "checked" : "")">
+                                        <input type="radio" class="form-check-input" name="transition" checked="@(_model.PageTransition == key)" @onchange="() => _model.PageTransition = key" />
+                                        <span>@label</span>
+                                    </label>
+                                }
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-3" @onclick="PreviewTransition"><i class="bi bi-play-circle me-1"></i>Testar efeito</button>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header-x"><h6><i class="bi bi-box-arrow-in-right me-2"></i>Login, rodapé e times</h6></div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Título do login</label>
+                                    <InputText class="form-control" @bind-Value="_model.LoginTitle" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">E-mail de suporte</label>
+                                    <InputText class="form-control" @bind-Value="_model.SupportEmail" />
+                                    <ValidationMessage For="() => _model.SupportEmail" class="text-danger small" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Mensagem do login</label>
+                                    <InputText class="form-control" @bind-Value="_model.LoginMessage" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Texto do rodapé</label>
+                                    <InputText class="form-control" @bind-Value="_model.FooterText" />
+                                </div>
+                                <div class="col-12">
+                                    <div class="branding-toggle">
+                                        <div class="form-check form-switch">
+                                            <InputCheckbox class="form-check-input" id="allow-team" @bind-Value="_model.AllowTeamBranding" />
+                                            <label class="form-check-label fw-semibold" for="allow-team">Permitir branding personalizado por time</label>
+                                        </div>
+                                        <div class="small text-muted">Times com “branding próprio” sobrescrevem nome, logo e cores quando selecionados no seletor de time.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </EditForm>
+        </div>
+
+        @* ---------------- Pré-visualização ao vivo *@
+        <div class="col-xl-5">
+            <div class="sticky-preview">
+                <div class="card">
+                    <div class="card-header-x"><h6><i class="bi bi-display me-2"></i>Pré-visualização</h6><small class="text-muted">atualiza enquanto você edita</small></div>
+                    <div class="card-body">
+                        <div class="live-preview" style="@PreviewStyle">
+                            <div class="lp-side">
+                                <div class="lp-brand">
+                                    @if (_model.LogoUrl is not null)
+                                    {
+                                        <img src="@_model.LogoUrl" />
+                                    }
+                                    else
+                                    {
+                                        <span class="lp-mark">@Avatar.Initials(_model.AppName)</span>
+                                    }
+                                    <span>@_model.AppName</span>
+                                </div>
+                                <div class="lp-link active"><i class="bi bi-grid-1x2"></i> Dashboard</div>
+                                <div class="lp-link"><i class="bi bi-people"></i> Usuários</div>
+                                <div class="lp-link"><i class="bi bi-diagram-3"></i> Times</div>
+                            </div>
+                            <div class="lp-main">
+                                <div class="lp-top"></div>
+                                <div class="lp-content">
+                                    <div class="lp-title">@(_model.Tagline ?? "Dashboard")</div>
+                                    <div class="lp-card">
+                                        <div class="lp-stat"><i class="bi bi-people"></i><div><small>Usuários</small><strong>1.248</strong></div></div>
+                                        <div class="d-flex gap-2 mt-2">
+                                            <span class="lp-btn">Primário</span>
+                                            <span class="lp-btn lp-btn-accent">Destaque</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lp-footer">@_model.FooterText</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-body small text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Última alteração: @_model.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm").
+                        As mudanças são aplicadas instantaneamente para todos os usuários conectados após recarregar a página (e imediatamente para você).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+    private sealed record Preset(string Name, string Primary, string Accent, string Sidebar, string SidebarText);
+
+    private static readonly Preset[] Presets =
+    [
+        new("Índigo", "#4f46e5", "#06b6d4", "#0f172a", "#cbd5e1"),
+        new("Esmeralda", "#059669", "#84cc16", "#052e2b", "#a7f3d0"),
+        new("Rubi", "#e11d48", "#f59e0b", "#2a0a14", "#fecdd3"),
+        new("Oceano", "#0284c7", "#22d3ee", "#0c1e33", "#bae6fd"),
+        new("Ameixa", "#7c3aed", "#ec4899", "#1e1033", "#ddd6fe"),
+        new("Grafite", "#334155", "#f97316", "#ffffff", "#334155"),
+        new("Laranja", "#ea580c", "#0ea5e9", "#1c1917", "#fed7aa"),
+    ];
+
+    private BrandingSettings? _model;
+    private bool _saving;
+    private bool _canEdit;
+
+    private string PreviewStyle =>
+        $"--p:{EffectiveBranding.Color(_model!.PrimaryColor, "#4f46e5")};--a:{EffectiveBranding.Color(_model.AccentColor, "#06b6d4")};" +
+        $"--s:{EffectiveBranding.Color(_model.SidebarColor, "#0f172a")};--st:{EffectiveBranding.Color(_model.SidebarTextColor, "#cbd5e1")};" +
+        $"--r:{_model.BorderRadius}px;--pc:{EffectiveBranding.Contrast(EffectiveBranding.Color(_model.PrimaryColor, "#4f46e5"))};" +
+        $"font-family:{(_model.FontFamily == "Sistema" ? "system-ui" : $"'{_model.FontFamily}'")}, system-ui";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+        _canEdit = (await Authz.AuthorizeAsync(user, Perm.Policy(Perm.BrandingEdit))).Succeeded;
+        _model = await Ui.QueryAsync(new GetBrandingQuery());
+    }
+
+    private void ApplyPreset(Preset p)
+    {
+        _model!.PrimaryColor = p.Primary;
+        _model.AccentColor = p.Accent;
+        _model.SidebarColor = p.Sidebar;
+        _model.SidebarTextColor = p.SidebarText;
+    }
+
+    private async Task PreviewTransition()
+    {
+        await JS.InvokeVoidAsync("appFx.pageEnter", _model!.PageTransition);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model is null || !_canEdit) return;
+        _saving = true;
+        try
+        {
+            var result = await Ui.SendAsync(new SaveBrandingCommand(_model), "Whitelabel atualizado", "O novo tema já está aplicado.", errorTitle: "Erro ao salvar");
+            if (!result.Succeeded) return;
+
+            await State.ReloadAsync();
+            _model = State.Global.Clone();
+            if (State.ActiveTeam is { UseCustomBranding: true } t && _model.AllowTeamBranding)
+                Toast.Info("Branding do time ativo", $"Você está no time \"{t.Name}\", que sobrescreve algumas cores. Selecione \"Padrão da plataforma\" para ver o tema global.");
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task ResetAsync()
+    {
+        var confirm = new ConfirmOptions
+        {
+            Title = "Restaurar padrão",
+            Message = new MarkupString("Todas as configurações de whitelabel voltarão aos <strong>valores padrão</strong>."),
+            ConfirmText = "Restaurar",
+            Icon = "bi-arrow-counterclockwise",
+            Danger = true
+        };
+        if (await Ui.ConfirmAndSendAsync(confirm, new ResetBrandingCommand(), "Padrão restaurado", loadingText: "Restaurando..."))
+        {
+            await State.ReloadAsync();
+            _model = State.Global.Clone();
+        }
+    }
+}

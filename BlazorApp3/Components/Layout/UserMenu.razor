@@ -1,0 +1,56 @@
+@inject PermissionService Permissions
+
+<div class="user-menu @(_open ? "open" : "")">
+    @if (_open)
+    {
+        <div class="dropdown-scrim" @onclick="() => _open = false"></div>
+    }
+    <button type="button" class="user-menu-btn" @onclick="Toggle">
+        <Avatar Name="@_name" Size="32" />
+        <span class="d-none d-md-inline text-truncate">@_name</span>
+        <i class="bi bi-chevron-down small opacity-50"></i>
+    </button>
+    @if (_open)
+    {
+        <div class="dropdown-panel dropdown-panel-end" style="width:300px">
+            <div class="px-3 py-2">
+                <div class="fw-semibold">@_name</div>
+                <div class="small text-muted">@_email</div>
+            </div>
+            <div class="px-3 pb-2">
+                <div class="small text-muted mb-1">Minhas permissões</div>
+                <TagList Items="_permList" Max="4" Title="Minhas permissões" EmptyText="Nenhuma">
+                    <ItemTemplate Context="p"><span class="badge text-bg-light border fw-normal">@p</span></ItemTemplate>
+                </TagList>
+            </div>
+            <div class="dropdown-divider"></div>
+            <div class="px-2 pb-2">
+                <a href="Account/Logout" data-enhance-nav="false" class="dropdown-panel-item text-danger text-decoration-none"><i class="bi bi-box-arrow-right"></i> Sair</a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private bool _open;
+    private string? _name;
+    private string? _email;
+    private List<string> _permList = [];
+    private string? _userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+        _userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        _email = user.Identity?.Name;
+        _name = user.FindFirstValue("full_name") ?? _email;
+    }
+
+    private async Task Toggle()
+    {
+        _open = !_open;
+        if (_open && _userId is not null) _permList = (await Permissions.GetPermissionsAsync(_userId)).Order().ToList();
+    }
+}

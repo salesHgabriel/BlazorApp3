@@ -1,0 +1,23 @@
+<div class="color-input">
+    <input type="color" value="@(Value ?? Fallback)" @onchange="OnChange" title="Escolher cor" />
+    <input type="text" class="form-control form-control-sm" value="@Value" placeholder="@Placeholder" maxlength="7" @onchange="OnChange" />
+    @if (Clearable && !string.IsNullOrEmpty(Value))
+    {
+        <button type="button" class="btn btn-sm btn-link text-muted px-1" title="Usar padrão" @onclick="() => ValueChanged.InvokeAsync(null)"><i class="bi bi-x-circle"></i></button>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string Fallback { get; set; } = "#000000";
+    [Parameter] public string? Placeholder { get; set; } = "#RRGGBB";
+    [Parameter] public bool Clearable { get; set; }
+
+    private Task OnChange(ChangeEventArgs e)
+    {
+        var v = e.Value?.ToString()?.Trim();
+        if (!string.IsNullOrEmpty(v) && !v.StartsWith('#')) v = "#" + v;
+        return ValueChanged.InvokeAsync(string.IsNullOrEmpty(v) ? null : v.ToLowerInvariant());
+    }
+}

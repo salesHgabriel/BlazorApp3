@@ -1,0 +1,15 @@
+@implements IDisposable
+@inject LoadingService Loading
+
+<div class="loading-overlay @(Loading.IsLoading ? "show" : "")" aria-hidden="@(!Loading.IsLoading)">
+    <div class="loading-card">
+        <div class="loader-ring"><div></div><div></div><div></div></div>
+        <div class="loading-text">@(Loading.Message ?? "Carregando...")</div>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized() => Loading.Changed += OnChanged;
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => Loading.Changed -= OnChanged;
+}

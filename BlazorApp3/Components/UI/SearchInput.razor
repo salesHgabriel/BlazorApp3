@@ -1,0 +1,69 @@
+@implements IDisposable
+
+@* Busca com debounce: só dispara ValueChanged depois que o usuário para de digitar. *@
+<div class="search-input @Class">
+    <i class="bi bi-search search-icon"></i>
+    <input type="search" class="form-control" placeholder="@Placeholder" value="@_text" @oninput="OnInput" aria-label="@Placeholder" />
+    @if (Busy || _pending)
+    {
+        <span class="search-busy spinner-border spinner-border-sm"></span>
+    }
+    else if (!string.IsNullOrEmpty(_text))
+    {
+        <button type="button" class="search-clear" title="Limpar" @onclick="Clear"><i class="bi bi-x-circle-fill"></i></button>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Buscar...";
+    [Parameter] public int DebounceMs { get; set; } = 400;
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private string? _text;
+    private string? _lastParam;
+    private bool _pending;
+    private CancellationTokenSource? _cts;
+
+    protected override void OnParametersSet()
+    {
+        if (Value != _lastParam)
+        {
+            _lastParam = Value;
+            _text = Value;
+        }
+    }
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString();
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        _pending = true;
+        try
+        {
+            await Task.Delay(DebounceMs, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        _pending = false;
+        _lastParam = _text;
+        await ValueChanged.InvokeAsync(_text);
+    }
+
+    private async Task Clear()
+    {
+        _cts?.Cancel();
+        _pending = false;
+        _text = null;
+        _lastParam = null;
+        await ValueChanged.InvokeAsync(null);
+    }
+
+    public void Dispose() => _cts?.Cancel();
+}

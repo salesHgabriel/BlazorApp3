@@ -1,0 +1,26 @@
+<div class="brand-logo @Class">
+    @if (!string.IsNullOrEmpty(LogoUrl))
+    {
+        <img src="@LogoUrl" alt="@Name" style="height:@(Size)px" />
+    }
+    else
+    {
+        <span class="brand-mark" style="width:@(Size)px;height:@(Size)px;font-size:@(Math.Round(Size * 0.42))px;@MarkStyle">@Initials</span>
+    }
+    @if (ShowName)
+    {
+        <span class="brand-name">@Name</span>
+    }
+</div>
+
+@code {
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string? LogoUrl { get; set; }
+    [Parameter] public int Size { get; set; } = 34;
+    [Parameter] public bool ShowName { get; set; } = true;
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private string MarkStyle => Color is null ? "" : $"background:{Color}";
+    private string Initials => string.Concat(Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
+}

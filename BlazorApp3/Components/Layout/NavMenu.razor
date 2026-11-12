@@ -1,0 +1,58 @@
+﻿@implements IDisposable
+@inject BrandingState Branding
+
+<div class="sidebar-brand">
+    <BrandLogo Name="@Branding.Effective.AppName" LogoUrl="@Branding.Effective.LogoUrl" ShowName="!Collapsed" />
+</div>
+@if (!Collapsed && Branding.ActiveTeam is { } team)
+{
+    <div class="sidebar-team">
+        <span class="dot" style="background:@team.PrimaryColor"></span>
+        <span class="text-truncate">@team.Name</span>
+    </div>
+}
+
+<nav class="sidebar-nav">
+    <div class="nav-section">Visão geral</div>
+    <NavLink class="side-link" href="" Match="NavLinkMatch.All" title="Dashboard">
+        <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
+    </NavLink>
+
+    <Can Any="[Perm.UsersView, Perm.TeamsView]">
+        <div class="nav-section">Gestão</div>
+    </Can>
+    <Can Permission="@Perm.UsersView">
+        <NavLink class="side-link" href="users" title="Usuários"><i class="bi bi-people"></i><span>Usuários</span></NavLink>
+    </Can>
+    <Can Permission="@Perm.TeamsView">
+        <NavLink class="side-link" href="teams" title="Times"><i class="bi bi-diagram-3"></i><span>Times</span></NavLink>
+    </Can>
+
+    <Can Any="[Perm.RolesView, Perm.PermissionsView]">
+        <div class="nav-section">Segurança</div>
+    </Can>
+    <Can Permission="@Perm.RolesView">
+        <NavLink class="side-link" href="roles" title="Papéis"><i class="bi bi-person-badge"></i><span>Papéis (roles)</span></NavLink>
+    </Can>
+    <Can Permission="@Perm.PermissionsView">
+        <NavLink class="side-link" href="permissions" title="Permissões"><i class="bi bi-key"></i><span>Permissões</span></NavLink>
+    </Can>
+
+    <Can Any="[Perm.BrandingView, Perm.ComponentsView]">
+        <div class="nav-section">Configurações</div>
+    </Can>
+    <Can Permission="@Perm.BrandingView">
+        <NavLink class="side-link" href="settings/branding" title="Whitelabel"><i class="bi bi-palette"></i><span>Whitelabel</span></NavLink>
+    </Can>
+    <Can Permission="@Perm.ComponentsView">
+        <NavLink class="side-link" href="components" title="Componentes"><i class="bi bi-boxes"></i><span>Componentes</span></NavLink>
+    </Can>
+</nav>
+
+@code {
+    [Parameter] public bool Collapsed { get; set; }
+
+    protected override void OnInitialized() => Branding.Changed += OnChanged;
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => Branding.Changed -= OnChanged;
+}

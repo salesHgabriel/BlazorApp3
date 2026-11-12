@@ -1,0 +1,23 @@
+﻿<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                @if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    <RedirectToLogin />
+                }
+                else
+                {
+                    <EmptyState Icon="bi-shield-lock" Title="Acesso negado"
+                                Message="Você não possui permissão para acessar esta página. Solicite acesso a um administrador.">
+                        <a class="btn btn-primary" href="">Voltar ao início</a>
+                    </EmptyState>
+                }
+            </NotAuthorized>
+            <Authorizing>
+                <div class="p-5 text-center"><Spinner Text="Verificando acesso..." /></div>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

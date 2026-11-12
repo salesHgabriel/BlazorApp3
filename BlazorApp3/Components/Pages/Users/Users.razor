@@ -1,0 +1,387 @@
+@page "/users"
+@attribute [HasPermission(Perm.UsersView)]
+@inject UiDispatcher Ui
+@inject ToastService Toast
+
+<AppPageTitle Title="Usuários" />
+
+<PageHeader Title="Usuários" Subtitle="Gerencie contas, papéis e vínculos com times" Icon="bi-people">
+    <Actions>
+        <Can Permission="@Perm.UsersCreate">
+            <button class="btn btn-primary" @onclick="() => OpenEditor(null)"><i class="bi bi-person-plus me-1"></i>Novo usuário</button>
+        </Can>
+    </Actions>
+</PageHeader>
+
+<div class="card">
+    @* ---------------- Barra de filtros (multi filtros) *@
+    <div class="filter-bar">
+        <SearchInput Value="@_query.Search" ValueChanged="v => Filter(() => _query.Search = v)" Placeholder="Buscar por nome, e-mail ou cargo..." Busy="_list.Loading" Class="flex-grow-1" />
+        <MultiSelect TValue="string" Options="_roleOptions" Selected="_query.RoleIds" SelectedChanged="v => Filter(() => _query.RoleIds = v)" Placeholder="Papéis" Icon="bi-person-badge" />
+        <MultiSelect TValue="int" Options="_teamOptions" Selected="_query.TeamIds" SelectedChanged="v => Filter(() => _query.TeamIds = v)" Placeholder="Times" Icon="bi-diagram-3" />
+        <MultiSelect TValue="string" Options="_deptOptions" Selected="_query.Departments" SelectedChanged="v => Filter(() => _query.Departments = v)" Placeholder="Departamentos" Icon="bi-building" />
+        <select class="form-select form-select-sm filter-select" value="@StatusValue" @onchange="OnStatusChange">
+            <option value="">Todos os status</option>
+            <option value="active">Ativos</option>
+            <option value="inactive">Inativos</option>
+        </select>
+        <button type="button" class="btn btn-sm @(_showDates ? "btn-secondary" : "btn-outline-secondary")" @onclick="() => _showDates = !_showDates">
+            <i class="bi bi-calendar-range me-1"></i>Período
+        </button>
+    </div>
+    @if (_showDates)
+    {
+        <div class="filter-bar pt-0">
+            <div class="d-flex align-items-center gap-2">
+                <label class="small text-muted text-nowrap">Cadastrado de</label>
+                <input type="date" class="form-control form-control-sm" value="@_query.CreatedFrom?.ToString("yyyy-MM-dd")" @onchange="e => Filter(() => _query.CreatedFrom = ParseDate(e))" />
+                <label class="small text-muted">até</label>
+                <input type="date" class="form-control form-control-sm" value="@_query.CreatedTo?.ToString("yyyy-MM-dd")" @onchange="e => Filter(() => _query.CreatedTo = ParseDate(e))" />
+            </div>
+        </div>
+    }
+
+    @* ---------------- Chips dos filtros ativos *@
+    @if (_query.ActiveFilterCount > 0)
+    {
+        <div class="filter-chips">
+            <span class="small text-muted me-1"><i class="bi bi-funnel"></i> Filtros:</span>
+            @foreach (var id in _query.RoleIds)
+            {
+                <span class="filter-chip">Papel: @Label(_roleOptions, id) <button @onclick="() => Filter(() => _query.RoleIds = _query.RoleIds.Where(x => x != id).ToList())"><i class="bi bi-x"></i></button></span>
+            }
+            @foreach (var id in _query.TeamIds)
+            {
+                <span class="filter-chip">Time: @Label(_teamOptions, id) <button @onclick="() => Filter(() => _query.TeamIds = _query.TeamIds.Where(x => x != id).ToList())"><i class="bi bi-x"></i></button></span>
+            }
+            @foreach (var d in _query.Departments)
+            {
+                <span class="filter-chip">Depto: @d <button @onclick="() => Filter(() => _query.Departments = _query.Departments.Where(x => x != d).ToList())"><i class="bi bi-x"></i></button></span>
+            }
+            @if (_query.IsActive.HasValue)
+            {
+                <span class="filter-chip">Status: @(_query.IsActive.Value ? "Ativo" : "Inativo") <button @onclick="() => Filter(() => _query.IsActive = null)"><i class="bi bi-x"></i></button></span>
+            }
+            @if (_query.CreatedFrom.HasValue)
+            {
+                <span class="filter-chip">Desde: @_query.CreatedFrom.Value.ToString("dd/MM/yyyy") <button @onclick="() => Filter(() => _query.CreatedFrom = null)"><i class="bi bi-x"></i></button></span>
+            }
+            @if (_query.CreatedTo.HasValue)
+            {
+                <span class="filter-chip">Até: @_query.CreatedTo.Value.ToString("dd/MM/yyyy") <button @onclick="() => Filter(() => _query.CreatedTo = null)"><i class="bi bi-x"></i></button></span>
+            }
+            <button class="btn btn-link btn-sm" @onclick="ClearFilters">Limpar todos</button>
+        </div>
+    }
+
+    @* ---------------- Ações em lote *@
+    @if (_selected.Count > 0)
+    {
+        <div class="bulk-bar">
+            <span><strong>@_selected.Count</strong> selecionado(s)</span>
+            <Can Permission="@Perm.UsersEdit">
+                <button class="btn btn-sm btn-light" @onclick="() => BulkActive(true)"><i class="bi bi-check-circle me-1"></i>Ativar</button>
+                <button class="btn btn-sm btn-light" @onclick="() => BulkActive(false)"><i class="bi bi-slash-circle me-1"></i>Inativar</button>
+            </Can>
+            <Can Permission="@Perm.UsersDelete">
+                <button class="btn btn-sm btn-danger" @onclick="BulkDelete"><i class="bi bi-trash3 me-1"></i>Excluir</button>
+            </Can>
+            <button class="btn btn-sm btn-link text-white" @onclick="() => _selected.Clear()">Cancelar</button>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table">
+            <thead>
+                <tr>
+                    <th style="width:36px"><input type="checkbox" class="form-check-input" checked="@AllSelected" @onchange="ToggleAll" /></th>
+                    <SortHeader Label="Usuário" Field="name" Current="@_query.SortBy" Desc="_query.SortDesc" OnSort="OnSort" />
+                    <SortHeader Label="Departamento" Field="department" Current="@_query.SortBy" Desc="_query.SortDesc" OnSort="OnSort" Class="d-none d-md-table-cell" />
+                    <th>Papéis</th>
+                    <th class="d-none d-xl-table-cell">Times</th>
+                    <th>Status</th>
+                    <SortHeader Label="Último acesso" Field="lastLogin" Current="@_query.SortBy" Desc="_query.SortDesc" OnSort="OnSort" Class="d-none d-lg-table-cell" />
+                    <th style="width:120px"></th>
+                </tr>
+            </thead>
+            <tbody class="@(_list.IsRefreshing ? "is-refreshing" : "")">
+                @if (_list.IsInitialLoad)
+                {
+                    <TableSkeleton Rows="@_query.PageSize" Columns="8" />
+                }
+                else if (_list.IsEmpty)
+                {
+                    <tr>
+                        <td colspan="8">
+                            <EmptyState Icon="bi-person-x" Title="Nenhum usuário encontrado" Message="Ajuste a busca ou os filtros.">
+                                @if (_query.ActiveFilterCount > 0 || !string.IsNullOrEmpty(_query.Search))
+                                {
+                                    <button class="btn btn-outline-secondary btn-sm" @onclick="ClearFilters">Limpar filtros</button>
+                                }
+                            </EmptyState>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var u in _list.Items)
+                    {
+                        <tr @key="u.Id" class="row-enter @(_selected.Contains(u.Id) ? "table-active" : "")">
+                            <td><input type="checkbox" class="form-check-input" checked="@_selected.Contains(u.Id)" @onchange="() => ToggleSelect(u.Id)" /></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2 cursor-pointer" @onclick="() => OpenDetails(u)">
+                                    <Avatar Name="@u.FullName" Url="@u.AvatarUrl" />
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold text-truncate">@u.FullName</div>
+                                        <div class="small text-muted text-truncate">@u.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="d-none d-md-table-cell">
+                                <div>@u.Department</div>
+                                <div class="small text-muted">@u.JobTitle</div>
+                            </td>
+                            <td>
+                                <TagList Items="u.Roles" Max="2" Title="Papéis" EmptyText="—">
+                                    <ItemTemplate Context="r"><ColorBadge Color="@r.Color">@r.Label</ColorBadge></ItemTemplate>
+                                </TagList>
+                            </td>
+                            <td class="d-none d-xl-table-cell">
+                                <TagList Items="u.Teams" Max="1" Title="Times" EmptyText="—">
+                                    <ItemTemplate Context="t"><span class="team-pill"><span class="dot" style="background:@t.Color"></span>@t.Label</span></ItemTemplate>
+                                </TagList>
+                            </td>
+                            <td><span class="status-badge @(u.IsActive ? "on" : "off")">@(u.IsActive ? "Ativo" : "Inativo")</span></td>
+                            <td class="d-none d-lg-table-cell small text-muted">@(u.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+                            <td class="text-end text-nowrap">
+                                <button class="icon-btn" title="Detalhes" @onclick="() => OpenDetails(u)"><i class="bi bi-eye"></i></button>
+                                <Can Permission="@Perm.UsersEdit">
+                                    <button class="icon-btn" title="Editar" @onclick="() => OpenEditor(u.Id)"><i class="bi bi-pencil"></i></button>
+                                </Can>
+                                <Can Permission="@Perm.UsersDelete">
+                                    <button class="icon-btn text-danger" title="Excluir" @onclick="() => DeleteOne(u)"><i class="bi bi-trash3"></i></button>
+                                </Can>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer-x">
+        <PagedPager State="_list" />
+    </div>
+</div>
+
+@* ---------------- Dialog lateral: criar/editar *@
+<UserEditor @bind-Visible="_editorOpen" UserId="@_editingId" RoleOptions="_roleOptions" TeamOptions="_teamOptions"
+            Departments="_deptOptions.Select(d => d.Value).ToList()" OnSaved="OnSaved" />
+
+@* ---------------- Dialog central: detalhes *@
+<Modal @bind-Visible="_detailsOpen" Title="Detalhes do usuário" Icon="bi-person-vcard" Size="md">
+    <ChildContent>
+        @if (_details is not null)
+        {
+            <div class="text-center mb-3">
+                <Avatar Name="@_details.FullName" Url="@_details.AvatarUrl" Size="84" />
+                <h5 class="mt-2 mb-0">@_details.FullName</h5>
+                <div class="text-muted">@_details.Email</div>
+                <span class="status-badge mt-2 @(_details.IsActive ? "on" : "off")">@(_details.IsActive ? "Ativo" : "Inativo")</span>
+            </div>
+            <dl class="detail-list">
+                <dt>Cargo</dt><dd>@(_details.JobTitle ?? "—")</dd>
+                <dt>Departamento</dt><dd>@(_details.Department ?? "—")</dd>
+                <dt>Cadastro</dt><dd>@_details.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                <dt>Último acesso</dt><dd>@(_details.LastLoginAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</dd>
+                <dt>Papéis</dt>
+                <dd>
+                    @foreach (var r in _details.Roles)
+                    {
+                        <ColorBadge Color="@r.Color" Class="me-1">@r.Label</ColorBadge>
+                    }
+                    @if (_details.Roles.Count == 0) { <span>—</span> }
+                </dd>
+                <dt>Times</dt>
+                <dd>
+                    @foreach (var t in _details.Teams)
+                    {
+                        <span class="team-pill"><span class="dot" style="background:@t.Color"></span>@t.Label</span>
+                    }
+                    @if (_details.Teams.Count == 0) { <span>—</span> }
+                </dd>
+            </dl>
+        }
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-light" @onclick="() => _detailsOpen = false">Fechar</button>
+        <Can Permission="@Perm.UsersEdit">
+            <button class="btn btn-primary" @onclick="EditFromDetails"><i class="bi bi-pencil me-1"></i>Editar</button>
+        </Can>
+    </Footer>
+</Modal>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+    [SupplyParameterFromQuery(Name = "role")] private string? RoleFilter { get; set; }
+    [SupplyParameterFromQuery(Name = "team")] private int? TeamFilter { get; set; }
+
+    private readonly SearchUsersQuery _query = new();
+    private PagedQueryState<UserListItem> _list = default!;
+    private readonly HashSet<string> _selected = [];
+    private bool _showDates;
+    private string? _currentUserId;
+
+    private List<SelectOption<string>> _roleOptions = [];
+    private List<SelectOption<int>> _teamOptions = [];
+    private List<SelectOption<string>> _deptOptions = [];
+
+    private bool _editorOpen;
+    private string? _editingId;
+    private bool _detailsOpen;
+    private UserListItem? _details;
+
+    private bool AllSelected => _list.Items.Count > 0 && _list.Items.All(u => _selected.Contains(u.Id));
+    private string StatusValue => _query.IsActive switch { true => "active", false => "inactive", _ => "" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _list = Ui.Paged(_query, StateHasChanged);
+        _currentUserId = (await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (RoleFilter is not null) _query.RoleIds = [RoleFilter];
+        if (TeamFilter is not null) _query.TeamIds = [TeamFilter.Value];
+
+        // Queries independentes em paralelo (cada uma roda em seu próprio escopo/DbContext)
+        var roles = Ui.QueryAsync(new RoleOptionsQuery());
+        var teams = Ui.QueryAsync(new TeamOptionsQuery());
+        var depts = LoadDepartmentsAsync();
+        var list = _list.LoadAsync();
+        await Task.WhenAll(roles, teams, depts, list);
+        _roleOptions = roles.Result;
+        _teamOptions = teams.Result;
+    }
+
+    private async Task LoadDepartmentsAsync() =>
+        _deptOptions = (await Ui.QueryAsync(new GetDepartmentsQuery())).Select(d => new SelectOption<string>(d, d)).ToList();
+
+    private Task Filter(Action change)
+    {
+        _selected.Clear();
+        return _list.ApplyAsync(change);
+    }
+
+    private Task OnStatusChange(ChangeEventArgs e) => Filter(() => _query.IsActive = e.Value?.ToString() switch
+    {
+        "active" => true,
+        "inactive" => false,
+        _ => null
+    });
+
+    private static DateTime? ParseDate(ChangeEventArgs e) => DateTime.TryParse(e.Value?.ToString(), out var d) ? d : null;
+
+    private Task ClearFilters() => Filter(() =>
+    {
+        _query.Search = null;
+        _query.RoleIds = [];
+        _query.TeamIds = [];
+        _query.Departments = [];
+        _query.IsActive = null;
+        _query.CreatedFrom = null;
+        _query.CreatedTo = null;
+    });
+
+    private static string Label<T>(List<SelectOption<T>> options, T value) =>
+        options.FirstOrDefault(o => EqualityComparer<T>.Default.Equals(o.Value, value))?.Label ?? value?.ToString() ?? "";
+
+    private Task OnSort((string Field, bool Desc) sort) => _list.ApplyAsync(() =>
+    {
+        _query.SortBy = sort.Field;
+        _query.SortDesc = sort.Desc;
+    });
+
+    private void ToggleSelect(string id)
+    {
+        if (!_selected.Remove(id)) _selected.Add(id);
+    }
+
+    private void ToggleAll()
+    {
+        if (AllSelected) foreach (var u in _list.Items) _selected.Remove(u.Id);
+        else foreach (var u in _list.Items) _selected.Add(u.Id);
+    }
+
+    private void OpenEditor(string? id)
+    {
+        _editingId = id;
+        _editorOpen = true;
+    }
+
+    private void OpenDetails(UserListItem u)
+    {
+        _details = u;
+        _detailsOpen = true;
+    }
+
+    private void EditFromDetails()
+    {
+        _detailsOpen = false;
+        if (_details is not null) OpenEditor(_details.Id);
+    }
+
+    private async Task OnSaved()
+    {
+        await LoadDepartmentsAsync();
+        await _list.LoadAsync();
+    }
+
+    private async Task DeleteOne(UserListItem u)
+    {
+        if (u.Id == _currentUserId)
+        {
+            Toast.Warning("Ação não permitida", "Você não pode excluir a sua própria conta.");
+            return;
+        }
+        var details = $"Vínculos com {u.Teams.Count} time(s) e {u.Roles.Count} papel(is) também serão removidos.";
+        if (await Ui.DeleteAsync(new DeleteUsersCommand([u.Id]), u.FullName, details, success: "Usuário excluído"))
+        {
+            _selected.Remove(u.Id);
+            await _list.LoadAsync();
+        }
+    }
+
+    private async Task BulkDelete()
+    {
+        var ids = _selected.Where(id => id != _currentUserId).ToList();
+        if (ids.Count < _selected.Count) Toast.Warning("Atenção", "Sua própria conta foi ignorada na exclusão.");
+        if (ids.Count == 0) return;
+
+        var confirm = new ConfirmOptions
+        {
+            Title = "Excluir usuários em lote",
+            Message = new MarkupString($"Você está prestes a excluir <strong>{ids.Count} usuário(s)</strong>. Esta ação não pode ser desfeita."),
+            ConfirmText = $"Excluir {ids.Count}",
+            Icon = "bi-trash3",
+            Danger = true,
+            RequireText = "EXCLUIR"
+        };
+        if (await Ui.ConfirmAndSendAsync(confirm, new DeleteUsersCommand(ids), "Exclusão concluída", $"{ids.Count} usuário(s) removido(s).", $"Excluindo {ids.Count} usuário(s)..."))
+        {
+            _selected.Clear();
+            await _list.LoadAsync();
+        }
+    }
+
+    private async Task BulkActive(bool active)
+    {
+        var ids = _selected.Where(id => active || id != _currentUserId).ToList();
+        if (ids.Count == 0) return;
+        var result = await Ui.SendAsync(new SetUsersActiveCommand(ids, active),
+            active ? "Usuários ativados" : "Usuários inativados", $"{ids.Count} registro(s) atualizado(s).",
+            active ? "Ativando..." : "Inativando...");
+        if (result.Succeeded)
+        {
+            _selected.Clear();
+            await _list.LoadAsync();
+        }
+    }
+}

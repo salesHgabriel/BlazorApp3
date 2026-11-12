@@ -1,0 +1,21 @@
+@if (Type == "text")
+{
+    <div class="skeleton-group @Class">
+        @for (var i = 0; i < Lines; i++)
+        {
+            <div class="skeleton skeleton-text" style="width:@(i == Lines - 1 && Lines > 1 ? "60%" : Width ?? "100%")"></div>
+        }
+    </div>
+}
+else
+{
+    <div class="skeleton skeleton-@Type @Class" style="width:@(Width ?? "100%");height:@(Height ?? "1rem")"></div>
+}
+
+@code {
+    [Parameter] public string Type { get; set; } = "text"; // text | rect | circle
+    [Parameter] public int Lines { get; set; } = 1;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public string? Class { get; set; }
+}

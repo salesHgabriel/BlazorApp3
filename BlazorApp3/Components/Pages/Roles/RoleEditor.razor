@@ -1,0 +1,110 @@
+@inherits EditorBase<RoleEditModel>
+
+@* Dialog central com a matriz de permissões do papel *@
+<Modal Visible="Visible" VisibleChanged="VisibleChanged" Size="lg" Icon="bi-shield-lock" CloseOnBackdrop="!Saving"
+       Title="@(RoleId is null ? "Novo papel" : CanEdit ? "Editar papel" : "Papel")"
+       Subtitle="Selecione as permissões que este papel concede">
+    <ChildContent>
+        @if (Model is null)
+        {
+            <Skeleton Lines="10" />
+        }
+        else
+        {
+            <EditForm id="role-form" Model="Model" OnValidSubmit="SubmitAsync">
+                <DataAnnotationsValidator />
+                <fieldset disabled="@(!CanEdit)">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nome *</label>
+                            <InputText class="form-control" @bind-Value="Model.Name" disabled="@Model.IsSystem" />
+                            <ValidationMessage For="() => Model.Name" class="text-danger small" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cor</label>
+                            <ColorInput Value="@Model.Color" ValueChanged="v => Model.Color = v ?? Model.Color" Fallback="#6366f1" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descrição</label>
+                            <InputText class="form-control" @bind-Value="Model.Description" />
+                        </div>
+                    </div>
+
+                    @if (Model.IsSystem)
+                    {
+                        <div class="alert alert-info py-2 small"><i class="bi bi-info-circle me-1"></i>Papel de sistema: possui todas as permissões automaticamente.</div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Permissões <span class="text-muted fw-normal">(@Model.PermissionIds.Count de @Perm.All.Count)</span></strong>
+                        @if (!Model.IsSystem)
+                        {
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-link p-0" @onclick="() => Model.PermissionIds = Perm.All.Select(p => p.Id).ToHashSet()">Marcar todas</button>
+                                <button type="button" class="btn btn-sm btn-link p-0 text-muted" @onclick="() => Model.PermissionIds.Clear()">Desmarcar</button>
+                            </div>
+                        }
+                    </div>
+                    <div class="perm-groups">
+                        @foreach (var group in Perm.All.GroupBy(p => p.Group))
+                        {
+                            var ids = group.Select(p => p.Id).ToList();
+                            var all = ids.All(Model.PermissionIds.Contains);
+                            <div class="perm-group">
+                                <label class="perm-group-header">
+                                    <input type="checkbox" class="form-check-input" checked="@all" disabled="@Model.IsSystem" @onchange="() => ToggleGroup(ids, !all)" />
+                                    <span>@group.Key</span>
+                                    <small class="text-muted ms-auto">@ids.Count(Model.PermissionIds.Contains)/@ids.Count</small>
+                                </label>
+                                @foreach (var p in group)
+                                {
+                                    var pid = p.Id;
+                                    <label class="perm-item">
+                                        <input type="checkbox" class="form-check-input" checked="@Model.PermissionIds.Contains(pid)" disabled="@Model.IsSystem" @onchange="() => TogglePerm(pid)" />
+                                        <div>
+                                            <code>@p.Name</code> <span class="text-muted small">#@p.Id</span>
+                                            <div class="small text-muted">@p.Description</div>
+                                        </div>
+                                    </label>
+                                }
+                            </div>
+                        }
+                    </div>
+                </fieldset>
+            </EditForm>
+        }
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-light" disabled="@Saving" @onclick="CloseAsync">@(CanEdit ? "Cancelar" : "Fechar")</button>
+        @if (CanEdit)
+        {
+            <LoadingButton Type="submit" form="role-form" Loading="Saving" Icon="bi-check2" LoadingText="Salvando...">Salvar</LoadingButton>
+        }
+    </Footer>
+</Modal>
+
+@code {
+    [Parameter] public string? RoleId { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+
+    protected override Task<RoleEditModel?> LoadModelAsync() =>
+        RoleId is null ? Task.FromResult<RoleEditModel?>(new RoleEditModel()) : Ui.QueryAsync(new GetRoleForEditQuery(RoleId));
+
+    protected override async Task<bool> SaveAsync(RoleEditModel model) =>
+        CanEdit && (await Ui.SendAsync(new SaveRoleCommand(model),
+            model.Id is null ? "Papel criado" : "Papel atualizado", $"{model.Name} · {model.PermissionIds.Count} permissões")).Succeeded;
+
+    private void TogglePerm(int id)
+    {
+        if (!Model!.PermissionIds.Remove(id)) Model.PermissionIds.Add(id);
+    }
+
+    private void ToggleGroup(List<int> ids, bool select)
+    {
+        foreach (var id in ids)
+        {
+            if (select) Model!.PermissionIds.Add(id);
+            else Model!.PermissionIds.Remove(id);
+        }
+    }
+}

@@ -1,0 +1,44 @@
+@inherits OverlayBase
+
+@if (Mounted)
+{
+    <div class="overlay-root overlay-center @(Shown ? "is-open" : "")" @onkeydown="OnKeyDown">
+        <div class="overlay-backdrop" @onclick="OnBackdropClick"></div>
+        <div class="dialog-panel dialog-@Size @Class" role="dialog" aria-modal="true" tabindex="-1" @ref="Panel">
+            @if (Title is not null || HeaderContent is not null || ShowClose)
+            {
+                <div class="dialog-header">
+                    @if (!string.IsNullOrEmpty(Icon))
+                    {
+                        <div class="dialog-header-icon"><i class="bi @Icon"></i></div>
+                    }
+                    <div class="flex-grow-1 min-w-0">
+                        @if (Title is not null)
+                        {
+                            <h5 class="dialog-title">@Title</h5>
+                        }
+                        @if (Subtitle is not null)
+                        {
+                            <div class="dialog-subtitle">@Subtitle</div>
+                        }
+                        @HeaderContent
+                    </div>
+                    @if (ShowClose)
+                    {
+                        <button type="button" class="icon-btn" aria-label="Fechar" @onclick="CloseAsync"><i class="bi bi-x-lg"></i></button>
+                    }
+                </div>
+            }
+            <div class="dialog-body">@ChildContent</div>
+            @if (Footer is not null)
+            {
+                <div class="dialog-footer">@Footer</div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>sm | md | lg | xl</summary>
+    [Parameter] public string Size { get; set; } = "md";
+}

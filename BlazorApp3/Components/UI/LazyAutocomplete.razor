@@ -1,0 +1,160 @@
+@typeparam TItem
+@implements IDisposable
+
+@*
+    Busca lazy: carrega resultados paginados sob demanda conforme o usuário digita (debounce)
+    e permite "carregar mais" sem trazer tudo do banco.
+*@
+<div class="ac @(_open ? "open" : "") @Class">
+    @if (_open)
+    {
+        <div class="dropdown-scrim" @onclick="Close"></div>
+    }
+    <div class="ac-input">
+        <i class="bi bi-search"></i>
+        <input class="form-control" placeholder="@Placeholder" value="@_term" autocomplete="off"
+               @oninput="OnInput" @onfocus="OnFocus" @onkeydown="OnKeyDown" disabled="@Disabled" />
+        @if (_loading)
+        {
+            <span class="spinner-border spinner-border-sm text-muted"></span>
+        }
+    </div>
+    @if (_open)
+    {
+        <div class="ac-panel">
+            @if (_items.Count == 0 && !_loading)
+            {
+                <div class="ac-empty"><i class="bi bi-search me-1"></i>@EmptyText</div>
+            }
+            @for (var i = 0; i < _items.Count; i++)
+            {
+                var item = _items[i];
+                var index = i;
+                <button type="button" class="ac-item @(index == _highlight ? "active" : "")" @onclick="() => Select(item)" @onmouseover="() => _highlight = index">
+                    @ItemTemplate(item)
+                </button>
+            }
+            @if (_items.Count > 0 && _items.Count < _total)
+            {
+                <button type="button" class="ac-more" disabled="@_loading" @onclick="LoadMore">
+                    @if (_loading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    Carregar mais (@_items.Count de @_total)
+                </button>
+            }
+            else if (_items.Count > 0)
+            {
+                <div class="ac-footer">@_total resultado(s)</div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Func<string, int, int, Task<PagedResult<TItem>>> SearchFunc { get; set; } = default!;
+    [Parameter, EditorRequired] public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
+    [Parameter] public EventCallback<TItem> OnSelected { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Digite para buscar...";
+    [Parameter] public string EmptyText { get; set; } = "Nenhum resultado encontrado";
+    [Parameter] public int PageSize { get; set; } = 8;
+    [Parameter] public int DebounceMs { get; set; } = 300;
+    [Parameter] public bool ClearOnSelect { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private readonly List<TItem> _items = [];
+    private string _term = "";
+    private bool _open;
+    private bool _loading;
+    private int _page;
+    private int _total;
+    private int _highlight = -1;
+    private int _requestId;
+    private CancellationTokenSource? _cts;
+
+    private async Task OnFocus()
+    {
+        if (_open) return;
+        _open = true;
+        if (_items.Count == 0) await LoadAsync(reset: true);
+    }
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        _term = e.Value?.ToString() ?? "";
+        _open = true;
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        try { await Task.Delay(DebounceMs, _cts.Token); }
+        catch (TaskCanceledException) { return; }
+        await LoadAsync(reset: true);
+    }
+
+    private Task LoadMore() => LoadAsync(reset: false);
+
+    private async Task LoadAsync(bool reset)
+    {
+        var id = ++_requestId;
+        _loading = true;
+        StateHasChanged();
+        try
+        {
+            var page = reset ? 1 : _page + 1;
+            var result = await SearchFunc(_term, page, PageSize);
+            if (id != _requestId) return; // resposta obsoleta (usuário continuou digitando)
+            if (reset) { _items.Clear(); _highlight = -1; }
+            _items.AddRange(result.Items);
+            _page = result.Page;
+            _total = result.TotalCount;
+        }
+        finally
+        {
+            if (id == _requestId) _loading = false;
+        }
+    }
+
+    private async Task Select(TItem item)
+    {
+        _open = false;
+        if (ClearOnSelect)
+        {
+            _term = "";
+            _items.Clear();
+        }
+        await OnSelected.InvokeAsync(item);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _open = true;
+                _highlight = Math.Min(_items.Count - 1, _highlight + 1);
+                break;
+            case "ArrowUp":
+                _highlight = Math.Max(0, _highlight - 1);
+                break;
+            case "Enter" when _highlight >= 0 && _highlight < _items.Count:
+                await Select(_items[_highlight]);
+                break;
+            case "Escape":
+                Close();
+                break;
+        }
+    }
+
+    private void Close() => _open = false;
+
+    /// <summary>Recarrega os resultados (ex.: após adicionar um item que deve sair da lista).</summary>
+    public void Reset()
+    {
+        _items.Clear();
+        _total = 0;
+        _page = 0;
+    }
+
+    public void Dispose() => _cts?.Cancel();
+}

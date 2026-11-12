@@ -1,0 +1,72 @@
+@implements IDisposable
+@inject ConfirmService Confirm
+
+<Modal Visible="_visible" VisibleChanged="OnVisibleChanged" Size="sm" ShowClose="false" Class="confirm-dialog">
+    <ChildContent>
+    @if (_options is not null)
+    {
+        <div class="confirm-content">
+            <div class="confirm-icon @(_options.Danger ? "danger" : "")"><i class="bi @_options.Icon"></i></div>
+            <h5 class="mb-2">@_options.Title</h5>
+            <p class="text-muted mb-2">@_options.Message</p>
+            @if (!string.IsNullOrEmpty(_options.Details))
+            {
+                <div class="confirm-details"><i class="bi bi-info-circle me-1"></i>@_options.Details</div>
+            }
+            @if (!string.IsNullOrEmpty(_options.RequireText))
+            {
+                <div class="text-start mt-3">
+                    <label class="form-label small">Digite <strong>@_options.RequireText</strong> para confirmar:</label>
+                    <input class="form-control" @bind="_typed" @bind:event="oninput" autocomplete="off" />
+                </div>
+            }
+        </div>
+    }
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-light" @onclick="() => Resolve(false)">@_options?.CancelText</button>
+        <button type="button" class="btn @(_options?.Danger == true ? "btn-danger" : "btn-primary")" disabled="@(!CanConfirm)" @onclick="() => Resolve(true)">
+            @_options?.ConfirmText
+        </button>
+    </Footer>
+</Modal>
+
+@code {
+    private bool _visible;
+    private ConfirmOptions? _options;
+    private TaskCompletionSource<bool>? _tcs;
+    private string _typed = "";
+
+    private bool CanConfirm => _options?.RequireText is not { Length: > 0 } req || string.Equals(_typed.Trim(), req, StringComparison.Ordinal);
+
+    protected override void OnInitialized() => Confirm.Requested += OnRequested;
+
+    private Task OnRequested(ConfirmOptions options, TaskCompletionSource<bool> tcs)
+    {
+        _tcs?.TrySetResult(false);
+        _options = options;
+        _tcs = tcs;
+        _typed = "";
+        _visible = true;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    private void OnVisibleChanged(bool visible)
+    {
+        if (!visible) Resolve(false);
+    }
+
+    private void Resolve(bool result)
+    {
+        if (result && !CanConfirm) return;
+        _visible = false;
+        _tcs?.TrySetResult(result);
+        _tcs = null;
+    }
+
+    public void Dispose()
+    {
+        Confirm.Requested -= OnRequested;
+        _tcs?.TrySetResult(false);
+    }
+}

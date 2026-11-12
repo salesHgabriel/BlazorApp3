@@ -1,0 +1,14 @@
+@* Renderiza o conteúdo apenas se o usuário tiver QUALQUER uma das permissões informadas. *@
+<AuthorizeView Policy="@Perm.AnyPolicy(Permissions)" Context="__can">
+    <Authorized>@ChildContent</Authorized>
+    <NotAuthorized>@Fallback</NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter] public string? Permission { get; set; }
+    [Parameter] public string[]? Any { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Fallback { get; set; }
+
+    private string[] Permissions => Any ?? (Permission is null ? [] : [Permission]);
+}

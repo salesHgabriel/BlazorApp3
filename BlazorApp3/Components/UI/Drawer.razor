@@ -1,0 +1,42 @@
+@inherits OverlayBase
+
+@if (Mounted)
+{
+    <div class="overlay-root overlay-drawer drawer-@Position @(Shown ? "is-open" : "")" @onkeydown="OnKeyDown">
+        <div class="overlay-backdrop" @onclick="OnBackdropClick"></div>
+        <aside class="drawer-panel @Class" style="--drawer-width:@Width" role="dialog" aria-modal="true" tabindex="-1" @ref="Panel">
+            <div class="dialog-header">
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <div class="dialog-header-icon"><i class="bi @Icon"></i></div>
+                }
+                <div class="flex-grow-1 min-w-0">
+                    @if (Title is not null)
+                    {
+                        <h5 class="dialog-title">@Title</h5>
+                    }
+                    @if (Subtitle is not null)
+                    {
+                        <div class="dialog-subtitle">@Subtitle</div>
+                    }
+                    @HeaderContent
+                </div>
+                @if (ShowClose)
+                {
+                    <button type="button" class="icon-btn" aria-label="Fechar" @onclick="CloseAsync"><i class="bi bi-x-lg"></i></button>
+                }
+            </div>
+            <div class="drawer-body">@ChildContent</div>
+            @if (Footer is not null)
+            {
+                <div class="dialog-footer">@Footer</div>
+            }
+        </aside>
+    </div>
+}
+
+@code {
+    /// <summary>end (direita) | start (esquerda)</summary>
+    [Parameter] public string Position { get; set; } = "end";
+    [Parameter] public string Width { get; set; } = "520px";
+}

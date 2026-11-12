@@ -1,0 +1,108 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject BrandingState Branding
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<ThemeStyle Branding="Branding.Effective" />
+
+<div class="app-shell @(_sidebarOpen ? "sidebar-open" : "") @(_collapsed ? "sidebar-collapsed" : "")">
+    <aside class="app-sidebar">
+        <NavMenu Collapsed="_collapsed" />
+    </aside>
+    <div class="sidebar-scrim" @onclick="() => _sidebarOpen = false"></div>
+
+    <div class="app-main">
+        <header class="app-topbar">
+            <button type="button" class="icon-btn d-lg-none" title="Menu" @onclick="() => _sidebarOpen = !_sidebarOpen"><i class="bi bi-list"></i></button>
+            <button type="button" class="icon-btn d-none d-lg-inline-flex" title="Recolher menu" @onclick="() => _collapsed = !_collapsed">
+                <i class="bi @(_collapsed ? "bi-layout-sidebar-inset" : "bi-layout-sidebar")"></i>
+            </button>
+            <div class="topbar-spacer"></div>
+            <AuthorizeView>
+                <Authorized>
+                    <TeamSwitcher />
+                    <UserMenu />
+                </Authorized>
+            </AuthorizeView>
+        </header>
+        <div class="nav-progress" id="nav-progress"></div>
+
+        <main class="app-content">
+            <div id="page-root" class="page-root">
+                <ErrorBoundary @ref="_errorBoundary">
+                    <ChildContent>@Body</ChildContent>
+                    <ErrorContent Context="ex">
+                        <EmptyState Icon="bi-bug" Title="Ops! Algo deu errado" Message="@ex.Message">
+                            <button class="btn btn-primary" @onclick="() => _errorBoundary?.Recover()">Tentar novamente</button>
+                        </EmptyState>
+                    </ErrorContent>
+                </ErrorBoundary>
+            </div>
+        </main>
+
+        @if (!string.IsNullOrEmpty(Branding.Effective.FooterText))
+        {
+            <footer class="app-footer">
+                <span>@Branding.Effective.FooterText</span>
+                @if (!string.IsNullOrEmpty(Branding.Effective.SupportEmail))
+                {
+                    <a href="mailto:@Branding.Effective.SupportEmail"><i class="bi bi-life-preserver me-1"></i>@Branding.Effective.SupportEmail</a>
+                }
+            </footer>
+        }
+    </div>
+</div>
+
+<ToastHost />
+<ConfirmHost />
+<LoadingHost />
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private ErrorBoundary? _errorBoundary;
+    private bool _sidebarOpen;
+    private bool _collapsed;
+    private bool _playTransition = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Branding.Changed += OnBrandingChanged;
+        Nav.LocationChanged += OnLocationChanged;
+
+        string? userId = null;
+        if (AuthState is not null)
+        {
+            var state = await AuthState;
+            userId = state.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+        await Branding.InitializeAsync(userId);
+    }
+
+    private void OnBrandingChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _sidebarOpen = false;
+        _playTransition = true;
+        _errorBoundary?.Recover();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_playTransition)
+        {
+            _playTransition = false;
+            try { await JS.InvokeVoidAsync("appFx.pageEnter", Branding.Effective.PageTransition); }
+            catch (JSDisconnectedException) { }
+        }
+    }
+
+    public void Dispose()
+    {
+        Branding.Changed -= OnBrandingChanged;
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+}

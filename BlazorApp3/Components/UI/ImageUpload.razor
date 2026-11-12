@@ -1,0 +1,96 @@
+@inject FileStorageService Storage
+@inject ToastService Toast
+
+@* Upload de imagem única com pré-visualização (logo, favicon, avatar). *@
+<div class="image-upload image-upload-@Shape @Class">
+    <div class="image-preview" style="width:@(Size)px;height:@(Size)px">
+        @if (_uploading)
+        {
+            <div class="image-progress">
+                <Spinner Size="sm" />
+                <small>@((int)(_progress * 100))%</small>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(Value))
+        {
+            <img src="@Value" alt="Pré-visualização" />
+        }
+        else
+        {
+            <i class="bi bi-image text-muted"></i>
+        }
+    </div>
+    <div class="image-actions">
+        <label class="btn btn-sm btn-outline-secondary position-relative overflow-hidden mb-0">
+            <i class="bi bi-upload me-1"></i>@(string.IsNullOrEmpty(Value) ? "Enviar" : "Trocar")
+            <InputFile @key="_key" OnChange="OnChange" accept="@Accept" class="stretched-input" disabled="@_uploading" />
+        </label>
+        @if (!string.IsNullOrEmpty(Value))
+        {
+            <button type="button" class="btn btn-sm btn-link text-danger" @onclick="Remove"><i class="bi bi-trash3 me-1"></i>Remover</button>
+        }
+        <div class="small text-muted">@Hint</div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string Folder { get; set; } = "images";
+    [Parameter] public string Accept { get; set; } = ".png,.jpg,.jpeg,.webp,.svg,.gif";
+    [Parameter] public double MaxSizeMb { get; set; } = 2;
+    [Parameter] public int Size { get; set; } = 72;
+    [Parameter] public string Shape { get; set; } = "square"; // square | circle
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private bool _uploading;
+    private double _progress;
+    private int _key;
+
+    protected override void OnParametersSet() =>
+        Hint ??= $"{Accept.Replace(".", "").ToUpperInvariant().Replace(",", ", ")} · até {MaxSizeMb:0.#} MB";
+
+    private async Task OnChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        var allowed = Accept.Split(',', StringSplitOptions.TrimEntries);
+        if (!allowed.Contains(Path.GetExtension(file.Name), StringComparer.OrdinalIgnoreCase))
+        {
+            Toast.Warning("Tipo não permitido", $"Formatos aceitos: {Accept}");
+            _key++;
+            return;
+        }
+        var maxBytes = (long)(MaxSizeMb * 1024 * 1024);
+        if (file.Size > maxBytes)
+        {
+            Toast.Warning("Imagem muito grande", $"O limite é {MaxSizeMb:0.#} MB.");
+            _key++;
+            return;
+        }
+
+        _uploading = true;
+        _progress = 0;
+        try
+        {
+            await using var stream = file.OpenReadStream(maxBytes);
+            var result = await Storage.SaveAsync(stream, file.Name, file.ContentType, Folder, file.Size, p =>
+            {
+                _progress = p;
+                _ = InvokeAsync(StateHasChanged);
+            });
+            await ValueChanged.InvokeAsync(result.Url);
+        }
+        catch (Exception ex)
+        {
+            Toast.Error("Falha no upload", ex is AppException ? ex.Message : "Não foi possível enviar a imagem.");
+        }
+        finally
+        {
+            _uploading = false;
+            _key++;
+        }
+    }
+
+    private Task Remove() => ValueChanged.InvokeAsync(null);
+}

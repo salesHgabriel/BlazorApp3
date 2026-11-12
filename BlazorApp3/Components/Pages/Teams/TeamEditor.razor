@@ -1,0 +1,112 @@
+@inherits EditorBase<TeamEditModel>
+
+
+<Drawer Visible="Visible" VisibleChanged="VisibleChanged" Width="600px" CloseOnBackdrop="!Saving"
+        Title="@(TeamId is null ? "Novo time" : "Editar time")" Subtitle="Dados e identidade visual do time" Icon="bi-diagram-3">
+    <ChildContent>
+        @if (Model is null)
+        {
+            <Skeleton Lines="10" />
+        }
+        else
+        {
+            <EditForm id="team-form" Model="Model" OnValidSubmit="SubmitAsync">
+                <DataAnnotationsValidator />
+
+                <div class="form-section">Informações</div>
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-7">
+                        <label class="form-label">Nome *</label>
+                        <InputText class="form-control" @bind-Value="Model.Name" />
+                        <ValidationMessage For="() => Model.Name" class="text-danger small" />
+                    </div>
+                    <div class="col-sm-5">
+                        <label class="form-label">Identificador (slug)</label>
+                        <InputText class="form-control" @bind-Value="Model.Slug" placeholder="gerado do nome" />
+                        <ValidationMessage For="() => Model.Slug" class="text-danger small" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Descrição</label>
+                        <InputTextArea class="form-control" rows="2" @bind-Value="Model.Description" />
+                    </div>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <InputCheckbox class="form-check-input" id="team-active" @bind-Value="Model.IsActive" />
+                    <label class="form-check-label" for="team-active">Time ativo</label>
+                </div>
+
+                <div class="form-section">Identidade visual</div>
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label">Cor principal *</label>
+                        <ColorInput @bind-Value="Model.PrimaryColor" Fallback="#4f46e5" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Cor de destaque</label>
+                        <ColorInput @bind-Value="Model.AccentColor" Fallback="#06b6d4" Clearable="true" Placeholder="padrão" />
+                    </div>
+                </div>
+                <label class="form-label">Logo do time</label>
+                <ImageUpload @bind-Value="Model.LogoUrl" Folder="teams" Size="64" />
+
+                <div class="branding-toggle mt-4">
+                    <div class="form-check form-switch">
+                        <InputCheckbox class="form-check-input" id="custom-branding" @bind-Value="Model.UseCustomBranding" />
+                        <label class="form-check-label fw-semibold" for="custom-branding">Usar branding próprio na aplicação</label>
+                    </div>
+                    <div class="small text-muted">Quando um membro seleciona este time, a aplicação assume o nome, logo e cores do time (se permitido no whitelabel global).</div>
+                </div>
+
+                @if (Model.UseCustomBranding)
+                {
+                    <div class="row g-3 mt-1">
+                        <div class="col-sm-6">
+                            <label class="form-label">Nome exibido</label>
+                            <InputText class="form-control" @bind-Value="Model.DisplayName" placeholder="@Model.Name" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Cor do menu lateral</label>
+                            <ColorInput @bind-Value="Model.SidebarColor" Fallback="#0f172a" Clearable="true" Placeholder="padrão" />
+                        </div>
+                    </div>
+                }
+
+                <div class="form-section">Pré-visualização</div>
+                <div class="mini-preview" style="--p:@Model.PrimaryColor;--a:@(Model.AccentColor ?? "#06b6d4");--s:@(Model.UseCustomBranding ? Model.SidebarColor ?? "#0f172a" : "#0f172a")">
+                    <div class="mp-side">
+                        <div class="mp-brand">
+                            @if (Model.LogoUrl is not null)
+                            {
+                                <img src="@Model.LogoUrl" />
+                            }
+                            else
+                            {
+                                <span>@Avatar.Initials(Model.Name)</span>
+                            }
+                            @(Model.UseCustomBranding && !string.IsNullOrWhiteSpace(Model.DisplayName) ? Model.DisplayName : Model.Name)
+                        </div>
+                        <div class="mp-link active"></div><div class="mp-link"></div><div class="mp-link"></div>
+                    </div>
+                    <div class="mp-main">
+                        <div class="mp-bar"></div>
+                        <div class="mp-card"><div class="mp-btn"></div><div class="mp-accent"></div></div>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-light" disabled="@Saving" @onclick="CloseAsync">Cancelar</button>
+        <LoadingButton Type="submit" form="team-form" Loading="Saving" Icon="bi-check2" LoadingText="Salvando...">Salvar</LoadingButton>
+    </Footer>
+</Drawer>
+
+@code {
+    [Parameter] public int? TeamId { get; set; }
+
+    protected override Task<TeamEditModel?> LoadModelAsync() =>
+        TeamId is null ? Task.FromResult<TeamEditModel?>(new TeamEditModel()) : Ui.QueryAsync(new GetTeamForEditQuery(TeamId.Value));
+
+    protected override async Task<bool> SaveAsync(TeamEditModel model) =>
+        (await Ui.SendAsync(new SaveTeamCommand(model), model.Id is null ? "Time criado" : "Time atualizado", model.Name)).Succeeded;
+}

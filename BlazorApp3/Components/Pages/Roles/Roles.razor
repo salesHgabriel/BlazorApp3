@@ -1,0 +1,127 @@
+@page "/roles"
+@attribute [HasPermission(Perm.RolesView)]
+@inject UiDispatcher Ui
+@inject IAuthorizationService Authz
+
+<AppPageTitle Title="Papéis" />
+
+<PageHeader Title="Papéis (roles)" Subtitle="Roles são criadas dinamicamente e agrupam permissões fixas do sistema" Icon="bi-person-badge">
+    <Actions>
+        <Can Permission="@Perm.RolesCreate">
+            <button class="btn btn-primary" @onclick="() => OpenEditor(null)"><i class="bi bi-plus-lg me-1"></i>Novo papel</button>
+        </Can>
+    </Actions>
+</PageHeader>
+
+<div class="card">
+    <div class="filter-bar">
+        <SearchInput Value="@_query.Search" ValueChanged="v => _list.ApplyAsync(() => _query.Search = v)" Placeholder="Buscar papel..." Busy="_list.Loading" Class="flex-grow-1" />
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table">
+            <thead>
+                <tr>
+                    <SortHeader Label="Papel" Field="name" Current="@_query.SortBy" Desc="_query.SortDesc" OnSort="OnSort" />
+                    <SortHeader Label="Usuários" Field="users" Current="@_query.SortBy" Desc="_query.SortDesc" OnSort="OnSort" />
+                    <SortHeader Label="Permissões" Field="permissions" Current="@_query.SortBy" Desc="_query.SortDesc" OnSort="OnSort" />
+                    <SortHeader Label="Criado em" Field="created" Current="@_query.SortBy" Desc="_query.SortDesc" OnSort="OnSort" Class="d-none d-md-table-cell" />
+                    <th style="width:110px"></th>
+                </tr>
+            </thead>
+            <tbody class="@(_list.IsRefreshing ? "is-refreshing" : "")">
+                @if (_list.IsInitialLoad)
+                {
+                    <TableSkeleton Rows="6" Columns="5" />
+                }
+                else if (_list.IsEmpty)
+                {
+                    <tr><td colspan="5"><EmptyState Icon="bi-person-badge" Title="Nenhum papel encontrado" /></td></tr>
+                }
+                else
+                {
+                    @foreach (var r in _list.Items)
+                    {
+                        <tr @key="r.Id" class="row-enter">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="role-icon" style="--badge-color:@r.Color"><i class="bi bi-shield-check"></i></span>
+                                    <div>
+                                        <div class="fw-semibold">
+                                            @r.Name
+                                            @if (r.IsSystem)
+                                            {
+                                                <span class="badge text-bg-dark ms-1" title="Papel de sistema"><i class="bi bi-lock-fill"></i> sistema</span>
+                                            }
+                                        </div>
+                                        <div class="small text-muted">@r.Description</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><a href="users?role=@r.Id" title="Ver usuários com este papel"><i class="bi bi-people me-1"></i>@r.UserCount</a></td>
+                            <td>
+                                <div class="perm-meter" title="@r.PermissionCount de @Perm.All.Count">
+                                    <div style="width:@(r.PermissionCount * 100 / Perm.All.Count)%;background:@r.Color"></div>
+                                </div>
+                                <small class="text-muted">@r.PermissionCount / @Perm.All.Count</small>
+                            </td>
+                            <td class="d-none d-md-table-cell small text-muted">@r.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                            <td class="text-end text-nowrap">
+                                <button class="icon-btn" title="@(_canUpdate ? "Editar" : "Visualizar")" @onclick="() => OpenEditor(r.Id)"><i class="bi @(_canUpdate ? "bi-pencil" : "bi-eye")"></i></button>
+                                @if (!r.IsSystem)
+                                {
+                                    <Can Permission="@Perm.RolesDelete">
+                                        <button class="icon-btn text-danger" title="Excluir" @onclick="() => DeleteAsync(r)"><i class="bi bi-trash3"></i></button>
+                                    </Can>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer-x">
+        <PagedPager State="_list" />
+    </div>
+</div>
+
+<RoleEditor @bind-Visible="_editorOpen" RoleId="@_editingId" CanEdit="@(_editingId is null ? _canCreate : _canUpdate)" OnSaved="_list.LoadAsync" />
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private readonly SearchRolesQuery _query = new();
+    private PagedQueryState<RoleListItem> _list = default!;
+    private bool _editorOpen;
+    private string? _editingId;
+    private bool _canCreate;
+    private bool _canUpdate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _list = Ui.Paged(_query, StateHasChanged);
+        var user = (await AuthState).User;
+        _canCreate = (await Authz.AuthorizeAsync(user, Perm.Policy(Perm.RolesCreate))).Succeeded;
+        _canUpdate = (await Authz.AuthorizeAsync(user, Perm.Policy(Perm.RolesEdit))).Succeeded;
+        await _list.LoadAsync();
+    }
+
+    private Task OnSort((string Field, bool Desc) s) => _list.ApplyAsync(() =>
+    {
+        _query.SortBy = s.Field;
+        _query.SortDesc = s.Desc;
+    });
+
+    private void OpenEditor(string? id)
+    {
+        _editingId = id;
+        _editorOpen = true;
+    }
+
+    private async Task DeleteAsync(RoleListItem role)
+    {
+        var details = role.UserCount > 0 ? $"{role.UserCount} usuário(s) perderão este papel e suas permissões." : null;
+        if (await Ui.DeleteAsync(new DeleteRoleCommand(role.Id), role.Name, details, success: "Papel excluído"))
+            await _list.LoadAsync();
+    }
+}

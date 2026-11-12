@@ -1,0 +1,13 @@
+@* Aplica o tema whitelabel via variáveis CSS (atualiza em tempo real). Valores validados em EffectiveBranding. *@
+<HeadContent>
+    <link rel="icon" href="@(Branding.FaviconUrl ?? "favicon.png")" />
+    @if (Branding.FontHref is { } href)
+    {
+        <link rel="stylesheet" href="@href" />
+    }
+    <style id="brand-theme">@((MarkupString)Branding.ToCss())</style>
+</HeadContent>
+
+@code {
+    [Parameter, EditorRequired] public EffectiveBranding Branding { get; set; } = default!;
+}

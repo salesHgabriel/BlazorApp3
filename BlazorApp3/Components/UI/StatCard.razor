@@ -1,0 +1,19 @@
+<div class="card stat-card fx-stagger" style="--i:@Delay">
+    <div class="stat-icon"><i class="bi @Icon"></i></div>
+    <div>
+        <div class="stat-label">@Label</div>
+        <div class="stat-value">@Value.ToString("N0")</div>
+        @if (!string.IsNullOrEmpty(Hint))
+        {
+            <div class="stat-hint">@Hint</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "bi-graph-up";
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public int Value { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public int Delay { get; set; }
+}

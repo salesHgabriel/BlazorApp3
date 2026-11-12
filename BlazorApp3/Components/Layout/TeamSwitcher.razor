@@ -1,0 +1,95 @@
+@implements IDisposable
+@inject BrandingState Branding
+@inject ToastService Toast
+
+@* Seletor do time ativo: aplica o branding personalizado do time (se habilitado). *@
+<div class="team-switcher @(_open ? "open" : "")">
+    @if (_open)
+    {
+        <div class="dropdown-scrim" @onclick="() => _open = false"></div>
+    }
+    <button type="button" class="team-switcher-btn" @onclick="() => _open = !_open" title="Trocar time">
+        @if (Branding.ActiveTeam is { } t)
+        {
+            <span class="dot" style="background:@t.PrimaryColor"></span>
+            <span class="d-none d-sm-inline text-truncate">@t.Name</span>
+        }
+        else
+        {
+            <i class="bi bi-diagram-3"></i>
+            <span class="d-none d-sm-inline">Sem time</span>
+        }
+        <i class="bi bi-chevron-down small opacity-50"></i>
+    </button>
+    @if (_open)
+    {
+        <div class="dropdown-panel dropdown-panel-end" style="width:310px">
+            @* Time atual em destaque no topo *@
+            <div class="dropdown-panel-current">
+                @if (Branding.ActiveTeam is { } current)
+                {
+                    <span class="team-chip" style="background:@current.PrimaryColor">@Avatar.Initials(current.Name)</span>
+                    <div class="min-w-0">
+                        <small class="text-muted d-block">Time atual</small>
+                        <div class="fw-semibold text-truncate">@current.Name</div>
+                    </div>
+                }
+                else
+                {
+                    <span class="team-chip" style="background:#64748b"><i class="bi bi-globe2"></i></span>
+                    <div class="min-w-0">
+                        <small class="text-muted d-block">Time atual</small>
+                        <div class="fw-semibold">Nenhum (padrão da plataforma)</div>
+                    </div>
+                }
+            </div>
+            <div class="dropdown-panel-header">Meus times</div>
+            <button type="button" class="dropdown-panel-item @(Branding.ActiveTeam is null ? "active" : "")" aria-current="@(Branding.ActiveTeam is null)" @onclick="() => Select(null)">
+                <i class="bi bi-globe2"></i>
+                <div class="flex-grow-1 text-start">
+                    <div>Padrão da plataforma</div>
+                    <small class="text-muted">Branding global</small>
+                </div>
+                <i class="bi bi-check2 active-check"></i>
+            </button>
+            @foreach (var team in Branding.MyTeams)
+            {
+                var isActive = Branding.ActiveTeam?.Id == team.Id;
+                <button type="button" class="dropdown-panel-item @(isActive ? "active" : "")" aria-current="@isActive" @onclick="() => Select(team.Id)">
+                    <span class="team-chip" style="background:@team.PrimaryColor">@Avatar.Initials(team.Name)</span>
+                    <div class="flex-grow-1 text-start min-w-0">
+                        <div class="text-truncate @(isActive ? "fw-semibold" : "")">@team.Name</div>
+                        <small class="text-muted">
+                            @TeamRoles.Label(team.Role)
+                            @if (team.UseCustomBranding && Branding.Global.AllowTeamBranding)
+                            {
+                                <span> · <i class="bi bi-palette"></i> branding próprio</span>
+                            }
+                        </small>
+                    </div>
+                    <i class="bi bi-check2 active-check"></i>
+                </button>
+            }
+            @if (Branding.MyTeams.Count == 0)
+            {
+                <div class="px-3 py-2 small text-muted">Você ainda não participa de nenhum time.</div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _open;
+
+    protected override void OnInitialized() => Branding.Changed += OnChanged;
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task Select(int? teamId)
+    {
+        _open = false;
+        await Branding.SetActiveTeamAsync(teamId);
+        Toast.Info("Time alterado", Branding.ActiveTeam is { } t ? $"Agora você está em \"{t.Name}\"." : "Usando o branding padrão da plataforma.");
+    }
+
+    public void Dispose() => Branding.Changed -= OnChanged;
+}

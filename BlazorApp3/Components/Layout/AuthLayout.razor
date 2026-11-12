@@ -1,0 +1,32 @@
+@inherits LayoutComponentBase
+@inject IDispatcher Dispatcher
+
+@* Layout das páginas de conta (SSR estático). Usa o whitelabel global. *@
+<ThemeStyle Branding="_branding" />
+
+<div class="auth-shell">
+    <section class="auth-hero">
+        <div class="auth-hero-inner">
+            <BrandLogo Name="@_branding.AppName" LogoUrl="@_branding.LogoUrl" Size="44" Class="brand-logo-light" />
+            <h2 class="mt-5">@_branding.Tagline</h2>
+            <ul class="auth-features">
+                <li><i class="bi bi-diagram-3"></i> Gestão de times com branding próprio</li>
+                <li><i class="bi bi-shield-check"></i> Roles dinâmicas com permissões fixas</li>
+                <li><i class="bi bi-palette"></i> Whitelabel configurável em tempo real</li>
+            </ul>
+            <div class="auth-hero-footer">@_branding.FooterText</div>
+        </div>
+    </section>
+    <section class="auth-form-area">
+        <div class="auth-card page-enter">
+            @Body
+        </div>
+    </section>
+</div>
+
+@code {
+    private EffectiveBranding _branding = EffectiveBranding.From(BrandingSettings.CreateDefault(), null);
+
+    protected override async Task OnInitializedAsync() =>
+        _branding = EffectiveBranding.From(await Dispatcher.QueryAsync(new GetBrandingQuery()), null);
+}
