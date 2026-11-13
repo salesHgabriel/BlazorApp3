@@ -38,11 +38,17 @@
         <NavLink class="side-link" href="permissions" title="@L["Permissões"]"><i class="bi bi-key"></i><span>@L["Permissões"]</span></NavLink>
     </Can>
 
-    <Can Any="[Perm.BrandingView, Perm.ComponentsView]">
+    <Can Any="[Perm.BrandingView, Perm.ComponentsView, Perm.SettingsSystem, Perm.JobsView]">
         <div class="nav-section">@L["Configurações"]</div>
     </Can>
     <Can Permission="@Perm.BrandingView">
         <NavLink class="side-link" href="settings/branding" title="@L["Whitelabel"]"><i class="bi bi-palette"></i><span>@L["Whitelabel"]</span></NavLink>
+    </Can>
+    <Can Permission="@Perm.SettingsSystem">
+        <NavLink class="side-link" href="settings/system" title="@L["Sistema"]"><i class="bi bi-sliders"></i><span>@L["Sistema"]</span></NavLink>
+    </Can>
+    <Can Permission="@Perm.JobsView">
+        <a class="side-link" href="jobs" target="_blank" title="@L["Jobs (Hangfire)"]"><i class="bi bi-cpu"></i><span>@L["Jobs (Hangfire)"]</span></a>
     </Can>
     <Can Permission="@Perm.ComponentsView">
         <NavLink class="side-link" href="components" title="@L["Componentes"]"><i class="bi bi-boxes"></i><span>@L["Componentes"]</span></NavLink>

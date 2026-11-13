@@ -15,7 +15,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261112200225_Start";
+    public override string LastMigrationId => "20261113152747_SessionsAndMfa";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -78,6 +78,17 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .HasMaxLength(300)
                     .HasColumnType("TEXT");
 
+                b.Property<string>("BlockReason")
+                    .HasMaxLength(300)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime?>("BlockedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("BlockedBy")
+                    .HasMaxLength(150)
+                    .HasColumnType("TEXT");
+
                 b.Property<string>("ConcurrencyStamp")
                     .IsConcurrencyToken()
                     .HasColumnType("TEXT");
@@ -114,7 +125,10 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.Property<bool>("LockoutEnabled")
                     .HasColumnType("INTEGER");
 
-                b.Property<DateTimeOffset?>("LockoutEnd")
+                b.Property<long?>("LockoutEnd")
+                    .HasColumnType("INTEGER");
+
+                b.Property<DateTime?>("MfaEnabledAt")
                     .HasColumnType("TEXT");
 
                 b.Property<string>("NormalizedEmail")
@@ -238,6 +252,93 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("BrandingSettings");
             });
 
+        modelBuilder.Entity("BlazorApp3.Data.EmailConfirmationCode", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("INTEGER");
+
+                b.Property<int>("Attempts")
+                    .HasColumnType("INTEGER");
+
+                b.Property<string>("CodeHash")
+                    .IsRequired()
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime?>("ConsumedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime>("ExpiresAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("UserId")
+                    .IsRequired()
+                    .HasMaxLength(450)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("ExpiresAt");
+
+                b.HasIndex("UserId", "CreatedAt");
+
+                b.ToTable("EmailConfirmationCodes");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.Notification", b =>
+            {
+                b.Property<int>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("INTEGER");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Icon")
+                    .IsRequired()
+                    .HasMaxLength(40)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Level")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Link")
+                    .HasMaxLength(300)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Message")
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime?>("ReadAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Title")
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("UserId")
+                    .IsRequired()
+                    .HasMaxLength(450)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("UserId", "CreatedAt");
+
+                b.HasIndex("UserId", "ReadAt");
+
+                b.ToTable("Notifications");
+            });
+
         modelBuilder.Entity("BlazorApp3.Data.Permission", b =>
             {
                 b.Property<int>("Id")
@@ -279,6 +380,43 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("PermissionId");
 
                 b.ToTable("RolePermissions");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.SystemSettings", b =>
+            {
+                b.Property<int>("Id")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("EmailNotificationsEnabled")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("InAppNotificationsEnabled")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("NewLoginAlertsEnabled")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("NotifyAdminsOnRegistration")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("RegistrationEnabled")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("RequireEmailConfirmation")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("SecurityAlertsEnabled")
+                    .HasColumnType("INTEGER");
+
+                b.Property<bool>("SingleSessionEnabled")
+                    .HasColumnType("INTEGER");
+
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.ToTable("SystemSettings");
             });
 
         modelBuilder.Entity("BlazorApp3.Data.Team", b =>
@@ -360,6 +498,98 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.HasIndex("UserId");
 
                 b.ToTable("TeamMembers");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.UserConnection", b =>
+            {
+                b.Property<string>("ConnectionId")
+                    .HasMaxLength(128)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime>("ConnectedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("SessionId")
+                    .IsRequired()
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("UserId")
+                    .IsRequired()
+                    .HasMaxLength(450)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("ConnectionId");
+
+                b.HasIndex("SessionId");
+
+                b.ToTable("UserConnections");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.UserSession", b =>
+            {
+                b.Property<string>("Id")
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Browser")
+                    .IsRequired()
+                    .HasMaxLength(60)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("DeviceType")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("IpAddress")
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime>("LastSeenAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<bool>("Mfa")
+                    .HasColumnType("INTEGER");
+
+                b.Property<string>("Os")
+                    .IsRequired()
+                    .HasMaxLength(60)
+                    .HasColumnType("TEXT");
+
+                b.Property<bool>("Persistent")
+                    .HasColumnType("INTEGER");
+
+                b.Property<DateTime?>("RevokedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("RevokedBySessionId")
+                    .HasMaxLength(64)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("RevokedReason")
+                    .HasMaxLength(30)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("UserAgent")
+                    .HasMaxLength(512)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("UserId")
+                    .IsRequired()
+                    .HasMaxLength(450)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("LastSeenAt");
+
+                b.HasIndex("UserId", "RevokedAt");
+
+                b.ToTable("UserSessions");
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -464,6 +694,28 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("AspNetUserTokens");
             });
 
+        modelBuilder.Entity("BlazorApp3.Data.EmailConfirmationCode", b =>
+            {
+                b.HasOne("BlazorApp3.Data.AppUser", "User")
+                    .WithMany("ConfirmationCodes")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("User");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.Notification", b =>
+            {
+                b.HasOne("BlazorApp3.Data.AppUser", "User")
+                    .WithMany()
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("User");
+            });
+
         modelBuilder.Entity("BlazorApp3.Data.RolePermission", b =>
             {
                 b.HasOne("BlazorApp3.Data.Permission", "Permission")
@@ -498,6 +750,28 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                     .IsRequired();
 
                 b.Navigation("Team");
+
+                b.Navigation("User");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.UserConnection", b =>
+            {
+                b.HasOne("BlazorApp3.Data.UserSession", "Session")
+                    .WithMany("Connections")
+                    .HasForeignKey("SessionId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Session");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.UserSession", b =>
+            {
+                b.HasOne("BlazorApp3.Data.AppUser", "User")
+                    .WithMany("Sessions")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
 
                 b.Navigation("User");
             });
@@ -560,6 +834,10 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("BlazorApp3.Data.AppUser", b =>
             {
+                b.Navigation("ConfirmationCodes");
+
+                b.Navigation("Sessions");
+
                 b.Navigation("Teams");
             });
 
@@ -571,6 +849,11 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("BlazorApp3.Data.Team", b =>
             {
                 b.Navigation("Members");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.UserSession", b =>
+            {
+                b.Navigation("Connections");
             });
 #pragma warning restore 612, 618
     }

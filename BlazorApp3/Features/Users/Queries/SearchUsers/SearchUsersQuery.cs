@@ -9,7 +9,8 @@ public sealed class SearchUsersQuery : PagedQuery<UserListItem>
     public List<string> RoleIds { get; set; } = [];
     public List<int> TeamIds { get; set; } = [];
     public List<string> Departments { get; set; } = [];
-    public bool? IsActive { get; set; }
+    /// <summary>active | inactive | blocked | pending (e-mail não confirmado) | null = todos</summary>
+    public string? Status { get; set; }
     public DateTime? CreatedFrom { get; set; }
     public DateTime? CreatedTo { get; set; }
     public string SortBy { get; set; } = "name";
@@ -17,5 +18,5 @@ public sealed class SearchUsersQuery : PagedQuery<UserListItem>
 
     public int ActiveFilterCount =>
         (RoleIds.Count > 0 ? 1 : 0) + (TeamIds.Count > 0 ? 1 : 0) + (Departments.Count > 0 ? 1 : 0) +
-        (IsActive.HasValue ? 1 : 0) + (CreatedFrom.HasValue ? 1 : 0) + (CreatedTo.HasValue ? 1 : 0);
+        (string.IsNullOrEmpty(Status) ? 0 : 1) + (CreatedFrom.HasValue ? 1 : 0) + (CreatedTo.HasValue ? 1 : 0);
 }

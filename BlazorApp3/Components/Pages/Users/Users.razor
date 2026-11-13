@@ -2,11 +2,17 @@
 @attribute [HasPermission(Perm.UsersView)]
 @inject UiDispatcher Ui
 @inject ToastService Toast
+@inject ConfirmService Confirm
+@inject BlazorApp3.Services.Reports.ReportService Reports
+@inject IJSRuntime JS
 
 <AppPageTitle Title="@L["Usuários"]" />
 
 <PageHeader Title="@L["Usuários"]" Subtitle="@L["Gerencie contas, papéis e vínculos com times"]" Icon="bi-people">
     <Actions>
+        <Can Permission="@Perm.UsersExport">
+            <button class="btn btn-outline-secondary" @onclick="() => _reportOpen = true"><i class="bi bi-file-earmark-bar-graph me-1"></i>@L["Relatório"]</button>
+        </Can>
         <Can Permission="@Perm.UsersCreate">
             <button class="btn btn-primary" @onclick="() => OpenEditor(null)"><i class="bi bi-person-plus me-1"></i>@L["Novo usuário"]</button>
         </Can>
@@ -24,6 +30,8 @@
             <option value="">@L["Todos os status"]</option>
             <option value="active">@L["Ativos"]</option>
             <option value="inactive">@L["Inativos"]</option>
+            <option value="blocked">@L["Bloqueados"]</option>
+            <option value="pending">@L["E-mail pendente"]</option>
         </select>
         <button type="button" class="btn btn-sm @(_showDates ? "btn-secondary" : "btn-outline-secondary")" @onclick="() => _showDates = !_showDates">
             <i class="bi bi-calendar-range me-1"></i>@L["Período"]
@@ -58,9 +66,9 @@
             {
                 <span class="filter-chip">@L["Depto:"] @d <button @onclick="() => Filter(() => _query.Departments = _query.Departments.Where(x => x != d).ToList())"><i class="bi bi-x"></i></button></span>
             }
-            @if (_query.IsActive.HasValue)
+            @if (!string.IsNullOrEmpty(_query.Status))
             {
-                <span class="filter-chip">@L["Status:"] @(_query.IsActive.Value ? L["Ativo"] : L["Inativo"]) <button @onclick="() => Filter(() => _query.IsActive = null)"><i class="bi bi-x"></i></button></span>
+                <span class="filter-chip">@L["Status:"] @StatusLabel(_query.Status) <button @onclick="() => Filter(() => _query.Status = null)"><i class="bi bi-x"></i></button></span>
             }
             @if (_query.CreatedFrom.HasValue)
             {
@@ -82,6 +90,10 @@
             <Can Permission="@Perm.UsersEdit">
                 <button class="btn btn-sm btn-light" @onclick="() => BulkActive(true)"><i class="bi bi-check-circle me-1"></i>@L["Ativar"]</button>
                 <button class="btn btn-sm btn-light" @onclick="() => BulkActive(false)"><i class="bi bi-slash-circle me-1"></i>@L["Inativar"]</button>
+            </Can>
+            <Can Permission="@Perm.UsersBlock">
+                <button class="btn btn-sm btn-light" @onclick="() => OpenBlock(_selected.ToList())"><i class="bi bi-lock me-1"></i>@L["Bloquear"]</button>
+                <button class="btn btn-sm btn-light" @onclick="() => UnblockAsync(_selected.ToList())"><i class="bi bi-unlock me-1"></i>@L["Desbloquear"]</button>
             </Can>
             <Can Permission="@Perm.UsersDelete">
                 <button class="btn btn-sm btn-danger" @onclick="BulkDelete"><i class="bi bi-trash3 me-1"></i>@L["Excluir"]</button>
@@ -151,12 +163,22 @@
                                     <ItemTemplate Context="t"><span class="team-pill"><span class="dot" style="background:@t.Color"></span>@t.Label</span></ItemTemplate>
                                 </TagList>
                             </td>
-                            <td><span class="status-badge @(u.IsActive ? "on" : "off")">@(u.IsActive ? L["Ativo"] : L["Inativo"])</span></td>
+                            <td><UserStatusBadges User="u" /></td>
                             <td class="d-none d-lg-table-cell small text-muted">@(u.LastLoginAt?.ToLocalTime().ToString("g") ?? L["Nunca"])</td>
                             <td class="text-end text-nowrap">
                                 <button class="icon-btn" title="@L["Detalhes"]" @onclick="() => OpenDetails(u)"><i class="bi bi-eye"></i></button>
                                 <Can Permission="@Perm.UsersEdit">
                                     <button class="icon-btn" title="@L["Editar"]" @onclick="() => OpenEditor(u.Id)"><i class="bi bi-pencil"></i></button>
+                                </Can>
+                                <Can Permission="@Perm.UsersBlock">
+                                    @if (u.IsBlocked)
+                                    {
+                                        <button class="icon-btn text-success" title="@L["Desbloquear"]" @onclick="() => UnblockAsync([u.Id])"><i class="bi bi-unlock"></i></button>
+                                    }
+                                    else
+                                    {
+                                        <button class="icon-btn" title="@L["Bloquear"]" @onclick="() => OpenBlock([u.Id])"><i class="bi bi-lock"></i></button>
+                                    }
                                 </Can>
                                 <Can Permission="@Perm.UsersDelete">
                                     <button class="icon-btn text-danger" title="@L["Excluir"]" @onclick="() => DeleteOne(u)"><i class="bi bi-trash3"></i></button>
@@ -186,13 +208,48 @@
                 <Avatar Name="@_details.FullName" Url="@_details.AvatarUrl" Size="84" />
                 <h5 class="mt-2 mb-0">@_details.FullName</h5>
                 <div class="text-muted">@_details.Email</div>
-                <span class="status-badge mt-2 @(_details.IsActive ? "on" : "off")">@(_details.IsActive ? L["Ativo"] : L["Inativo"])</span>
+                <div class="mt-2 d-flex justify-content-center"><UserStatusBadges User="_details" /></div>
             </div>
+            @if (_details.IsBlocked)
+            {
+                <div class="alert alert-danger py-2 small">
+                    <div class="fw-semibold"><i class="bi bi-lock me-1"></i>@(_details.IsAdminBlock ? L["Bloqueado por {0}", _details.BlockedBy ?? "—"] : L["Bloqueado por excesso de tentativas de senha"])</div>
+                    <div>@(BlockState.IsPermanent(_details.LockoutEnd) ? L["Por tempo indeterminado"] : L["Até {0}", _details.LockoutEnd!.Value.ToLocalTime().ToString("g")])</div>
+                    @if (!string.IsNullOrEmpty(_details.BlockReason))
+                    {
+                        <div>@L["Motivo: {0}", _details.BlockReason]</div>
+                    }
+                </div>
+            }
+            @if (!_details.EmailConfirmed)
+            {
+                <div class="alert alert-warning py-2 small d-flex align-items-center gap-2">
+                    <i class="bi bi-envelope-exclamation"></i>
+                    <span class="flex-grow-1">@L["E-mail ainda não confirmado."]</span>
+                    <Can Permission="@Perm.UsersEdit">
+                        <button class="btn btn-sm btn-warning" @onclick="() => ResendAsync(_details)">@L["Reenviar código"]</button>
+                    </Can>
+                </div>
+            }
             <dl class="detail-list">
                 <dt>@L["Cargo"]</dt><dd>@(_details.JobTitle ?? "—")</dd>
                 <dt>@L["Departamento"]</dt><dd>@(_details.Department ?? "—")</dd>
                 <dt>@L["Cadastro"]</dt><dd>@_details.CreatedAt.ToLocalTime().ToString("g")</dd>
                 <dt>@L["Último acesso"]</dt><dd>@(_details.LastLoginAt?.ToLocalTime().ToString("g") ?? L["Nunca"])</dd>
+                <dt>MFA</dt>
+                <dd>
+                    @if (_details.TwoFactorEnabled)
+                    {
+                        <span class="badge text-bg-success"><i class="bi bi-shield-check me-1"></i>@L["Ativa"]</span>
+                        <Can Permission="@Perm.UsersEdit">
+                            <button class="btn btn-link btn-sm text-danger p-0 ms-2" @onclick="() => ResetMfaAsync(_details)">@L["Remover MFA"]</button>
+                        </Can>
+                    }
+                    else
+                    {
+                        <span class="text-muted">@L["Desativada"]</span>
+                    }
+                </dd>
                 <dt>@L["Papéis"]</dt>
                 <dd>
                     @foreach (var r in _details.Roles)
@@ -214,9 +271,53 @@
     </ChildContent>
     <Footer>
         <button class="btn btn-light" @onclick="() => _detailsOpen = false">@L["Fechar"]</button>
+        <Can Permission="@Perm.UsersBlock">
+            @if (_details?.IsBlocked == true)
+            {
+                <button class="btn btn-outline-success" @onclick="() => UnblockAsync([_details.Id])"><i class="bi bi-unlock me-1"></i>@L["Desbloquear"]</button>
+            }
+            else if (_details is not null)
+            {
+                <button class="btn btn-outline-danger" @onclick="() => OpenBlock([_details.Id])"><i class="bi bi-lock me-1"></i>@L["Bloquear"]</button>
+            }
+        </Can>
         <Can Permission="@Perm.UsersEdit">
             <button class="btn btn-primary" @onclick="EditFromDetails"><i class="bi bi-pencil me-1"></i>@L["Editar"]</button>
         </Can>
+    </Footer>
+</Modal>
+
+@* ---------------- Relatório Excel/PDF com os filtros atuais *@
+<ReportDialog @bind-Visible="_reportOpen" DefaultTitle="@L["Relatório de usuários"]" Columns="_reportColumns" Groupable="UsersReport.Groupable"
+              Hint="@L["{0} registro(s) com os filtros atuais", _list.Result.TotalCount]" OnGenerate="GenerateReportAsync" />
+
+@* ---------------- Dialog central: bloquear usuário(s) *@
+<Modal @bind-Visible="_blockOpen" Title="@(_blockIds.Count == 1 ? L["Bloquear usuário"] : L["Bloquear {0} usuários", _blockIds.Count])" Icon="bi-lock" Size="md">
+    <ChildContent>
+        <p class="text-muted small">@L["O acesso é suspenso na hora: as sessões abertas são encerradas e o usuário é avisado por e-mail."]</p>
+        <div class="mb-3">
+            <label class="form-label">@L["Duração"]</label>
+            <select class="form-select" @bind="_blockHours">
+                <option value="1">@L["1 hora"]</option>
+                <option value="24">@L["24 horas"]</option>
+                <option value="168">@L["7 dias"]</option>
+                <option value="720">@L["30 dias"]</option>
+                <option value="0">@L["Tempo indeterminado"]</option>
+            </select>
+            @if (_blockHours > 0)
+            {
+                <div class="form-text"><i class="bi bi-clock-history me-1"></i>@L["O desbloqueio automático é agendado no Hangfire."]</div>
+            }
+        </div>
+        <div>
+            <label class="form-label">@L["Motivo (opcional, enviado ao usuário)"]</label>
+            <textarea class="form-control" rows="3" maxlength="300" @bind="_blockReason" @bind:event="oninput"></textarea>
+            <div class="form-text text-end">@(_blockReason?.Length ?? 0)/300</div>
+        </div>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-light" @onclick="() => _blockOpen = false">@L["Cancelar"]</button>
+        <LoadingButton Class="btn-danger" Icon="bi-lock" Loading="_blocking" OnClick="BlockAsync">@L["Bloquear"]</LoadingButton>
     </Footer>
 </Modal>
 
@@ -241,12 +342,30 @@
     private UserListItem? _details;
 
     private bool AllSelected => _list.Items.Count > 0 && _list.Items.All(u => _selected.Contains(u.Id));
-    private string StatusValue => _query.IsActive switch { true => "active", false => "inactive", _ => "" };
+    private string StatusValue => _query.Status ?? "";
+
+    private bool _blockOpen;
+    private bool _blocking;
+    private List<string> _blockIds = [];
+    private int _blockHours = 24;
+    private string? _blockReason;
+    private string? _currentUserName;
+
+    private string StatusLabel(string status) => status switch
+    {
+        "active" => L["Ativo"],
+        "inactive" => L["Inativo"],
+        "blocked" => L["Bloqueado"],
+        "pending" => L["E-mail pendente"],
+        _ => status
+    };
 
     protected override async Task OnInitializedAsync()
     {
         _list = Ui.Paged(_query, StateHasChanged);
-        _currentUserId = (await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var me = (await AuthState).User;
+        _currentUserId = me.FindFirstValue(ClaimTypes.NameIdentifier);
+        _currentUserName = me.FindFirstValue("full_name") ?? me.Identity?.Name;
 
         if (RoleFilter is not null) _query.RoleIds = [RoleFilter];
         if (TeamFilter is not null) _query.TeamIds = [TeamFilter.Value];
@@ -270,12 +389,8 @@
         return _list.ApplyAsync(change);
     }
 
-    private Task OnStatusChange(ChangeEventArgs e) => Filter(() => _query.IsActive = e.Value?.ToString() switch
-    {
-        "active" => true,
-        "inactive" => false,
-        _ => null
-    });
+    private Task OnStatusChange(ChangeEventArgs e) =>
+        Filter(() => _query.Status = string.IsNullOrEmpty(e.Value?.ToString()) ? null : e.Value!.ToString());
 
     private static DateTime? ParseDate(ChangeEventArgs e) => DateTime.TryParse(e.Value?.ToString(), out var d) ? d : null;
 
@@ -285,7 +400,7 @@
         _query.RoleIds = [];
         _query.TeamIds = [];
         _query.Departments = [];
-        _query.IsActive = null;
+        _query.Status = null;
         _query.CreatedFrom = null;
         _query.CreatedTo = null;
     });
@@ -383,5 +498,102 @@
             _selected.Clear();
             await _list.LoadAsync();
         }
+    }
+
+    private void OpenBlock(List<string> ids)
+    {
+        _blockIds = ids.Where(id => id != _currentUserId).ToList();
+        if (_blockIds.Count < ids.Count) Toast.Warning(L["Atenção"], L["Você não pode bloquear a sua própria conta."]);
+        if (_blockIds.Count == 0) return;
+        _blockReason = null;
+        _blockHours = 24;
+        _detailsOpen = false;
+        _blockOpen = true;
+    }
+
+    private async Task BlockAsync()
+    {
+        _blocking = true;
+        var hours = _blockHours > 0 ? _blockHours : (int?)null;
+        var result = await Ui.SendAsync(new BlockUsersCommand(_blockIds, _blockReason, hours, _currentUserName ?? ""),
+            L["Usuário(s) bloqueado(s)"], L["{0} registro(s) atualizado(s).", _blockIds.Count], L["Bloqueando..."]);
+        _blocking = false;
+        if (!result.Succeeded) return;
+        _blockOpen = false;
+        _selected.Clear();
+        await _list.LoadAsync();
+    }
+
+    private async Task UnblockAsync(List<string> ids)
+    {
+        var result = await Ui.SendAsync(new UnblockUsersCommand(ids), L["Usuário(s) desbloqueado(s)"],
+            L["{0} registro(s) atualizado(s).", ids.Count], L["Desbloqueando..."]);
+        if (!result.Succeeded) return;
+        _detailsOpen = false;
+        _selected.Clear();
+        await _list.LoadAsync();
+    }
+
+    private Task ResendAsync(UserListItem u) =>
+        Ui.SendAsync(new ResendConfirmationCommand(u.Id), L["Código reenviado"], u.Email);
+
+    // ---------------------------------------------------------------- MFA (administrador)
+
+    private async Task ResetMfaAsync(UserListItem u)
+    {
+        var ok = await Confirm.ShowAsync(new ConfirmOptions
+        {
+            Title = L["Remover MFA"],
+            Message = new MarkupString(L["Remover a verificação em duas etapas de <strong>{0}</strong>? As sessões abertas do usuário serão encerradas e ele poderá configurar o MFA de novo.", System.Net.WebUtility.HtmlEncode(u.FullName)]),
+            ConfirmText = L["Remover"], Icon = "bi-shield-x", Danger = true
+        });
+        if (!ok) return;
+        var result = await Ui.SendAsync(new ResetUserMfaCommand(u.Id), L["MFA removido"], u.Email);
+        if (!result.Succeeded) return;
+        _detailsOpen = false;
+        await _list.LoadAsync();
+    }
+
+    // ---------------------------------------------------------------- Relatório Excel/PDF
+
+    private bool _reportOpen;
+    private readonly List<ReportDialog.ColumnOption> _reportColumns =
+        UsersReport.Columns().Select(c => new ReportDialog.ColumnOption(c.Key, c.Header, c.DefaultSelected)).ToList();
+
+    private async Task<bool> GenerateReportAsync(BlazorApp3.Services.Reports.ReportOptions options)
+    {
+        // Cópia dos filtros atuais (a listagem continua com sua própria paginação)
+        var filters = new SearchUsersQuery
+        {
+            Search = _query.Search, RoleIds = [.. _query.RoleIds], TeamIds = [.. _query.TeamIds], Departments = [.. _query.Departments],
+            Status = _query.Status, CreatedFrom = _query.CreatedFrom, CreatedTo = _query.CreatedTo,
+            SortBy = _query.SortBy, SortDesc = _query.SortDesc
+        };
+        try
+        {
+            var items = await Ui.QueryAsync(new ExportUsersQuery(filters));
+            var (name, type, content) = await Reports.RenderAsync(items, UsersReport.Columns(), options, _currentUserName ?? "", FilterSummary());
+            await JS.DownloadAsync(name, type, content);
+            Toast.Success(L["Relatório gerado"], L["{0} registro(s) · {1}", items.Count, name]);
+            return true;
+        }
+        catch (AppException ex)
+        {
+            Toast.Error(L["Não foi possível gerar o relatório"], ex.Message);
+            return false;
+        }
+    }
+
+    private List<(string Label, string Value)> FilterSummary()
+    {
+        var list = new List<(string, string)>();
+        if (!string.IsNullOrWhiteSpace(_query.Search)) list.Add((L["Busca"], _query.Search));
+        if (_query.RoleIds.Count > 0) list.Add((L["Papéis"], string.Join(", ", _query.RoleIds.Select(id => Label(_roleOptions, id)))));
+        if (_query.TeamIds.Count > 0) list.Add((L["Times"], string.Join(", ", _query.TeamIds.Select(id => Label(_teamOptions, id)))));
+        if (_query.Departments.Count > 0) list.Add((L["Departamentos"], string.Join(", ", _query.Departments)));
+        if (!string.IsNullOrEmpty(_query.Status)) list.Add((L["Status"], StatusLabel(_query.Status)));
+        if (_query.CreatedFrom.HasValue) list.Add((L["Cadastrado de"], _query.CreatedFrom.Value.ToString("d")));
+        if (_query.CreatedTo.HasValue) list.Add((L["até"], _query.CreatedTo.Value.ToString("d")));
+        return list;
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace BlazorApp3.Security;
 
-/// <summary>Adiciona o nome completo ao cookie de autenticação.</summary>
+/// <summary>Adiciona o nome completo ao cookie. O session_id entra no login (UserSessions.SignInAsync).</summary>
 public sealed class AppClaimsPrincipalFactory(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IOptions<IdentityOptions> options)
     : UserClaimsPrincipalFactory<AppUser, AppRole>(userManager, roleManager, options)
 {

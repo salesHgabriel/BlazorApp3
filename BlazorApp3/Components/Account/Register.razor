@@ -1,0 +1,169 @@
+@page "/Account/Register"
+@attribute [ExcludeFromInteractiveRouting]
+@layout AuthLayout
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<AppUser> UserManager
+@inject RoleManager<AppRole> RoleManager
+@inject SignInManager<AppUser> SignInManager
+@inject EmailConfirmationService Confirmation
+@inject UserSessions Sessions
+@inject INotifier Notifier
+@inject SystemSettingsProvider SettingsProvider
+@inject IOptions<AccountOptions> AccountOptions
+@inject NavigationManager Nav
+@inject IDispatcher Dispatcher
+
+<PageTitle>@L["Criar conta"] · @_appName</PageTitle>
+
+@if (!_enabled)
+{
+    <div class="text-center py-3">
+        <div class="auth-state-icon is-muted"><i class="bi bi-door-closed"></i></div>
+        <h1 class="h4 fw-bold mt-3">@L["Cadastro indisponível"]</h1>
+        <p class="text-muted">@L["O cadastro de novas contas está desativado. Solicite acesso a um administrador."]</p>
+        <a href="Account/Login" data-enhance-nav="false" class="btn btn-primary"><i class="bi bi-arrow-left me-1"></i>@L["Voltar para o login"]</a>
+    </div>
+}
+else
+{
+    <h1 class="h3 fw-bold mb-1">@L["Criar conta"]</h1>
+    <p class="text-muted mb-4">
+        @(_requireConfirmation ? L["Preencha seus dados. Enviaremos um código para confirmar seu e-mail."] : L["Preencha seus dados para começar."])
+    </p>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="alert alert-danger d-flex align-items-start gap-2 py-2" role="alert">
+            <i class="bi bi-exclamation-octagon mt-1"></i><span>@_error</span>
+        </div>
+    }
+
+    <EditForm Model="Input" method="post" OnValidSubmit="RegisterAsync" FormName="register" Enhance="false">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label for="fullname" class="form-label">@L["Nome completo"]</label>
+            <div class="input-icon">
+                <i class="bi bi-person"></i>
+                <InputText id="fullname" @bind-Value="Input!.FullName" class="form-control" autocomplete="name" placeholder="@L["Seu nome"]" />
+            </div>
+            <ValidationMessage For="() => Input.FullName" class="text-danger small" />
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">@L["E-mail"]</label>
+            <div class="input-icon">
+                <i class="bi bi-envelope"></i>
+                <InputText id="email" @bind-Value="Input.Email" class="form-control" autocomplete="email" placeholder="@L["voce@empresa.com"]" />
+            </div>
+            <ValidationMessage For="() => Input.Email" class="text-danger small" />
+        </div>
+        <div class="row g-3 mb-2">
+            <div class="col-sm-6">
+                <label for="password" class="form-label">@L["Senha"]</label>
+                <div class="input-icon">
+                    <i class="bi bi-lock"></i>
+                    <InputText id="password" type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" placeholder="••••••••" data-password-meter="pw-meter" />
+                </div>
+                <ValidationMessage For="() => Input.Password" class="text-danger small" />
+            </div>
+            <div class="col-sm-6">
+                <label for="confirm" class="form-label">@L["Confirmar senha"]</label>
+                <div class="input-icon">
+                    <i class="bi bi-lock-fill"></i>
+                    <InputText id="confirm" type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="••••••••" />
+                </div>
+                <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger small" />
+            </div>
+        </div>
+        <div class="pw-meter mb-1" id="pw-meter"><span></span><span></span><span></span><span></span></div>
+        <div class="small text-muted mb-3">@L["Mínimo 6 caracteres, com maiúscula e número"]</div>
+
+        <div class="form-check mb-4">
+            <InputCheckbox id="terms" @bind-Value="Input.AcceptTerms" class="form-check-input" />
+            <label for="terms" class="form-check-label small">@L["Li e aceito os termos de uso e a política de privacidade"]</label>
+            <ValidationMessage For="() => Input.AcceptTerms" class="text-danger small d-block" />
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2">
+            <i class="bi bi-person-plus me-1"></i> @L["Criar conta"]
+        </button>
+    </EditForm>
+
+    <p class="text-center small text-muted mt-4 mb-0">
+        @L["Já tem uma conta?"] <a href="Account/Login" data-enhance-nav="false" class="fw-semibold">@L["Entrar"]</a>
+    </p>
+}
+
+@code {
+    [SupplyParameterFromForm] private RegisterInput? Input { get; set; }
+
+    private string _appName = "";
+    private string? _error;
+    private bool _enabled;
+    private bool _requireConfirmation;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        _appName = (await Dispatcher.QueryAsync(new GetBrandingQuery())).AppName;
+        var settings = await SettingsProvider.GetAsync();
+        _enabled = settings.RegistrationEnabled;
+        _requireConfirmation = settings.RequireEmailConfirmation;
+    }
+
+    private async Task RegisterAsync()
+    {
+        var settings = await SettingsProvider.GetAsync();
+        if (!settings.RegistrationEnabled) return;
+
+        var email = Input!.Email.Trim();
+        var user = new AppUser
+        {
+            UserName = email, Email = email, FullName = Input.FullName.Trim(),
+            EmailConfirmed = !settings.RequireEmailConfirmation, IsActive = true, CreatedAt = DateTime.UtcNow
+        };
+        var result = await UserManager.CreateAsync(user, Input.Password);
+        if (!result.Succeeded)
+        {
+            _error = string.Join(" ", result.Errors.Select(e => e.Description));
+            return;
+        }
+
+        var role = AccountOptions.Value.DefaultRole;
+        if (!string.IsNullOrWhiteSpace(role) && await RoleManager.RoleExistsAsync(role))
+            await UserManager.AddToRoleAsync(user, role);
+
+        if (settings.NotifyAdminsOnRegistration) Notifier.NewRegistration(user);
+
+        if (settings.RequireEmailConfirmation)
+        {
+            await Confirmation.IssueCodeAsync(user);
+            Nav.NavigateTo($"/Account/ConfirmEmail?email={Uri.EscapeDataString(email)}", forceLoad: true);
+            return;
+        }
+
+        Notifier.Welcome(user);
+        await Sessions.SignInAsync(SignInManager, user, persistent: false);
+        Nav.NavigateTo("/", forceLoad: true);
+    }
+
+    private sealed class RegisterInput
+    {
+        [Required(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.NameRequired)),
+         StringLength(150, MinimumLength = 3, ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.NameLength3To150))]
+        public string FullName { get; set; } = "";
+
+        [Required(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.EmailRequired)),
+         EmailAddress(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.EmailInvalid))]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.PasswordRequired)),
+         StringLength(100, MinimumLength = 6, ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.PasswordMinLength))]
+        public string Password { get; set; } = "";
+
+        [Compare(nameof(Password), ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.PasswordsDontMatch))]
+        public string ConfirmPassword { get; set; } = "";
+
+        [Range(typeof(bool), "true", "true", ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.TermsRequired))]
+        public bool AcceptTerms { get; set; }
+    }
+}

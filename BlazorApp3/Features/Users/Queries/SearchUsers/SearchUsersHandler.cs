@@ -10,18 +10,22 @@ internal sealed class SearchUsersHandler(AppDbContext db) : IQueryHandler<Search
     public async Task<PagedResult<UserListItem>> HandleAsync(SearchUsersQuery query, CancellationToken ct)
     {
         var page = await Sort(Filter(db.Users.AsNoTracking(), query), query)
-            .Select(u => new UserListItem
-            {
-                Id = u.Id, FullName = u.FullName, Email = u.Email!, JobTitle = u.JobTitle, Department = u.Department,
-                AvatarUrl = u.AvatarUrl, IsActive = u.IsActive, CreatedAt = u.CreatedAt, LastLoginAt = u.LastLoginAt
-            })
+            .Select(ToListItem)
             .ToPagedAsync(query.Page, query.PageSize, ct);
 
         await LoadBadgesAsync(page.Items, ct);
         return page;
     }
 
-    private IQueryable<AppUser> Filter(IQueryable<AppUser> q, SearchUsersQuery query)
+    internal static readonly System.Linq.Expressions.Expression<Func<AppUser, UserListItem>> ToListItem = u => new UserListItem
+    {
+        Id = u.Id, FullName = u.FullName, Email = u.Email!, JobTitle = u.JobTitle, Department = u.Department,
+        AvatarUrl = u.AvatarUrl, IsActive = u.IsActive, CreatedAt = u.CreatedAt, LastLoginAt = u.LastLoginAt,
+        EmailConfirmed = u.EmailConfirmed, TwoFactorEnabled = u.TwoFactorEnabled, LockoutEnd = u.LockoutEnd,
+        BlockedAt = u.BlockedAt, BlockReason = u.BlockReason, BlockedBy = u.BlockedBy
+    };
+
+    internal IQueryable<AppUser> Filter(IQueryable<AppUser> q, SearchUsersQuery query)
     {
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -43,13 +47,21 @@ internal sealed class SearchUsersHandler(AppDbContext db) : IQueryHandler<Search
             var deps = query.Departments;
             q = q.Where(u => u.Department != null && deps.Contains(u.Department));
         }
-        if (query.IsActive.HasValue) q = q.Where(u => u.IsActive == query.IsActive.Value);
+        var now = DateTimeOffset.UtcNow;
+        q = query.Status switch
+        {
+            "active" => q.Where(u => u.IsActive),
+            "inactive" => q.Where(u => !u.IsActive),
+            "blocked" => q.Where(u => u.LockoutEnd != null && u.LockoutEnd > now),
+            "pending" => q.Where(u => !u.EmailConfirmed),
+            _ => q
+        };
         if (query.CreatedFrom.HasValue) { var from = query.CreatedFrom.Value.Date; q = q.Where(u => u.CreatedAt >= from); }
         if (query.CreatedTo.HasValue) { var to = query.CreatedTo.Value.Date.AddDays(1); q = q.Where(u => u.CreatedAt < to); }
         return q;
     }
 
-    private static IQueryable<AppUser> Sort(IQueryable<AppUser> q, SearchUsersQuery query) => (query.SortBy, query.SortDesc) switch
+    internal static IQueryable<AppUser> Sort(IQueryable<AppUser> q, SearchUsersQuery query) => (query.SortBy, query.SortDesc) switch
     {
         ("email", false) => q.OrderBy(u => u.Email),
         ("email", true) => q.OrderByDescending(u => u.Email),
@@ -64,7 +76,7 @@ internal sealed class SearchUsersHandler(AppDbContext db) : IQueryHandler<Search
     };
 
     /// <summary>Papéis e times da página atual em 2 consultas (evita N+1).</summary>
-    private async Task LoadBadgesAsync(IReadOnlyList<UserListItem> items, CancellationToken ct)
+    internal async Task LoadBadgesAsync(IReadOnlyList<UserListItem> items, CancellationToken ct)
     {
         var ids = items.Select(i => i.Id).ToList();
         var roles = await (from ur in db.UserRoles

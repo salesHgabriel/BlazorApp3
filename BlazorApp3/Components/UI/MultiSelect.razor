@@ -1,10 +1,8 @@
 @typeparam TValue
+@implements IAsyncDisposable
+@inject IJSRuntime JS
 
-<div class="ms @(_open ? "open" : "") @Class">
-    @if (_open)
-    {
-        <div class="dropdown-scrim" @onclick="Close"></div>
-    }
+<div class="ms @(_open ? "open" : "") @Class" @ref="_root">
     <button type="button" class="ms-toggle form-select form-select-sm @(Selected.Count > 0 ? "has-value" : "")" @onclick="Toggle">
         @if (!string.IsNullOrEmpty(Icon))
         {
@@ -61,6 +59,15 @@
 
     private bool _open;
     private string _filter = "";
+    private ElementReference _root;
+    private OutsideClickWatcher? _outside;
+
+    protected override void OnInitialized() =>
+        _outside = new OutsideClickWatcher(JS, () => InvokeAsync(() => { _open = false; StateHasChanged(); }));
+
+    protected override Task OnAfterRenderAsync(bool firstRender) => _outside!.SyncAsync(_open, _root);
+
+    public ValueTask DisposeAsync() => _outside?.DisposeAsync() ?? ValueTask.CompletedTask;
 
     private IEnumerable<SelectOption<TValue>> Filtered => string.IsNullOrWhiteSpace(_filter)
         ? Options
@@ -81,7 +88,6 @@
     }
 
     private void Toggle() { _open = !_open; _filter = ""; }
-    private void Close() => _open = false;
 
     private Task ToggleOption(TValue value)
     {

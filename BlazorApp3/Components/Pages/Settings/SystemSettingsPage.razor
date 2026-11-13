@@ -1,0 +1,106 @@
+@page "/settings/system"
+@attribute [HasPermission(Perm.SettingsSystem)]
+@using BlazorApp3.Services.Email
+@inject UiDispatcher Ui
+@inject IMailSender Mail
+@inject IOptions<AccountOptions> AccountOptions
+
+<AppPageTitle Title="@L["Configurações do sistema"]" />
+
+<PageHeader Title="@L["Configurações do sistema"]" Subtitle="@L["Cadastro, segurança e notificações"]" Icon="bi-sliders">
+    <Actions>
+        <LoadingButton Loading="_saving" Icon="bi-check2" LoadingText="@L["Salvando..."]" OnClick="SaveAsync" Disabled="_model is null">@L["Salvar"]</LoadingButton>
+    </Actions>
+</PageHeader>
+
+@if (_model is null)
+{
+    <div class="card p-4"><Skeleton Lines="10" /></div>
+}
+else
+{
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card p-4 mb-3">
+                <h2 class="h6 fw-bold mb-1"><i class="bi bi-person-plus me-2"></i>@L["Novas contas"]</h2>
+                <Toggle @bind-Value="_model.RegistrationEnabled" Title="@L["Permitir cadastro público"]"
+                        Description="@L["Exibe “Criar conta” na tela de login. Novas contas recebem o papel padrão configurado."]" />
+                <Toggle @bind-Value="_model.RequireEmailConfirmation" Title="@L["Exigir confirmação de e-mail"]"
+                        Description="@L["O usuário só entra depois de digitar o código enviado por e-mail."]" />
+                <Toggle @bind-Value="_model.NotifyAdminsOnRegistration" Title="@L["Avisar administradores sobre novos cadastros"]"
+                        Description="@L["Notifica quem tem a permissão de editar usuários."]" />
+            </div>
+
+            <div class="card p-4 mb-3">
+                <h2 class="h6 fw-bold mb-1"><i class="bi bi-shield-lock me-2"></i>@L["Segurança"]</h2>
+                <Toggle @bind-Value="_model.SingleSessionEnabled" Title="@L["Sessão única por usuário"]"
+                        Description="@L["Ao entrar em outro navegador ou dispositivo, as outras sessões da conta são encerradas na hora (SignalR)."]" />
+                <Toggle @bind-Value="_model.NewLoginAlertsEnabled" Disabled="_model.SingleSessionEnabled" Title="@L["Avisar sobre novos acessos"]"
+                        Description="@L["Com várias sessões permitidas, as sessões abertas são avisadas na hora quando a conta entra em outro dispositivo e podem encerrar o novo acesso (pedindo senha e MFA)."]" />
+                <Toggle @bind-Value="_model.SecurityAlertsEnabled" Title="@L["Alertas de segurança"]"
+                        Description="@L["Avisa o usuário quando a conta é bloqueada por excesso de tentativas de senha."]" />
+            </div>
+
+            <div class="card p-4">
+                <h2 class="h6 fw-bold mb-1"><i class="bi bi-bell me-2"></i>@L["Notificações"]</h2>
+                <Toggle @bind-Value="_model.InAppNotificationsEnabled" Title="@L["Notificações no sistema"]"
+                        Description="@L["Sino no topo com contador e efeito, atualizado em tempo real via SignalR."]" />
+                <Toggle @bind-Value="_model.EmailNotificationsEnabled" Title="@L["Notificações por e-mail"]"
+                        Description="@L["Envia uma cópia das notificações por e-mail. O código de confirmação é sempre enviado."]" />
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card p-4 mb-3">
+                <h2 class="h6 fw-bold mb-3"><i class="bi bi-envelope-at me-2"></i>@L["Envio de e-mails"]</h2>
+                <dl class="detail-list mb-3">
+                    <dt>@L["Provedor ativo"]</dt><dd><span class="badge text-bg-light border">@_provider</span></dd>
+                    <dt>@L["Código de confirmação"]</dt><dd>@L["{0} dígitos · expira em {1} min · {2} tentativas", AccountOptions.Value.CodeLength, AccountOptions.Value.CodeLifetimeMinutes, AccountOptions.Value.MaxCodeAttempts]</dd>
+                </dl>
+                <p class="small text-muted">@L["O provedor (Pickup, Smtp, SendGrid, Mailtrap ou outro implementado) e suas credenciais são definidos em Email no appsettings ou em variáveis de ambiente."]</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="TestEmailAsync"><i class="bi bi-send me-1"></i>@L["Enviar e-mail de teste"]</button>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="TestNotificationAsync"><i class="bi bi-bell me-1"></i>@L["Testar notificação"]</button>
+                </div>
+            </div>
+
+            <Can Permission="@Perm.JobsView">
+                <div class="card p-4">
+                    <h2 class="h6 fw-bold mb-2"><i class="bi bi-cpu me-2"></i>@L["Jobs em segundo plano"]</h2>
+                    <p class="small text-muted">@L["E-mails, entrega de notificações, fim de bloqueios temporários e limpezas rodam no Hangfire, com novas tentativas automáticas."]</p>
+                    <a href="jobs" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-up-right me-1"></i>@L["Abrir painel do Hangfire"]</a>
+                </div>
+            </Can>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private SystemSettings? _model;
+    private bool _saving;
+    private string _provider = "";
+    private string? _userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _userId = (await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier);
+        try { _provider = Mail.ProviderName; } catch (InvalidOperationException ex) { _provider = ex.Message; }
+        _model = await Ui.QueryAsync(new GetSystemSettingsQuery());
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        await Ui.SendAsync(new SaveSystemSettingsCommand(_model!), L["Configurações salvas"],
+            L["As mudanças valem para os próximos acessos. Recarregue a página para ver o sino atualizado."]);
+        _saving = false;
+    }
+
+    private Task TestEmailAsync() =>
+        Ui.SendAsync(new SendTestEmailCommand(_userId!), L["E-mail de teste enfileirado"], L["Acompanhe o envio no painel do Hangfire."]);
+
+    private Task TestNotificationAsync() =>
+        Ui.SendAsync(new SendTestNotificationCommand(_userId!, L["Notificação de teste"], L["Se você está vendo isto, as notificações em tempo real estão funcionando."]));
+}

@@ -1,0 +1,51 @@
+@page "/Account/SessionEnded"
+@attribute [ExcludeFromInteractiveRouting]
+@layout AuthLayout
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Authentication
+@inject UserSessions Sessions
+@inject NavigationManager Nav
+
+<PageTitle>@L["Sessão encerrada"]</PageTitle>
+
+@* Destino do aviso "sessionRevoked" (SignalR). Se a sessão deste navegador ainda vale (ex.: outra aba com cookie novo),
+   volta para o início; senão apaga o cookie e explica o motivo. *@
+<div class="text-center py-2">
+    <div class="auth-state-icon is-warning pop-in"><i class="bi @_icon"></i></div>
+    <h1 class="h4 fw-bold mt-3">@L["Sua sessão foi encerrada"]</h1>
+    <p class="text-muted mb-4">@_message</p>
+    <a href="Account/Login" data-enhance-nav="false" class="btn btn-primary w-100 py-2"><i class="bi bi-box-arrow-in-right me-1"></i>@L["Entrar novamente"]</a>
+    @if (Reason is SessionRevokeReason.Replaced or SessionRevokeReason.Revoked)
+    {
+        <p class="small text-muted mt-3 mb-0">@L["Se não foi você, troque sua senha assim que entrar."]</p>
+    }
+</div>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    [SupplyParameterFromQuery] private string? Reason { get; set; }
+
+    private string _icon = "bi-display";
+    private string _message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        (_icon, _message) = Reason switch
+        {
+            SessionRevokeReason.Revoked => ("bi-x-octagon", L["Esta sessão foi encerrada a partir de outro dispositivo conectado à sua conta."].Value),
+            SessionRevokeReason.Blocked => ("bi-lock", L["Seu acesso foi suspenso por um administrador."].Value),
+            SessionRevokeReason.Security => ("bi-shield-lock", L["As configurações de segurança da conta foram alteradas. Entre novamente para continuar."].Value),
+            _ => ("bi-display", L["Sua conta foi acessada em outro navegador ou dispositivo. Por segurança, apenas uma sessão pode ficar ativa por vez."].Value)
+        };
+
+        var user = HttpContext.User;
+        if (user.Identity?.IsAuthenticated != true) return;
+
+        if (await Sessions.IsCurrentAsync(user))
+        {
+            Nav.NavigateTo("/", forceLoad: true);
+            return;
+        }
+        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+    }
+}

@@ -13,6 +13,7 @@ namespace BlazorApp3.Security;
 internal sealed class IdentityRevalidatingAuthenticationStateProvider(
     ILoggerFactory loggerFactory,
     IServiceScopeFactory scopeFactory,
+    UserSessions sessions,
     IOptions<IdentityOptions> options) : RevalidatingServerAuthenticationStateProvider(loggerFactory)
 {
     protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(1);
@@ -25,6 +26,7 @@ internal sealed class IdentityRevalidatingAuthenticationStateProvider(
 
         var user = await userManager.GetUserAsync(principal);
         if (user is null || !user.IsActive) return false;
+        if (!await sessions.IsCurrentAsync(principal, cancellationToken)) return false; // sessão única: entrou em outro lugar
         if (!userManager.SupportsUserSecurityStamp) return true;
 
         var principalStamp = principal.FindFirstValue(options.Value.ClaimsIdentity.SecurityStampClaimType);

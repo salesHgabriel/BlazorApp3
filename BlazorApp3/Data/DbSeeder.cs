@@ -43,6 +43,12 @@ public static class DbSeeder
             await db.SaveChangesAsync();
         }
 
+        if (!await db.SystemSettings.AnyAsync())
+        {
+            db.SystemSettings.Add(new SystemSettings());
+            await db.SaveChangesAsync();
+        }
+
         var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
         if (!await db.Roles.AnyAsync())
             await SeedRolesAsync(db, roleManager);
@@ -82,7 +88,7 @@ public static class DbSeeder
         {
             (AdminRoleName, "Acesso total ao sistema", "#dc2626", true, Perm.All.Select(p => p.Name).ToArray()),
             ("Gestor", "Gerencia usuários e times", "#2563eb", false,
-                [Perm.DashboardView, Perm.UsersView, Perm.UsersCreate, Perm.UsersEdit, Perm.TeamsView, Perm.TeamsCreate,
+                [Perm.DashboardView, Perm.UsersView, Perm.UsersCreate, Perm.UsersEdit, Perm.UsersBlock, Perm.TeamsView, Perm.TeamsCreate,
                  Perm.TeamsEdit, Perm.TeamsDelete, Perm.TeamsManageMembers, Perm.RolesView, Perm.PermissionsView, Perm.BrandingView]),
             ("Analista", "Consulta de dados", "#059669", false,
                 [Perm.DashboardView, Perm.UsersView, Perm.TeamsView, Perm.PermissionsView]),

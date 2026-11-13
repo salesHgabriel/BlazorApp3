@@ -1,0 +1,248 @@
+@page "/Account/ConfirmEmail"
+@attribute [ExcludeFromInteractiveRouting]
+@layout AuthLayout
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<AppUser> UserManager
+@inject SignInManager<AppUser> SignInManager
+@inject EmailConfirmationService Confirmation
+@inject UserSessions Sessions
+@inject IOptions<AccountOptions> AccountOptions
+@inject IDispatcher Dispatcher
+
+<PageTitle>@L["Confirmar e-mail"] · @_appName</PageTitle>
+
+@if (_state == State.Confirmed)
+{
+    @* ---------------- Tela de confirmação concluída *@
+    <div class="text-center py-2">
+        <div class="auth-state-icon is-success pop-in"><i class="bi bi-check-lg"></i></div>
+        <h1 class="h3 fw-bold mt-3">@L["E-mail confirmado!"]</h1>
+        <p class="text-muted mb-4">
+            @(_signedIn ? L["Tudo certo, sua conta está ativa. Você já está conectado."] : L["Tudo certo, sua conta está ativa. Entre para continuar."])
+        </p>
+        @if (_signedIn)
+        {
+            <a href="" data-enhance-nav="false" class="btn btn-primary w-100 py-2"><i class="bi bi-speedometer2 me-1"></i>@L["Acessar o painel"]</a>
+        }
+        else
+        {
+            <a href="Account/Login" data-enhance-nav="false" class="btn btn-primary w-100 py-2"><i class="bi bi-box-arrow-in-right me-1"></i>@L["Ir para o login"]</a>
+        }
+    </div>
+}
+else if (_state == State.AlreadyConfirmed)
+{
+    <div class="text-center py-2">
+        <div class="auth-state-icon is-success"><i class="bi bi-patch-check"></i></div>
+        <h1 class="h4 fw-bold mt-3">@L["Este e-mail já está confirmado"]</h1>
+        <p class="text-muted mb-4">@L["Você já pode entrar com seu e-mail e senha."]</p>
+        <a href="Account/Login" data-enhance-nav="false" class="btn btn-primary w-100 py-2">@L["Ir para o login"]</a>
+    </div>
+}
+else
+{
+    <div class="text-center mb-4">
+        <div class="auth-state-icon"><i class="bi bi-envelope-paper"></i></div>
+        <h1 class="h3 fw-bold mt-3 mb-1">@L["Confirme seu e-mail"]</h1>
+        <p class="text-muted mb-0">
+            @if (Pending)
+            {
+                @L["Seu e-mail ainda não foi confirmado."] <br />
+            }
+            @L["Enviamos um código de {0} dígitos para", _codeLength] <strong>@Mask(Email)</strong>.
+        </p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="alert alert-danger d-flex align-items-start gap-2 py-2" role="alert">
+            <i class="bi bi-exclamation-octagon mt-1"></i><span>@_error</span>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(_info))
+    {
+        <div class="alert alert-success d-flex align-items-start gap-2 py-2" role="status">
+            <i class="bi bi-send-check mt-1"></i><span>@_info</span>
+        </div>
+    }
+
+    <EditForm Model="ConfirmInput" method="post" OnValidSubmit="ConfirmAsync" FormName="confirm-email" Enhance="false">
+        <DataAnnotationsValidator />
+        <input type="hidden" name="ConfirmInput.Email" value="@ConfirmInput!.Email" />
+        <div class="otp mb-2" data-otp="code" data-otp-length="@_codeLength">
+            <InputText id="code" @bind-Value="ConfirmInput.Code" class="form-control form-control-lg text-center otp-fallback"
+                       inputmode="numeric" autocomplete="one-time-code" maxlength="@_codeLength" placeholder="@(new string('0', _codeLength))" />
+        </div>
+        <ValidationMessage For="() => ConfirmInput.Code" class="text-danger small d-block text-center mb-2" />
+        <div class="small text-muted text-center mb-4">@L["O código expira em {0} minutos.", AccountOptions.Value.CodeLifetimeMinutes]</div>
+        <button type="submit" class="btn btn-primary w-100 py-2">
+            <i class="bi bi-shield-check me-1"></i> @L["Confirmar e-mail"]
+        </button>
+    </EditForm>
+
+    <EditForm Model="ResendInput" method="post" OnSubmit="ResendAsync" FormName="resend-code" Enhance="false" class="text-center mt-3">
+        <input type="hidden" name="ResendInput.Email" value="@Email" />
+        <span class="small text-muted">@L["Não recebeu?"]</span>
+        <button type="submit" class="btn btn-link btn-sm p-0 align-baseline" data-countdown="@_cooldown"
+                data-countdown-text="@L["Reenviar em {0}s"]">@L["Reenviar código"]</button>
+    </EditForm>
+
+    @if (Confirmation.DevAutoConfirmAvailable)
+    {
+        @* Somente em Development sem provedor de e-mail configurado *@
+        <EditForm Model="DevInput" method="post" OnSubmit="DevAutoConfirmAsync" FormName="dev-auto-confirm" Enhance="false"
+                  class="mt-4 p-3 border border-warning border-2 rounded-3" style="border-style: dashed !important;">
+            <input type="hidden" name="DevInput.Email" value="@Email" />
+            <div class="small text-warning-emphasis mb-2">
+                <i class="bi bi-cone-striped me-1"></i>@L["Modo desenvolvimento: nenhum provedor de e-mail configurado."]
+            </div>
+            <button type="submit" class="btn btn-outline-warning btn-sm w-100">
+                <i class="bi bi-lightning-charge me-1"></i>@L["Confirmar sem código"]
+            </button>
+        </EditForm>
+    }
+
+    <p class="text-center small text-muted mt-4 mb-0">
+        <a href="Account/Login" data-enhance-nav="false"><i class="bi bi-arrow-left me-1"></i>@L["Voltar para o login"]</a>
+    </p>
+}
+
+@code {
+    private enum State { Pending, Confirmed, AlreadyConfirmed }
+
+    [SupplyParameterFromQuery(Name = "email")] private string? EmailQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "code")] private string? CodeQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "pending")] private bool Pending { get; set; }
+
+    [SupplyParameterFromForm(FormName = "confirm-email")] private CodeInput? ConfirmInput { get; set; }
+    [SupplyParameterFromForm(FormName = "resend-code")] private EmailInput? ResendInput { get; set; }
+    [SupplyParameterFromForm(FormName = "dev-auto-confirm")] private EmailInput? DevInput { get; set; }
+
+    private State _state = State.Pending;
+    private string _appName = "";
+    private string? _error;
+    private string? _info;
+    private int _cooldown;
+    private bool _signedIn;
+    private int _codeLength;
+
+    /// <summary>E-mail vindo do formulário enviado ou da query string.</summary>
+    private string Email => (ConfirmInput?.Email ?? ResendInput?.Email ?? DevInput?.Email ?? EmailQuery ?? "").Trim();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _codeLength = AccountOptions.Value.CodeLength;
+        ConfirmInput ??= new() { Email = EmailQuery ?? "", Code = new string((CodeQuery ?? "").Where(char.IsDigit).ToArray()) };
+        ResendInput ??= new() { Email = EmailQuery ?? "" };
+        DevInput ??= new() { Email = EmailQuery ?? "" };
+        _appName = (await Dispatcher.QueryAsync(new GetBrandingQuery())).AppName;
+
+        var user = await FindUserAsync();
+        if (user?.EmailConfirmed == true) _state = State.AlreadyConfirmed;
+        else if (user is not null) _cooldown = await Confirmation.CooldownRemainingAsync(user.Id);
+    }
+
+    private async Task ConfirmAsync()
+    {
+        var user = await FindUserAsync();
+        if (user is null)
+        {
+            _error = L["Código inválido ou expirado."];
+            return;
+        }
+
+        await HandleVerifyResultAsync(user, await Confirmation.VerifyAsync(user, ConfirmInput!.Code));
+    }
+
+    private async Task DevAutoConfirmAsync()
+    {
+        if (!Confirmation.DevAutoConfirmAvailable) return;
+        var user = await FindUserAsync();
+        if (user is null)
+        {
+            _error = L["Usuário não encontrado."];
+            return;
+        }
+        await HandleVerifyResultAsync(user, await Confirmation.DevAutoConfirmAsync(user));
+    }
+
+    private async Task HandleVerifyResultAsync(AppUser user, CodeVerifyResult result)
+    {
+        switch (result.Status)
+        {
+            case CodeVerifyStatus.Confirmed:
+                _state = State.Confirmed;
+                if (user.IsActive && !await UserManager.IsLockedOutAsync(user))
+                {
+                    await Sessions.SignInAsync(SignInManager, user, persistent: false);
+                    _signedIn = true;
+                }
+                break;
+            case CodeVerifyStatus.AlreadyConfirmed:
+                _state = State.AlreadyConfirmed;
+                break;
+            case CodeVerifyStatus.Invalid:
+                _error = L["Código incorreto. Você tem mais {0} tentativa(s).", result.RemainingAttempts];
+                break;
+            case CodeVerifyStatus.TooManyAttempts:
+                _error = L["Muitas tentativas incorretas. Solicite um novo código."];
+                break;
+            default:
+                _error = L["Código expirado. Solicite um novo código."];
+                break;
+        }
+        _cooldown = await Confirmation.CooldownRemainingAsync(user.Id);
+    }
+
+    private async Task ResendAsync()
+    {
+        var user = await FindUserAsync();
+        if (user is null)
+        {
+            // Não revela se o e-mail existe
+            _info = L["Se o e-mail estiver cadastrado, um novo código foi enviado."];
+            return;
+        }
+        var result = await Confirmation.IssueCodeAsync(user);
+        switch (result.Status)
+        {
+            case CodeIssueStatus.AlreadyConfirmed:
+                _state = State.AlreadyConfirmed;
+                break;
+            case CodeIssueStatus.Cooldown:
+                _error = L["Aguarde {0} segundos para pedir outro código.", result.CooldownSeconds];
+                _cooldown = result.CooldownSeconds;
+                break;
+            default:
+                _info = L["Enviamos um novo código. Os códigos anteriores deixaram de valer."];
+                _cooldown = result.CooldownSeconds;
+                break;
+        }
+    }
+
+    private async Task<AppUser?> FindUserAsync() =>
+        string.IsNullOrWhiteSpace(Email) ? null : await UserManager.FindByEmailAsync(Email);
+
+    /// <summary>gabriel@exemplo.com → ga*****@exemplo.com</summary>
+    private static string Mask(string email)
+    {
+        var at = email.IndexOf('@');
+        if (at <= 0) return email;
+        var visible = Math.Min(2, at);
+        return email[..visible] + new string('•', Math.Max(3, at - visible)) + email[at..];
+    }
+
+    private sealed class CodeInput
+    {
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessageResourceType = typeof(ValidationMessages), ErrorMessageResourceName = nameof(ValidationMessages.CodeRequired))]
+        public string Code { get; set; } = "";
+    }
+
+    private sealed class EmailInput
+    {
+        public string Email { get; set; } = "";
+    }
+}

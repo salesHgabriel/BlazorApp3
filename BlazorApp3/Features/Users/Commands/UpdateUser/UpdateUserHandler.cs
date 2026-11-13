@@ -1,12 +1,13 @@
 using BlazorApp3.Localization;
 using BlazorApp3.Application.Cqrs;
 using BlazorApp3.Data;
+using BlazorApp3.Security;
 using BlazorApp3.Services;
 using Microsoft.AspNetCore.Identity;
 
 namespace BlazorApp3.Features.Users;
 
-internal sealed class UpdateUserHandler(UserManager<AppUser> users, AppDbContext db) : ICommandHandler<UpdateUserCommand, Unit>
+internal sealed class UpdateUserHandler(UserManager<AppUser> users, AppDbContext db, UserSessions sessions) : ICommandHandler<UpdateUserCommand, Unit>
 {
     public async Task<Unit> HandleAsync(UpdateUserCommand command, CancellationToken ct)
     {
@@ -34,6 +35,8 @@ internal sealed class UpdateUserHandler(UserManager<AppUser> users, AppDbContext
             AppException.ThrowIfFailed(await users.ResetPasswordAsync(user, token, m.Password));
         }
         if (deactivated) await users.UpdateSecurityStampAsync(user); // derruba sessões ativas
+        if (deactivated) await sessions.RevokeAllAsync(user.Id, SessionRevokeReason.Blocked);
+        else if (!string.IsNullOrWhiteSpace(m.Password)) await sessions.RevokeAllAsync(user.Id, SessionRevokeReason.Security); // senha trocada pelo admin
 
         await UserAssignments.SyncRolesAsync(users, db, user, m.RoleIds, ct);
         await UserAssignments.SyncTeamsAsync(db, user.Id, m.TeamIds, ct);

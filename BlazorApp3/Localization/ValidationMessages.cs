@@ -19,4 +19,8 @@ public static class ValidationMessages
     public static string SlugFormat => AppText.Get("Use apenas letras minúsculas, números e hífens");
     public static string ColorRequired => AppText.Get("Informe a cor");
     public static string ColorInvalid => AppText.Get("Cor inválida");
+    public static string PasswordsDontMatch => AppText.Get("As senhas não conferem");
+    public static string TermsRequired => AppText.Get("É preciso aceitar os termos para continuar");
+    public static string CodeRequired => AppText.Get("Informe o código recebido por e-mail");
+    public static string MfaCodeRequired => AppText.Get("Informe o código de verificação");
 }

@@ -1,0 +1,82 @@
+@* Confirmação de identidade para ações sensíveis: senha + código MFA (se o usuário tiver MFA ativo).
+   OnConfirm recebe (senha, código) e retorna true quando deu certo (o dialog fecha); em erro o dialog continua aberto. *@
+<Modal Visible="Visible" VisibleChanged="VisibleChanged" Title="@Title" Icon="bi-shield-lock" Size="sm" CloseOnBackdrop="!_busy">
+    <ChildContent>
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <p class="small text-muted">@Message</p>
+        }
+        <form id="@_formId" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+            <div class="mb-3">
+                <label class="form-label" for="@($"{_formId}-pw")">@L["Senha"]</label>
+                <div class="input-icon">
+                    <i class="bi bi-lock"></i>
+                    <input id="@($"{_formId}-pw")" type="password" class="form-control" autocomplete="current-password"
+                           @bind="_password" @bind:event="oninput" @ref="_passwordInput" />
+                </div>
+            </div>
+            @if (MfaRequired)
+            {
+                <div class="mb-2">
+                    <label class="form-label" for="@($"{_formId}-code")">@L["Código do app autenticador"]</label>
+                    <div class="input-icon">
+                        <i class="bi bi-phone"></i>
+                        <input id="@($"{_formId}-code")" class="form-control" inputmode="numeric" autocomplete="one-time-code" maxlength="11"
+                               placeholder="000000" @bind="_code" @bind:event="oninput" />
+                    </div>
+                    <div class="form-text">@L["Ou um código de recuperação."]</div>
+                </div>
+            }
+        </form>
+    </ChildContent>
+    <Footer>
+        <button type="button" class="btn btn-light" disabled="@_busy" @onclick="() => VisibleChanged.InvokeAsync(false)">@L["Cancelar"]</button>
+        <LoadingButton Type="submit" form="@_formId" Class="@(Danger ? "btn-danger" : "btn-primary")" Icon="bi-shield-check" Loading="_busy"
+                       Disabled="@(string.IsNullOrEmpty(_password) || (MfaRequired && string.IsNullOrWhiteSpace(_code)))">@ConfirmText</LoadingButton>
+    </Footer>
+</Modal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string Title { get; set; } = AppText.Get("Confirme sua identidade");
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public string ConfirmText { get; set; } = AppText.Get("Confirmar");
+    [Parameter] public bool Danger { get; set; }
+    [Parameter] public bool MfaRequired { get; set; }
+    [Parameter, EditorRequired] public Func<string, string?, Task<bool>> OnConfirm { get; set; } = default!;
+
+    private readonly string _formId = "reauth-" + Guid.NewGuid().ToString("N")[..8];
+    private string _password = "";
+    private string? _code;
+    private bool _busy;
+    private bool _wasVisible;
+    private ElementReference _passwordInput;
+
+    protected override void OnParametersSet()
+    {
+        if (Visible && !_wasVisible) { _password = ""; _code = null; } // limpa a cada abertura
+        _wasVisible = Visible;
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_busy || string.IsNullOrEmpty(_password)) return;
+        _busy = true;
+        try
+        {
+            if (await OnConfirm(_password, MfaRequired ? _code : null))
+            {
+                _password = "";
+                _code = null;
+                await VisibleChanged.InvokeAsync(false);
+            }
+            else
+            {
+                _password = "";
+                _code = null;
+            }
+        }
+        finally { _busy = false; }
+    }
+}

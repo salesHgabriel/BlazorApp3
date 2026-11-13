@@ -15,6 +15,8 @@ public static class Perm
     public const string UsersCreate = "Users.Create";
     public const string UsersEdit = "Users.Edit";
     public const string UsersDelete = "Users.Delete";
+    public const string UsersBlock = "Users.Block";
+    public const string UsersExport = "Users.Export";
 
     public const string RolesView = "Roles.View";
     public const string RolesCreate = "Roles.Create";
@@ -33,6 +35,8 @@ public static class Perm
     public const string BrandingEdit = "Branding.Edit";
 
     public const string ComponentsView = "Components.View";
+    public const string JobsView = "Jobs.View";
+    public const string SettingsSystem = "Settings.System";
 
     public static readonly IReadOnlyList<PermissionDefinition> All =
     [
@@ -42,6 +46,8 @@ public static class Perm
         new(11, UsersCreate,        "Usuários",    "Criar usuários"),
         new(12, UsersEdit,          "Usuários",    "Editar usuários, ativar/inativar"),
         new(13, UsersDelete,        "Usuários",    "Excluir usuários"),
+        new(14, UsersBlock,         "Usuários",    "Bloquear e desbloquear usuários"),
+        new(15, UsersExport,        "Usuários",    "Gerar relatórios (Excel e PDF) de usuários"),
 
         new(20, RolesView,          "Papéis",      "Listar e visualizar papéis (roles)"),
         new(21, RolesCreate,        "Papéis",      "Criar papéis"),
@@ -59,7 +65,9 @@ public static class Perm
         new(40, BrandingView,       "Whitelabel",  "Visualizar configurações whitelabel"),
         new(41, BrandingEdit,       "Whitelabel",  "Alterar configurações whitelabel"),
 
-        new(50, ComponentsView,     "Sistema",     "Acessar a vitrine de componentes")
+        new(50, ComponentsView,     "Sistema",     "Acessar a vitrine de componentes"),
+        new(51, JobsView,           "Sistema",     "Acessar o painel de jobs em segundo plano (Hangfire)"),
+        new(52, SettingsSystem,     "Sistema",     "Configurar cadastro, segurança e notificações")
     ];
 
     public static string Policy(string permission) => PolicyPrefix + permission;

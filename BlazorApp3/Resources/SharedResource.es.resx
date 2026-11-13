@@ -1421,4 +1421,805 @@
   <data name="Zoom" xml:space="preserve">
     <value>Zoom</value>
   </data>
+  <data name="Confirmar e-mail" xml:space="preserve">
+    <value>Confirmar correo</value>
+  </data>
+  <data name="E-mail confirmado!" xml:space="preserve">
+    <value>¡Correo confirmado!</value>
+  </data>
+  <data name="Tudo certo, sua conta está ativa. Você já está conectado." xml:space="preserve">
+    <value>Todo listo, tu cuenta está activa. Ya has iniciado sesión.</value>
+  </data>
+  <data name="Tudo certo, sua conta está ativa. Entre para continuar." xml:space="preserve">
+    <value>Todo listo, tu cuenta está activa. Inicia sesión para continuar.</value>
+  </data>
+  <data name="Acessar o painel" xml:space="preserve">
+    <value>Ir al panel</value>
+  </data>
+  <data name="Ir para o login" xml:space="preserve">
+    <value>Ir al inicio de sesión</value>
+  </data>
+  <data name="Este e-mail já está confirmado" xml:space="preserve">
+    <value>Este correo ya está confirmado</value>
+  </data>
+  <data name="Você já pode entrar com seu e-mail e senha." xml:space="preserve">
+    <value>Ya puedes iniciar sesión con tu correo y contraseña.</value>
+  </data>
+  <data name="Confirme seu e-mail" xml:space="preserve">
+    <value>Confirma tu correo</value>
+  </data>
+  <data name="Seu e-mail ainda não foi confirmado." xml:space="preserve">
+    <value>Tu correo aún no ha sido confirmado.</value>
+  </data>
+  <data name="Enviamos um código de {0} dígitos para" xml:space="preserve">
+    <value>Enviamos un código de {0} dígitos a</value>
+  </data>
+  <data name="O código expira em {0} minutos." xml:space="preserve">
+    <value>El código caduca en {0} minutos.</value>
+  </data>
+  <data name="Não recebeu?" xml:space="preserve">
+    <value>¿No lo recibiste?</value>
+  </data>
+  <data name="Reenviar em {0}s" xml:space="preserve">
+    <value>Reenviar en {0}s</value>
+  </data>
+  <data name="Reenviar código" xml:space="preserve">
+    <value>Reenviar código</value>
+  </data>
+  <data name="Voltar para o login" xml:space="preserve">
+    <value>Volver al inicio de sesión</value>
+  </data>
+  <data name="Código inválido ou expirado." xml:space="preserve">
+    <value>Código inválido o caducado.</value>
+  </data>
+  <data name="Código incorreto. Você tem mais {0} tentativa(s)." xml:space="preserve">
+    <value>Código incorrecto. Te quedan {0} intento(s).</value>
+  </data>
+  <data name="Muitas tentativas incorretas. Solicite um novo código." xml:space="preserve">
+    <value>Demasiados intentos incorrectos. Solicita un código nuevo.</value>
+  </data>
+  <data name="Código expirado. Solicite um novo código." xml:space="preserve">
+    <value>Código caducado. Solicita un código nuevo.</value>
+  </data>
+  <data name="Se o e-mail estiver cadastrado, um novo código foi enviado." xml:space="preserve">
+    <value>Si el correo está registrado, se envió un código nuevo.</value>
+  </data>
+  <data name="Aguarde {0} segundos para pedir outro código." xml:space="preserve">
+    <value>Espera {0} segundos para pedir otro código.</value>
+  </data>
+  <data name="Enviamos um novo código. Os códigos anteriores deixaram de valer." xml:space="preserve">
+    <value>Enviamos un código nuevo. Los códigos anteriores ya no son válidos.</value>
+  </data>
+  <data name="Ainda não tem conta?" xml:space="preserve">
+    <value>¿Aún no tienes cuenta?</value>
+  </data>
+  <data name="Criar conta" xml:space="preserve">
+    <value>Crear cuenta</value>
+  </data>
+  <data name="Sua conta foi bloqueada por um administrador." xml:space="preserve">
+    <value>Tu cuenta fue bloqueada por un administrador.</value>
+  </data>
+  <data name="Sua conta está bloqueada até {0}." xml:space="preserve">
+    <value>Tu cuenta está bloqueada hasta {0}.</value>
+  </data>
+  <data name="Motivo: {0}" xml:space="preserve">
+    <value>Motivo: {0}</value>
+  </data>
+  <data name="Cadastro indisponível" xml:space="preserve">
+    <value>Registro no disponible</value>
+  </data>
+  <data name="O cadastro de novas contas está desativado. Solicite acesso a um administrador." xml:space="preserve">
+    <value>El registro de cuentas nuevas está desactivado. Solicita acceso a un administrador.</value>
+  </data>
+  <data name="Preencha seus dados. Enviaremos um código para confirmar seu e-mail." xml:space="preserve">
+    <value>Completa tus datos. Te enviaremos un código para confirmar tu correo.</value>
+  </data>
+  <data name="Preencha seus dados para começar." xml:space="preserve">
+    <value>Completa tus datos para empezar.</value>
+  </data>
+  <data name="Nome completo" xml:space="preserve">
+    <value>Nombre completo</value>
+  </data>
+  <data name="Seu nome" xml:space="preserve">
+    <value>Tu nombre</value>
+  </data>
+  <data name="Confirmar senha" xml:space="preserve">
+    <value>Confirmar contraseña</value>
+  </data>
+  <data name="Li e aceito os termos de uso e a política de privacidade" xml:space="preserve">
+    <value>He leído y acepto los términos de uso y la política de privacidad</value>
+  </data>
+  <data name="Já tem uma conta?" xml:space="preserve">
+    <value>¿Ya tienes una cuenta?</value>
+  </data>
+  <data name="Sessão encerrada" xml:space="preserve">
+    <value>Sesión finalizada</value>
+  </data>
+  <data name="Sua sessão foi encerrada" xml:space="preserve">
+    <value>Tu sesión ha finalizado</value>
+  </data>
+  <data name="Sua conta foi acessada em outro navegador ou dispositivo. Por segurança, apenas uma sessão pode ficar ativa por vez." xml:space="preserve">
+    <value>Se inició sesión con tu cuenta en otro navegador o dispositivo. Por seguridad, solo puede haber una sesión activa a la vez.</value>
+  </data>
+  <data name="Entrar novamente" xml:space="preserve">
+    <value>Iniciar sesión de nuevo</value>
+  </data>
+  <data name="Se não foi você, troque sua senha assim que entrar." xml:space="preserve">
+    <value>Si no fuiste tú, cambia tu contraseña en cuanto inicies sesión.</value>
+  </data>
+  <data name="Jobs (Hangfire)" xml:space="preserve">
+    <value>Jobs (Hangfire)</value>
+  </data>
+  <data name="Notificações" xml:space="preserve">
+    <value>Notificaciones</value>
+  </data>
+  <data name="{0} não lida(s)" xml:space="preserve">
+    <value>{0} sin leer</value>
+  </data>
+  <data name="Tudo em dia" xml:space="preserve">
+    <value>Todo al día</value>
+  </data>
+  <data name="Marcar todas como lidas" xml:space="preserve">
+    <value>Marcar todas como leídas</value>
+  </data>
+  <data name="Limpar lidas" xml:space="preserve">
+    <value>Borrar leídas</value>
+  </data>
+  <data name="Nenhuma notificação por aqui." xml:space="preserve">
+    <value>No hay notificaciones.</value>
+  </data>
+  <data name="agora" xml:space="preserve">
+    <value>ahora</value>
+  </data>
+  <data name="há {0} min" xml:space="preserve">
+    <value>hace {0} min</value>
+  </data>
+  <data name="há {0} h" xml:space="preserve">
+    <value>hace {0} h</value>
+  </data>
+  <data name="Configurações do sistema" xml:space="preserve">
+    <value>Configuración del sistema</value>
+  </data>
+  <data name="Cadastro, segurança e notificações" xml:space="preserve">
+    <value>Registro, seguridad y notificaciones</value>
+  </data>
+  <data name="Permitir cadastro público" xml:space="preserve">
+    <value>Permitir registro público</value>
+  </data>
+  <data name="Exibe “Criar conta” na tela de login. Novas contas recebem o papel padrão configurado." xml:space="preserve">
+    <value>Muestra “Crear cuenta” en la pantalla de inicio de sesión. Las cuentas nuevas reciben el rol predeterminado configurado.</value>
+  </data>
+  <data name="Exigir confirmação de e-mail" xml:space="preserve">
+    <value>Exigir confirmación de correo</value>
+  </data>
+  <data name="O usuário só entra depois de digitar o código enviado por e-mail." xml:space="preserve">
+    <value>El usuario solo entra después de escribir el código enviado por correo.</value>
+  </data>
+  <data name="Avisar administradores sobre novos cadastros" xml:space="preserve">
+    <value>Avisar a los administradores sobre nuevos registros</value>
+  </data>
+  <data name="Notifica quem tem a permissão de editar usuários." xml:space="preserve">
+    <value>Notifica a quien tiene permiso para editar usuarios.</value>
+  </data>
+  <data name="Sessão única por usuário" xml:space="preserve">
+    <value>Sesión única por usuario</value>
+  </data>
+  <data name="Ao entrar em outro navegador ou dispositivo, as outras sessões da conta são encerradas na hora (SignalR)." xml:space="preserve">
+    <value>Al iniciar sesión en otro navegador o dispositivo, las demás sesiones de la cuenta se cierran al instante (SignalR).</value>
+  </data>
+  <data name="Alertas de segurança" xml:space="preserve">
+    <value>Alertas de seguridad</value>
+  </data>
+  <data name="Avisa o usuário quando a conta é bloqueada por excesso de tentativas de senha." xml:space="preserve">
+    <value>Avisa al usuario cuando la cuenta se bloquea por exceso de intentos de contraseña.</value>
+  </data>
+  <data name="Notificações no sistema" xml:space="preserve">
+    <value>Notificaciones en el sistema</value>
+  </data>
+  <data name="Sino no topo com contador e efeito, atualizado em tempo real via SignalR." xml:space="preserve">
+    <value>Campana arriba con contador y efecto, actualizada en tiempo real vía SignalR.</value>
+  </data>
+  <data name="Notificações por e-mail" xml:space="preserve">
+    <value>Notificaciones por correo</value>
+  </data>
+  <data name="Envia uma cópia das notificações por e-mail. O código de confirmação é sempre enviado." xml:space="preserve">
+    <value>Envía una copia de las notificaciones por correo. El código de confirmación siempre se envía.</value>
+  </data>
+  <data name="Envio de e-mails" xml:space="preserve">
+    <value>Envío de correos</value>
+  </data>
+  <data name="Provedor ativo" xml:space="preserve">
+    <value>Proveedor activo</value>
+  </data>
+  <data name="Código de confirmação" xml:space="preserve">
+    <value>Código de confirmación</value>
+  </data>
+  <data name="{0} dígitos · expira em {1} min · {2} tentativas" xml:space="preserve">
+    <value>{0} dígitos · caduca en {1} min · {2} intentos</value>
+  </data>
+  <data name="O provedor (Pickup, Smtp, SendGrid, Mailtrap ou outro implementado) e suas credenciais são definidos em Email no appsettings ou em variáveis de ambiente." xml:space="preserve">
+    <value>El proveedor (Pickup, Smtp, SendGrid, Mailtrap u otro implementado) y sus credenciales se definen en Email del appsettings o en variables de entorno.</value>
+  </data>
+  <data name="Enviar e-mail de teste" xml:space="preserve">
+    <value>Enviar correo de prueba</value>
+  </data>
+  <data name="Testar notificação" xml:space="preserve">
+    <value>Probar notificación</value>
+  </data>
+  <data name="Jobs em segundo plano" xml:space="preserve">
+    <value>Jobs en segundo plano</value>
+  </data>
+  <data name="E-mails, entrega de notificações, fim de bloqueios temporários e limpezas rodam no Hangfire, com novas tentativas automáticas." xml:space="preserve">
+    <value>Correos, entrega de notificaciones, fin de bloqueos temporales y limpiezas se ejecutan en Hangfire, con reintentos automáticos.</value>
+  </data>
+  <data name="Abrir painel do Hangfire" xml:space="preserve">
+    <value>Abrir panel de Hangfire</value>
+  </data>
+  <data name="Configurações salvas" xml:space="preserve">
+    <value>Configuración guardada</value>
+  </data>
+  <data name="As mudanças valem para os próximos acessos. Recarregue a página para ver o sino atualizado." xml:space="preserve">
+    <value>Los cambios se aplican a los próximos accesos. Recarga la página para ver la campana actualizada.</value>
+  </data>
+  <data name="E-mail de teste enfileirado" xml:space="preserve">
+    <value>Correo de prueba en cola</value>
+  </data>
+  <data name="Acompanhe o envio no painel do Hangfire." xml:space="preserve">
+    <value>Sigue el envío en el panel de Hangfire.</value>
+  </data>
+  <data name="Notificação de teste" xml:space="preserve">
+    <value>Notificación de prueba</value>
+  </data>
+  <data name="Se você está vendo isto, as notificações em tempo real estão funcionando." xml:space="preserve">
+    <value>Si ves esto, las notificaciones en tiempo real funcionan.</value>
+  </data>
+  <data name="Bloqueados" xml:space="preserve">
+    <value>Bloqueados</value>
+  </data>
+  <data name="E-mail pendente" xml:space="preserve">
+    <value>Correo pendiente</value>
+  </data>
+  <data name="Bloquear" xml:space="preserve">
+    <value>Bloquear</value>
+  </data>
+  <data name="Desbloquear" xml:space="preserve">
+    <value>Desbloquear</value>
+  </data>
+  <data name="Bloqueado por {0}" xml:space="preserve">
+    <value>Bloqueado por {0}</value>
+  </data>
+  <data name="Bloqueado por excesso de tentativas de senha" xml:space="preserve">
+    <value>Bloqueado por exceso de intentos de contraseña</value>
+  </data>
+  <data name="Por tempo indeterminado" xml:space="preserve">
+    <value>Por tiempo indefinido</value>
+  </data>
+  <data name="Até {0}" xml:space="preserve">
+    <value>Hasta {0}</value>
+  </data>
+  <data name="E-mail ainda não confirmado." xml:space="preserve">
+    <value>Correo aún no confirmado.</value>
+  </data>
+  <data name="Bloquear usuário" xml:space="preserve">
+    <value>Bloquear usuario</value>
+  </data>
+  <data name="Bloquear {0} usuários" xml:space="preserve">
+    <value>Bloquear {0} usuarios</value>
+  </data>
+  <data name="O acesso é suspenso na hora: as sessões abertas são encerradas e o usuário é avisado por e-mail." xml:space="preserve">
+    <value>El acceso se suspende al instante: las sesiones abiertas se cierran y se avisa al usuario por correo.</value>
+  </data>
+  <data name="Duração" xml:space="preserve">
+    <value>Duración</value>
+  </data>
+  <data name="1 hora" xml:space="preserve">
+    <value>1 hora</value>
+  </data>
+  <data name="24 horas" xml:space="preserve">
+    <value>24 horas</value>
+  </data>
+  <data name="7 dias" xml:space="preserve">
+    <value>7 días</value>
+  </data>
+  <data name="30 dias" xml:space="preserve">
+    <value>30 días</value>
+  </data>
+  <data name="Tempo indeterminado" xml:space="preserve">
+    <value>Tiempo indefinido</value>
+  </data>
+  <data name="O desbloqueio automático é agendado no Hangfire." xml:space="preserve">
+    <value>El desbloqueo automático se programa en Hangfire.</value>
+  </data>
+  <data name="Motivo (opcional, enviado ao usuário)" xml:space="preserve">
+    <value>Motivo (opcional, se envía al usuario)</value>
+  </data>
+  <data name="Bloqueado" xml:space="preserve">
+    <value>Bloqueado</value>
+  </data>
+  <data name="Você não pode bloquear a sua própria conta." xml:space="preserve">
+    <value>No puedes bloquear tu propia cuenta.</value>
+  </data>
+  <data name="Usuário(s) bloqueado(s)" xml:space="preserve">
+    <value>Usuario(s) bloqueado(s)</value>
+  </data>
+  <data name="Bloqueando..." xml:space="preserve">
+    <value>Bloqueando...</value>
+  </data>
+  <data name="Usuário(s) desbloqueado(s)" xml:space="preserve">
+    <value>Usuario(s) desbloqueado(s)</value>
+  </data>
+  <data name="Desbloqueando..." xml:space="preserve">
+    <value>Desbloqueando...</value>
+  </data>
+  <data name="Código reenviado" xml:space="preserve">
+    <value>Código reenviado</value>
+  </data>
+  <data name="Pendente" xml:space="preserve">
+    <value>Pendiente</value>
+  </data>
+  <data name="Use o código abaixo para confirmar seu e-mail e ativar sua conta:" xml:space="preserve">
+    <value>Usa el código de abajo para confirmar tu correo y activar tu cuenta:</value>
+  </data>
+  <data name="O código expira em {0} minutos. Se você não criou esta conta, ignore este e-mail." xml:space="preserve">
+    <value>El código caduca en {0} minutos. Si no creaste esta cuenta, ignora este correo.</value>
+  </data>
+  <data name="Seu código de confirmação" xml:space="preserve">
+    <value>Tu código de confirmación</value>
+  </data>
+  <data name="Conta confirmada!" xml:space="preserve">
+    <value>¡Cuenta confirmada!</value>
+  </data>
+  <data name="Seu e-mail foi confirmado e sua conta já está pronta para uso." xml:space="preserve">
+    <value>Tu correo fue confirmado y tu cuenta ya está lista para usar.</value>
+  </data>
+  <data name="Novo cadastro" xml:space="preserve">
+    <value>Nuevo registro</value>
+  </data>
+  <data name="{0} ({1}) criou uma conta." xml:space="preserve">
+    <value>{0} ({1}) creó una cuenta.</value>
+  </data>
+  <data name="O bloqueio é por tempo indeterminado." xml:space="preserve">
+    <value>El bloqueo es por tiempo indefinido.</value>
+  </data>
+  <data name="O bloqueio vale até {0} (UTC)." xml:space="preserve">
+    <value>El bloqueo dura hasta {0} (UTC).</value>
+  </data>
+  <data name="Sua conta foi bloqueada" xml:space="preserve">
+    <value>Tu cuenta ha sido bloqueada</value>
+  </data>
+  <data name="Sua conta foi bloqueada por um administrador e o acesso está suspenso." xml:space="preserve">
+    <value>Tu cuenta fue bloqueada por un administrador y el acceso está suspendido.</value>
+  </data>
+  <data name="Sua conta foi desbloqueada" xml:space="preserve">
+    <value>Tu cuenta ha sido desbloqueada</value>
+  </data>
+  <data name="Seu acesso foi restabelecido. Você já pode entrar novamente." xml:space="preserve">
+    <value>Tu acceso fue restablecido. Ya puedes iniciar sesión de nuevo.</value>
+  </data>
+  <data name="Alerta de segurança: tentativas de acesso" xml:space="preserve">
+    <value>Alerta de seguridad: intentos de acceso</value>
+  </data>
+  <data name="Houve várias tentativas de entrar na sua conta com a senha incorreta, por isso ela foi bloqueada temporariamente. Se não foi você, recomendamos trocar a senha." xml:space="preserve">
+    <value>Hubo varios intentos de entrar en tu cuenta con una contraseña incorrecta, por eso se bloqueó temporalmente. Si no fuiste tú, te recomendamos cambiar la contraseña.</value>
+  </data>
+  <data name="Abrir no sistema" xml:space="preserve">
+    <value>Abrir en el sistema</value>
+  </data>
+  <data name="E-mail de teste" xml:space="preserve">
+    <value>Correo de prueba</value>
+  </data>
+  <data name="Se você recebeu esta mensagem, o envio pelo provedor {0} está funcionando." xml:space="preserve">
+    <value>Si recibiste este mensaje, el envío por el proveedor {0} funciona.</value>
+  </data>
+  <data name="Você entrou em um time" xml:space="preserve">
+    <value>Te uniste a un equipo</value>
+  </data>
+  <data name="Você foi adicionado(a) ao time {0}." xml:space="preserve">
+    <value>Fuiste añadido(a) al equipo {0}.</value>
+  </data>
+  <data name="O e-mail deste usuário já está confirmado." xml:space="preserve">
+    <value>El correo de este usuario ya está confirmado.</value>
+  </data>
+  <data name="Um código foi enviado há pouco. Aguarde {0} segundos." xml:space="preserve">
+    <value>Se envió un código hace poco. Espera {0} segundos.</value>
+  </data>
+  <data name="As senhas não conferem" xml:space="preserve">
+    <value>Las contraseñas no coinciden</value>
+  </data>
+  <data name="É preciso aceitar os termos para continuar" xml:space="preserve">
+    <value>Debes aceptar los términos para continuar</value>
+  </data>
+  <data name="Informe o código recebido por e-mail" xml:space="preserve">
+    <value>Introduce el código recibido por correo</value>
+  </data>
+  <data name="Bloquear e desbloquear usuários" xml:space="preserve">
+    <value>Bloquear y desbloquear usuarios</value>
+  </data>
+  <data name="Acessar o painel de jobs em segundo plano (Hangfire)" xml:space="preserve">
+    <value>Acceder al panel de jobs en segundo plano (Hangfire)</value>
+  </data>
+  <data name="Configurar cadastro, segurança e notificações" xml:space="preserve">
+    <value>Configurar registro, seguridad y notificaciones</value>
+  </data>
+  <data name="Novas contas" xml:space="preserve">
+    <value>Cuentas nuevas</value>
+  </data>
+  <data name="Modo desenvolvimento: nenhum provedor de e-mail configurado." xml:space="preserve">
+    <value>Modo desarrollo: ningún proveedor de correo configurado.</value>
+  </data>
+  <data name="Confirmar sem código" xml:space="preserve">
+    <value>Confirmar sin código</value>
+  </data>
+  <data name="1 dispositivo desconectado." xml:space="preserve">
+    <value>1 dispositivo desconectado.</value>
+  </data>
+  <data name="A verificação em duas etapas já está ativa." xml:space="preserve">
+    <value>La verificación en dos pasos ya está activa.</value>
+  </data>
+  <data name="A verificação em duas etapas não está ativa." xml:space="preserve">
+    <value>La verificación en dos pasos no está activa.</value>
+  </data>
+  <data name="Abra o app autenticador e digite o código de 6 dígitos." xml:space="preserve">
+    <value>Abre la app autenticadora e ingresa el código de 6 dígitos.</value>
+  </data>
+  <data name="Agrupar por" xml:space="preserve">
+    <value>Agrupar por</value>
+  </data>
+  <data name="Além da senha, o login pede um código do app autenticador (Google Authenticator, Microsoft Authenticator, Authy...)." xml:space="preserve">
+    <value>Además de la contraseña, el inicio de sesión pide un código de la app autenticadora (Google Authenticator, Microsoft Authenticator, Authy...).</value>
+  </data>
+  <data name="As configurações de segurança da conta foram alteradas. Entre novamente para continuar." xml:space="preserve">
+    <value>La configuración de seguridad de la cuenta cambió. Inicia sesión de nuevo para continuar.</value>
+  </data>
+  <data name="As outras {0} sessão(ões) foram encerradas por segurança." xml:space="preserve">
+    <value>Las otras {0} sesión(es) se cerraron por seguridad.</value>
+  </data>
+  <data name="Ativa" xml:space="preserve">
+    <value>Activa</value>
+  </data>
+  <data name="Atualizar" xml:space="preserve">
+    <value>Actualizar</value>
+  </data>
+  <data name="Avisar sobre novos acessos" xml:space="preserve">
+    <value>Avisar sobre nuevos accesos</value>
+  </data>
+  <data name="Baixar .txt" xml:space="preserve">
+    <value>Descargar .txt</value>
+  </data>
+  <data name="Busca" xml:space="preserve">
+    <value>Búsqueda</value>
+  </data>
+  <data name="Colunas ({0} de {1})" xml:space="preserve">
+    <value>Columnas ({0} de {1})</value>
+  </data>
+  <data name="Com várias sessões permitidas, as sessões abertas são avisadas na hora quando a conta entra em outro dispositivo e podem encerrar o novo acesso (pedindo senha e MFA)." xml:space="preserve">
+    <value>Con varias sesiones permitidas, las sesiones abiertas reciben un aviso al instante cuando la cuenta entra en otro dispositivo y pueden cerrar ese nuevo acceso (pidiendo contraseña y MFA).</value>
+  </data>
+  <data name="Configurar app autenticador" xml:space="preserve">
+    <value>Configurar app autenticadora</value>
+  </data>
+  <data name="Confirme sua identidade" xml:space="preserve">
+    <value>Confirma tu identidad</value>
+  </data>
+  <data name="Copiado" xml:space="preserve">
+    <value>Copiado</value>
+  </data>
+  <data name="Copiar" xml:space="preserve">
+    <value>Copiar</value>
+  </data>
+  <data name="Código de verificação inválido." xml:space="preserve">
+    <value>Código de verificación inválido.</value>
+  </data>
+  <data name="Código de verificação inválido. Confira o horário do celular e tente de novo." xml:space="preserve">
+    <value>Código de verificación inválido. Revisa la hora del celular e inténtalo de nuevo.</value>
+  </data>
+  <data name="Código do app autenticador" xml:space="preserve">
+    <value>Código de la app autenticadora</value>
+  </data>
+  <data name="Códigos de recuperação" xml:space="preserve">
+    <value>Códigos de recuperación</value>
+  </data>
+  <data name="Desativada" xml:space="preserve">
+    <value>Desactivada</value>
+  </data>
+  <data name="Desativar" xml:space="preserve">
+    <value>Desactivar</value>
+  </data>
+  <data name="Desativar verificação em duas etapas" xml:space="preserve">
+    <value>Desactivar verificación en dos pasos</value>
+  </data>
+  <data name="Descer" xml:space="preserve">
+    <value>Bajar</value>
+  </data>
+  <data name="Digite o código de 6 dígitos exibido no app:" xml:space="preserve">
+    <value>Ingresa el código de 6 dígitos que muestra la app:</value>
+  </data>
+  <data name="Digite um dos seus códigos de recuperação." xml:space="preserve">
+    <value>Ingresa uno de tus códigos de recuperación.</value>
+  </data>
+  <data name="E-mail confirmado" xml:space="preserve">
+    <value>Correo confirmado</value>
+  </data>
+  <data name="Encerrar" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="Encerrar esta sessão" xml:space="preserve">
+    <value>Cerrar esta sesión</value>
+  </data>
+  <data name="Encerrar outras sessões" xml:space="preserve">
+    <value>Cerrar otras sesiones</value>
+  </data>
+  <data name="Encerrar sessão" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="Encerrar todas as outras ({0})" xml:space="preserve">
+    <value>Cerrar todas las demás ({0})</value>
+  </data>
+  <data name="Entrada em {0} · {1} (IP {2}). Se não foi você, encerre a sessão e troque sua senha." xml:space="preserve">
+    <value>Acceso en {0} · {1} (IP {2}). Si no fuiste tú, cierra la sesión y cambia tu contraseña.</value>
+  </data>
+  <data name="Entrou em {0}" xml:space="preserve">
+    <value>Entró el {0}</value>
+  </data>
+  <data name="Escaneie o QR code:" xml:space="preserve">
+    <value>Escanea el código QR:</value>
+  </data>
+  <data name="Esta sessão" xml:space="preserve">
+    <value>Esta sesión</value>
+  </data>
+  <data name="Esta sessão foi encerrada a partir de outro dispositivo conectado à sua conta." xml:space="preserve">
+    <value>Esta sesión se cerró desde otro dispositivo conectado a tu cuenta.</value>
+  </data>
+  <data name="Esta sessão já foi encerrada." xml:space="preserve">
+    <value>Esta sesión ya fue cerrada.</value>
+  </data>
+  <data name="Formato" xml:space="preserve">
+    <value>Formato</value>
+  </data>
+  <data name="Fui eu" xml:space="preserve">
+    <value>Fui yo</value>
+  </data>
+  <data name="Gerado por {0}" xml:space="preserve">
+    <value>Generado por {0}</value>
+  </data>
+  <data name="Gerando..." xml:space="preserve">
+    <value>Generando...</value>
+  </data>
+  <data name="Gerar" xml:space="preserve">
+    <value>Generar</value>
+  </data>
+  <data name="Gerar novos códigos" xml:space="preserve">
+    <value>Generar nuevos códigos</value>
+  </data>
+  <data name="Gerar novos códigos de recuperação" xml:space="preserve">
+    <value>Generar nuevos códigos de recuperación</value>
+  </data>
+  <data name="Gerar relatório" xml:space="preserve">
+    <value>Generar informe</value>
+  </data>
+  <data name="Gerar relatórios (Excel e PDF) de usuários" xml:space="preserve">
+    <value>Generar informes de usuarios (Excel y PDF)</value>
+  </data>
+  <data name="Gerar {0}" xml:space="preserve">
+    <value>Generar {0}</value>
+  </data>
+  <data name="Guarde estes códigos em local seguro. Cada um entra uma única vez caso você perca o celular. Eles não serão exibidos novamente." xml:space="preserve">
+    <value>Guarda estos códigos en un lugar seguro. Cada uno sirve para entrar una sola vez si pierdes el celular. No se mostrarán de nuevo.</value>
+  </data>
+  <data name="IP {0}" xml:space="preserve">
+    <value>IP {0}</value>
+  </data>
+  <data name="Incluir filtros aplicados" xml:space="preserve">
+    <value>Incluir filtros aplicados</value>
+  </data>
+  <data name="Incluir total de registros" xml:space="preserve">
+    <value>Incluir total de registros</value>
+  </data>
+  <data name="Informe o código de verificação" xml:space="preserve">
+    <value>Ingresa el código de verificación</value>
+  </data>
+  <data name="Informe o código do app autenticador." xml:space="preserve">
+    <value>Ingresa el código de la app autenticadora.</value>
+  </data>
+  <data name="Instale um app autenticador no celular." xml:space="preserve">
+    <value>Instala una app autenticadora en el celular.</value>
+  </data>
+  <data name="Já guardei" xml:space="preserve">
+    <value>Ya los guardé</value>
+  </data>
+  <data name="Linhas zebradas" xml:space="preserve">
+    <value>Filas alternadas</value>
+  </data>
+  <data name="Logo e cores da marca" xml:space="preserve">
+    <value>Logo y colores de la marca</value>
+  </data>
+  <data name="MFA" xml:space="preserve">
+    <value>MFA</value>
+  </data>
+  <data name="MFA removido" xml:space="preserve">
+    <value>MFA eliminado</value>
+  </data>
+  <data name="Mais {0} acesso(s) aguardando." xml:space="preserve">
+    <value>{0} acceso(s) más en espera.</value>
+  </data>
+  <data name="Motivo do bloqueio" xml:space="preserve">
+    <value>Motivo del bloqueo</value>
+  </data>
+  <data name="Navegadores e dispositivos conectados à sua conta agora." xml:space="preserve">
+    <value>Navegadores y dispositivos conectados a tu cuenta ahora.</value>
+  </data>
+  <data name="Nenhum registro encontrado." xml:space="preserve">
+    <value>No se encontraron registros.</value>
+  </data>
+  <data name="Novo acesso à sua conta" xml:space="preserve">
+    <value>Nuevo acceso a tu cuenta</value>
+  </data>
+  <data name="Novos códigos gerados" xml:space="preserve">
+    <value>Nuevos códigos generados</value>
+  </data>
+  <data name="Não" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Não foi possível ativar" xml:space="preserve">
+    <value>No se pudo activar</value>
+  </data>
+  <data name="Não foi possível gerar a chave." xml:space="preserve">
+    <value>No se pudo generar la clave.</value>
+  </data>
+  <data name="Não foi possível gerar o relatório" xml:space="preserve">
+    <value>No se pudo generar el informe</value>
+  </data>
+  <data name="O outro dispositivo foi desconectado. Recomendamos trocar sua senha." xml:space="preserve">
+    <value>El otro dispositivo fue desconectado. Recomendamos cambiar tu contraseña.</value>
+  </data>
+  <data name="O relatório tem mais de {0} registros. Refine os filtros." xml:space="preserve">
+    <value>El informe tiene más de {0} registros. Ajusta los filtros.</value>
+  </data>
+  <data name="Online agora" xml:space="preserve">
+    <value>En línea ahora</value>
+  </data>
+  <data name="Orientação" xml:space="preserve">
+    <value>Orientación</value>
+  </data>
+  <data name="Os códigos atuais deixam de valer." xml:space="preserve">
+    <value>Los códigos actuales dejarán de funcionar.</value>
+  </data>
+  <data name="Ou digite a chave manualmente:" xml:space="preserve">
+    <value>O ingresa la clave manualmente:</value>
+  </data>
+  <data name="Ou um código de recuperação." xml:space="preserve">
+    <value>O un código de recuperación.</value>
+  </data>
+  <data name="Padrão" xml:space="preserve">
+    <value>Predeterminadas</value>
+  </data>
+  <data name="Paisagem" xml:space="preserve">
+    <value>Horizontal</value>
+  </data>
+  <data name="Para encerrar esta sessão use &quot;Sair&quot;." xml:space="preserve">
+    <value>Para cerrar esta sesión usa "Salir".</value>
+  </data>
+  <data name="Para encerrar o acesso no outro dispositivo, confirme sua senha." xml:space="preserve">
+    <value>Para cerrar el acceso en el otro dispositivo, confirma tu contraseña.</value>
+  </data>
+  <data name="Página" xml:space="preserve">
+    <value>Página</value>
+  </data>
+  <data name="Relatório" xml:space="preserve">
+    <value>Informe</value>
+  </data>
+  <data name="Relatório de usuários" xml:space="preserve">
+    <value>Informe de usuarios</value>
+  </data>
+  <data name="Relatório gerado" xml:space="preserve">
+    <value>Informe generado</value>
+  </data>
+  <data name="Remover MFA" xml:space="preserve">
+    <value>Eliminar MFA</value>
+  </data>
+  <data name="Remover a verificação em duas etapas de &lt;strong&gt;{0}&lt;/strong&gt;? As sessões abertas do usuário serão encerradas e ele poderá configurar o MFA de novo." xml:space="preserve">
+    <value>¿Eliminar la verificación en dos pasos de &lt;strong&gt;{0}&lt;/strong&gt;? Las sesiones abiertas del usuario se cerrarán y podrá configurar el MFA de nuevo.</value>
+  </data>
+  <data name="Retrato" xml:space="preserve">
+    <value>Vertical</value>
+  </data>
+  <data name="Se foi você, pode ignorar. Se não reconhece este acesso, encerre a sessão agora e troque sua senha." xml:space="preserve">
+    <value>Si fuiste tú, puedes ignorarlo. Si no reconoces este acceso, cierra la sesión ahora y cambia tu contraseña.</value>
+  </data>
+  <data name="Segurança da conta" xml:space="preserve">
+    <value>Seguridad de la cuenta</value>
+  </data>
+  <data name="Selecione ao menos uma coluna." xml:space="preserve">
+    <value>Selecciona al menos una columna.</value>
+  </data>
+  <data name="Sem acesso ao celular?" xml:space="preserve">
+    <value>¿Sin acceso al celular?</value>
+  </data>
+  <data name="Sem agrupamento" xml:space="preserve">
+    <value>Sin agrupar</value>
+  </data>
+  <data name="Sessões abertas e verificação em duas etapas (MFA)" xml:space="preserve">
+    <value>Sesiones abiertas y verificación en dos pasos (MFA)</value>
+  </data>
+  <data name="Sessões ativas" xml:space="preserve">
+    <value>Sesiones activas</value>
+  </data>
+  <data name="Seu acesso foi suspenso por um administrador." xml:space="preserve">
+    <value>Tu acceso fue suspendido por un administrador.</value>
+  </data>
+  <data name="Sim" xml:space="preserve">
+    <value>Sí</value>
+  </data>
+  <data name="Sua conta acabou de ser acessada em outro navegador ou dispositivo:" xml:space="preserve">
+    <value>Tu cuenta acaba de ser accedida desde otro navegador o dispositivo:</value>
+  </data>
+  <data name="Sua conta ficará protegida apenas pela senha. As outras sessões serão encerradas." xml:space="preserve">
+    <value>Tu cuenta quedará protegida solo por la contraseña. Las otras sesiones se cerrarán.</value>
+  </data>
+  <data name="Subir" xml:space="preserve">
+    <value>Subir</value>
+  </data>
+  <data name="Subtítulo (opcional)" xml:space="preserve">
+    <value>Subtítulo (opcional)</value>
+  </data>
+  <data name="Todas" xml:space="preserve">
+    <value>Todas</value>
+  </data>
+  <data name="Todos os outros navegadores e dispositivos serão desconectados na hora." xml:space="preserve">
+    <value>Todos los demás navegadores y dispositivos se desconectarán al instante.</value>
+  </data>
+  <data name="Total: {0} registro(s)" xml:space="preserve">
+    <value>Total: {0} registro(s)</value>
+  </data>
+  <data name="Título" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="Usar código de recuperação" xml:space="preserve">
+    <value>Usar código de recuperación</value>
+  </data>
+  <data name="Usar o app autenticador" xml:space="preserve">
+    <value>Usar la app autenticadora</value>
+  </data>
+  <data name="Ver sessões" xml:space="preserve">
+    <value>Ver sesiones</value>
+  </data>
+  <data name="Verificar e entrar" xml:space="preserve">
+    <value>Verificar y entrar</value>
+  </data>
+  <data name="Verificação em duas etapas" xml:space="preserve">
+    <value>Verificación en dos pasos</value>
+  </data>
+  <data name="Verificação em duas etapas (MFA)" xml:space="preserve">
+    <value>Verificación en dos pasos (MFA)</value>
+  </data>
+  <data name="Verificação em duas etapas ativada" xml:space="preserve">
+    <value>Verificación en dos pasos activada</value>
+  </data>
+  <data name="Verificação em duas etapas desativada" xml:space="preserve">
+    <value>Verificación en dos pasos desactivada</value>
+  </data>
+  <data name="Visto por último {0}" xml:space="preserve">
+    <value>Visto por última vez {0}</value>
+  </data>
+  <data name="desde {0}" xml:space="preserve">
+    <value>desde {0}</value>
+  </data>
+  <data name="{0} código(s) de recuperação restante(s)." xml:space="preserve">
+    <value>{0} código(s) de recuperación restante(s).</value>
+  </data>
+  <data name="{0} dispositivos desconectados." xml:space="preserve">
+    <value>{0} dispositivos desconectados.</value>
+  </data>
+  <data name="{0} registro(s) com os filtros atuais" xml:space="preserve">
+    <value>{0} registro(s) con los filtros actuales</value>
+  </data>
+  <data name="{0} registro(s) · {1}" xml:space="preserve">
+    <value>{0} registro(s) · {1}</value>
+  </data>
+  <data name="{0} · Gerado por {1} em {2}" xml:space="preserve">
+    <value>{0} · Generado por {1} el {2}</value>
+  </data>
+  <data name="{0} · {1} será desconectado na hora." xml:space="preserve">
+    <value>{0} · {1} se desconectará al instante.</value>
+  </data>
 </root>

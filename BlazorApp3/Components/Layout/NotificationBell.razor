@@ -1,0 +1,186 @@
+@implements IAsyncDisposable
+@inject IDispatcher Dispatcher
+@inject SystemSettingsProvider SettingsProvider
+@inject ToastService Toast
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@* Sino de notificações: badge com não lidas, efeito ao chegar notificação nova (SignalR) e lista em dropdown.
+   A conexão SignalR também recebe o aviso de sessão encerrada (sessão única), por isso é aberta mesmo com o sino oculto. *@
+@if (_inAppEnabled)
+{
+    <div class="notif-menu @(_open ? "open" : "")">
+        @if (_open)
+        {
+            <div class="dropdown-scrim" @onclick="() => _open = false"></div>
+        }
+        <button type="button" class="icon-btn notif-btn" title="@L["Notificações"]" aria-label="@L["Notificações"]" @onclick="Toggle" @ref="_bell">
+            <i class="bi @(_unread > 0 ? "bi-bell-fill" : "bi-bell")"></i>
+            @if (_unread > 0)
+            {
+                <span class="notif-badge" @key="_unread">@(_unread > 99 ? "99+" : _unread.ToString())</span>
+            }
+        </button>
+        @if (_open)
+        {
+            <div class="dropdown-panel dropdown-panel-end notif-panel">
+                <div class="notif-head">
+                    <div>
+                        <div class="fw-semibold">@L["Notificações"]</div>
+                        <div class="small text-muted">@(_unread > 0 ? L["{0} não lida(s)", _unread] : L["Tudo em dia"])</div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        @if (_unread > 0)
+                        {
+                            <button class="btn btn-sm btn-light" @onclick="MarkAllAsync" title="@L["Marcar todas como lidas"]"><i class="bi bi-check2-all"></i></button>
+                        }
+                        @if (_items.Any(i => i.Read))
+                        {
+                            <button class="btn btn-sm btn-light" @onclick="ClearReadAsync" title="@L["Limpar lidas"]"><i class="bi bi-trash3"></i></button>
+                        }
+                    </div>
+                </div>
+                @if (_items.Count == 0)
+                {
+                    <div class="text-center text-muted py-4 small">
+                        <i class="bi bi-bell-slash d-block fs-3 mb-1 opacity-50"></i>@L["Nenhuma notificação por aqui."]
+                    </div>
+                }
+                else
+                {
+                    <div class="notif-list">
+                        @foreach (var n in _items)
+                        {
+                            <button type="button" @key="n.Id" class="notif-item @(n.Read ? "" : "unread") @(n.Id == _newestId ? "is-new" : "")" @onclick="() => OpenAsync(n)">
+                                <span class="notif-icon lvl-@n.Level"><i class="bi @n.Icon"></i></span>
+                                <span class="min-w-0 flex-grow-1">
+                                    <span class="notif-title">@n.Title</span>
+                                    <span class="notif-msg">@n.Message</span>
+                                    <span class="notif-time">@Ago(n.CreatedAt)</span>
+                                </span>
+                                @if (!n.Read)
+                                {
+                                    <span class="notif-dot"></span>
+                                }
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private DotNetObjectReference<NotificationBell>? _ref;
+    private ElementReference _bell;
+    private string? _userId;
+    private string? _sessionId;
+    private bool _inAppEnabled;
+    private bool _open;
+    private int _unread;
+    private int? _newestId;
+    private List<NotificationDto> _items = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+        _userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        _sessionId = user.FindFirstValue(UserSessions.ClaimType);
+        _inAppEnabled = (await SettingsProvider.GetAsync()).InAppNotificationsEnabled;
+        if (_userId is not null && _inAppEnabled) await LoadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _userId is null) return;
+        _ref = DotNetObjectReference.Create(this);
+        try { await JS.InvokeVoidAsync("appNotify.start", _ref, _sessionId); }
+        catch (JSDisconnectedException) { }
+    }
+
+    private async Task LoadAsync()
+    {
+        var snap = await Dispatcher.QueryAsync(new MyNotificationsQuery(_userId!));
+        _items = snap.Items.ToList();
+        _unread = snap.UnreadCount;
+    }
+
+    /// <summary>Chamado pelo navegador quando o hub SignalR entrega uma notificação nova.</summary>
+    [JSInvokable]
+    public async Task OnNotification(NotificationDto n)
+    {
+        await InvokeAsync(() =>
+        {
+            if (!_inAppEnabled || _items.Any(i => i.Id == n.Id)) return;
+            _items.Insert(0, n);
+            if (_items.Count > 20) _items.RemoveAt(_items.Count - 1);
+            _unread++;
+            _newestId = n.Id;
+            ShowToast(n);
+            StateHasChanged();
+        });
+        try { await JS.InvokeVoidAsync("appNotify.ring", _bell); } catch (JSException) { } catch (JSDisconnectedException) { }
+    }
+
+    private void ShowToast(NotificationDto n)
+    {
+        switch (n.Level)
+        {
+            case NotificationLevel.Success: Toast.Success(n.Title, n.Message); break;
+            case NotificationLevel.Warning: Toast.Warning(n.Title, n.Message); break;
+            case NotificationLevel.Danger: Toast.Error(n.Title, n.Message); break;
+            default: Toast.Info(n.Title, n.Message); break;
+        }
+    }
+
+    private async Task Toggle()
+    {
+        _open = !_open;
+        _newestId = null;
+        if (_open) await LoadAsync();
+    }
+
+    private async Task OpenAsync(NotificationDto n)
+    {
+        if (!n.Read)
+        {
+            await Dispatcher.SendAsync(new MarkNotificationsReadCommand(_userId!, n.Id));
+            await LoadAsync();
+        }
+        if (n.Link is not null)
+        {
+            _open = false;
+            Nav.NavigateTo(n.Link);
+        }
+    }
+
+    private async Task MarkAllAsync()
+    {
+        await Dispatcher.SendAsync(new MarkNotificationsReadCommand(_userId!));
+        await LoadAsync();
+    }
+
+    private async Task ClearReadAsync()
+    {
+        await Dispatcher.SendAsync(new ClearReadNotificationsCommand(_userId!));
+        await LoadAsync();
+    }
+
+    private string Ago(DateTime utc)
+    {
+        var d = DateTime.UtcNow - DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+        if (d.TotalMinutes < 1) return L["agora"];
+        if (d.TotalHours < 1) return L["há {0} min", (int)d.TotalMinutes];
+        if (d.TotalDays < 1) return L["há {0} h", (int)d.TotalHours];
+        return DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime().ToString("g");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("appNotify.stop"); } catch (JSDisconnectedException) { } catch (ObjectDisposedException) { }
+        _ref?.Dispose();
+    }
+}

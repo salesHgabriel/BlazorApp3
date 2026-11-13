@@ -1,0 +1,328 @@
+@page "/account/security"
+@attribute [Authorize]
+@implements IDisposable
+@inject UiDispatcher Ui
+@inject ToastService Toast
+@inject SessionEvents Events
+@inject IJSRuntime JS
+
+<AppPageTitle Title="@L["Segurança da conta"]" />
+
+<PageHeader Title="@L["Segurança da conta"]" Subtitle="@L["Sessões abertas e verificação em duas etapas (MFA)"]" Icon="bi-shield-lock" />
+
+<div class="row g-3">
+    @* ================================================================ Sessões *@
+    <div class="col-xl-7">
+        <div class="card p-4 h-100">
+            <div class="d-flex align-items-start gap-2 mb-3">
+                <div class="flex-grow-1">
+                    <h2 class="h6 fw-bold mb-1"><i class="bi bi-laptop me-2"></i>@L["Sessões ativas"]</h2>
+                    <div class="small text-muted">@L["Navegadores e dispositivos conectados à sua conta agora."]</div>
+                </div>
+                <button class="icon-btn" title="@L["Atualizar"]" @onclick="LoadSessionsAsync"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
+
+            @if (_sessions is null)
+            {
+                <Skeleton Lines="4" />
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var s in _sessions)
+                    {
+                        var current = s.Id == _sessionId;
+                        <div class="session-card @(current ? "is-current" : "")" @key="s.Id">
+                            <span class="session-icon">
+                                <i class="bi @DeviceInfo.Icon(s.DeviceType, s.Os)"></i>
+                                @if (s.Online)
+                                {
+                                    <span class="session-online" title="@L["Online agora"]"></span>
+                                }
+                            </span>
+                            <span class="min-w-0 flex-grow-1">
+                                <span class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="fw-semibold">@s.Browser · @s.Os</span>
+                                    @if (current)
+                                    {
+                                        <span class="badge text-bg-primary">@L["Esta sessão"]</span>
+                                    }
+                                    @if (s.Mfa)
+                                    {
+                                        <span class="badge text-bg-light border"><i class="bi bi-shield-check me-1"></i>MFA</span>
+                                    }
+                                </span>
+                                <span class="d-block small text-muted">
+                                    @L["IP {0}", s.IpAddress ?? "?"] · @L["Entrou em {0}", Local(s.CreatedAt).ToString("g")]
+                                </span>
+                                <span class="d-block small @(s.Online ? "text-success" : "text-muted")">
+                                    @(s.Online ? L["Online agora"] : L["Visto por último {0}", Ago(s.LastSeenAt)])
+                                </span>
+                            </span>
+                            @if (!current)
+                            {
+                                <button class="btn btn-sm btn-outline-danger text-nowrap" @onclick="() => AskRevoke(s)">
+                                    <i class="bi bi-x-octagon me-1"></i>@L["Encerrar"]
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @if (_sessions.Count > 1)
+                {
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-sm btn-danger" @onclick="() => AskRevoke(null)">
+                            <i class="bi bi-door-closed me-1"></i>@L["Encerrar todas as outras ({0})", _sessions.Count - 1]
+                        </button>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    @* ================================================================ MFA *@
+    <div class="col-xl-5">
+        <div class="card p-4 h-100">
+            <h2 class="h6 fw-bold mb-1"><i class="bi bi-phone me-2"></i>@L["Verificação em duas etapas (MFA)"]</h2>
+            <div class="small text-muted mb-3">@L["Além da senha, o login pede um código do app autenticador (Google Authenticator, Microsoft Authenticator, Authy...)."]</div>
+
+            @if (_mfa is null)
+            {
+                <Skeleton Lines="3" />
+            }
+            else if (_recoveryCodes is not null)
+            {
+                @* ---- Códigos de recuperação recém-gerados (exibidos uma única vez) *@
+                <div class="alert alert-warning small py-2">
+                    <i class="bi bi-exclamation-triangle me-1"></i>@L["Guarde estes códigos em local seguro. Cada um entra uma única vez caso você perca o celular. Eles não serão exibidos novamente."]
+                </div>
+                <div class="recovery-grid mb-3">
+                    @foreach (var c in _recoveryCodes)
+                    {
+                        <code>@c</code>
+                    }
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="CopyCodesAsync"><i class="bi bi-clipboard me-1"></i>@L["Copiar"]</button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="DownloadCodesAsync"><i class="bi bi-download me-1"></i>@L["Baixar .txt"]</button>
+                    <button class="btn btn-sm btn-primary ms-auto" @onclick="() => _recoveryCodes = null">@L["Já guardei"]</button>
+                </div>
+            }
+            else if (_mfa.Enabled)
+            {
+                @* ---- MFA ativo *@
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge text-bg-success"><i class="bi bi-shield-check me-1"></i>@L["Ativa"]</span>
+                    @if (_mfa.EnabledAt is { } at)
+                    {
+                        <span class="small text-muted">@L["desde {0}", Local(at).ToString("g")]</span>
+                    }
+                </div>
+                <div class="small mb-3 @(_mfa.RecoveryCodesLeft <= 3 ? "text-danger" : "text-muted")">
+                    <i class="bi bi-key me-1"></i>@L["{0} código(s) de recuperação restante(s).", _mfa.RecoveryCodesLeft]
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-outline-primary" @onclick="() => OpenMfaAction(MfaAction.Regenerate)"><i class="bi bi-arrow-repeat me-1"></i>@L["Gerar novos códigos"]</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => OpenMfaAction(MfaAction.Disable)"><i class="bi bi-shield-x me-1"></i>@L["Desativar"]</button>
+                </div>
+            }
+            else if (_setup is null)
+            {
+                @* ---- MFA desligado *@
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge text-bg-secondary">@L["Desativada"]</span>
+                </div>
+                <LoadingButton Class="btn-primary" Icon="bi-qr-code" Loading="_mfaBusy" OnClick="StartSetupAsync">@L["Configurar app autenticador"]</LoadingButton>
+            }
+            else
+            {
+                @* ---- Configuração em andamento *@
+                <ol class="mfa-steps">
+                    <li>@L["Instale um app autenticador no celular."]</li>
+                    <li>
+                        @L["Escaneie o QR code:"]
+                        <div class="text-center my-2"><img src="@_setup.QrCodeDataUri" alt="QR code" class="mfa-qr" /></div>
+                        <div class="small text-muted">@L["Ou digite a chave manualmente:"]</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <code class="mfa-key">@_setup.SharedKey</code>
+                            <button class="icon-btn" title="@L["Copiar"]" @onclick="CopyKeyAsync"><i class="bi bi-clipboard"></i></button>
+                        </div>
+                    </li>
+                    <li>
+                        @L["Digite o código de 6 dígitos exibido no app:"]
+                        <form class="d-flex gap-2 mt-2" @onsubmit="EnableAsync" @onsubmit:preventDefault>
+                            <input class="form-control text-center" style="max-width:160px;letter-spacing:.3em" inputmode="numeric" maxlength="6"
+                                   autocomplete="one-time-code" placeholder="000000" @bind="_setupCode" @bind:event="oninput" />
+                            <LoadingButton Type="submit" Icon="bi-shield-check" Loading="_mfaBusy" Disabled="@(_setupCode?.Length != 6)">@L["Ativar"]</LoadingButton>
+                        </form>
+                    </li>
+                </ol>
+                <button class="btn btn-link btn-sm px-0" @onclick="() => _setup = null">@L["Cancelar"]</button>
+            }
+        </div>
+    </div>
+</div>
+
+@* Encerrar sessão(ões) *@
+<ReauthDialog @bind-Visible="_revokeOpen" Danger="true" MfaRequired="_mfa?.Enabled == true"
+              Title="@(_revokeTarget is null ? L["Encerrar outras sessões"] : L["Encerrar sessão"])"
+              Message="@(_revokeTarget is null ? L["Todos os outros navegadores e dispositivos serão desconectados na hora."] : L["{0} · {1} será desconectado na hora.", _revokeTarget.Browser, _revokeTarget.Os])"
+              ConfirmText="@L["Encerrar"]" OnConfirm="RevokeAsync" />
+
+@* Desativar MFA / gerar novos códigos *@
+<ReauthDialog @bind-Visible="_mfaActionOpen" Danger="@(_mfaAction == MfaAction.Disable)" MfaRequired="true"
+              Title="@(_mfaAction == MfaAction.Disable ? L["Desativar verificação em duas etapas"] : L["Gerar novos códigos de recuperação"])"
+              Message="@(_mfaAction == MfaAction.Disable ? L["Sua conta ficará protegida apenas pela senha. As outras sessões serão encerradas."] : L["Os códigos atuais deixam de valer."])"
+              ConfirmText="@(_mfaAction == MfaAction.Disable ? L["Desativar"] : L["Gerar"])" OnConfirm="ConfirmMfaActionAsync" />
+
+@code {
+    private enum MfaAction { Disable, Regenerate }
+
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private string _userId = "";
+    private string _sessionId = "";
+    private string _email = "";
+    private List<SessionItem>? _sessions;
+    private MfaStatus? _mfa;
+    private MfaSetup? _setup;
+    private string? _setupCode;
+    private IReadOnlyList<string>? _recoveryCodes;
+    private bool _mfaBusy;
+
+    private bool _revokeOpen;
+    private SessionItem? _revokeTarget;
+    private bool _mfaActionOpen;
+    private MfaAction _mfaAction;
+
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+        _userId = user.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        _sessionId = user.FindFirstValue(UserSessions.ClaimType) ?? "";
+        _email = user.Identity?.Name ?? "";
+        Events.Changed += OnSessionsChanged;
+        await Task.WhenAll(LoadSessionsAsync(), LoadMfaAsync());
+        // "online agora" / "visto por último" mudam sozinhos: atualiza a cada 30s
+        _timer = new Timer(_ => OnSessionsChanged(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    private async Task LoadSessionsAsync() => _sessions = await Ui.QueryAsync(new MySessionsQuery(_userId));
+    private async Task LoadMfaAsync() => _mfa = await Ui.QueryAsync(new GetMfaStatusQuery(_userId));
+
+    private void OnSessionsChanged() => _ = InvokeAsync(async () =>
+    {
+        try { await LoadSessionsAsync(); StateHasChanged(); }
+        catch (ObjectDisposedException) { }
+    });
+
+    // ---------------------------------------------------------------- Sessões
+
+    private void AskRevoke(SessionItem? target)
+    {
+        _revokeTarget = target;
+        _revokeOpen = true;
+    }
+
+    private async Task<bool> RevokeAsync(string password, string? code)
+    {
+        var result = await Ui.SendAsync(new RevokeSessionCommand(_userId, _sessionId, _revokeTarget?.Id, password, code));
+        if (!result.Succeeded) return false;
+        Toast.Success(L["Sessão encerrada"], result.Value == 1 ? L["1 dispositivo desconectado."] : L["{0} dispositivos desconectados.", result.Value]);
+        await LoadSessionsAsync();
+        return true;
+    }
+
+    // ---------------------------------------------------------------- MFA
+
+    private async Task StartSetupAsync()
+    {
+        _mfaBusy = true;
+        try
+        {
+            var r = await Ui.SendAsync(new StartMfaSetupCommand(_userId));
+            if (r.Succeeded) { _setup = r.Value; _setupCode = null; }
+        }
+        finally { _mfaBusy = false; }
+    }
+
+    private async Task EnableAsync()
+    {
+        if (_setupCode?.Length != 6 || _mfaBusy) return;
+        _mfaBusy = true;
+        try
+        {
+            var r = await Ui.SendAsync(new EnableMfaCommand(_userId, _sessionId, _setupCode), errorTitle: L["Não foi possível ativar"]);
+            if (!r.Succeeded) { _setupCode = null; return; }
+            _setup = null;
+            _recoveryCodes = r.Value!.RecoveryCodes;
+            Toast.Success(L["Verificação em duas etapas ativada"],
+                r.Value.SessionsEnded > 0 ? L["As outras {0} sessão(ões) foram encerradas por segurança.", r.Value.SessionsEnded] : null);
+            await Task.WhenAll(LoadMfaAsync(), LoadSessionsAsync());
+        }
+        finally { _mfaBusy = false; }
+    }
+
+    private void OpenMfaAction(MfaAction action)
+    {
+        _mfaAction = action;
+        _mfaActionOpen = true;
+    }
+
+    private async Task<bool> ConfirmMfaActionAsync(string password, string? code)
+    {
+        if (_mfaAction == MfaAction.Disable)
+        {
+            var r = await Ui.SendAsync(new DisableMfaCommand(_userId, _sessionId, password, code ?? ""), success: L["Verificação em duas etapas desativada"]);
+            if (!r.Succeeded) return false;
+        }
+        else
+        {
+            var r = await Ui.SendAsync(new RegenerateRecoveryCodesCommand(_userId, password, code ?? ""), success: L["Novos códigos gerados"]);
+            if (!r.Succeeded) return false;
+            _recoveryCodes = r.Value;
+        }
+        await Task.WhenAll(LoadMfaAsync(), LoadSessionsAsync());
+        return true;
+    }
+
+    private string CodesText => string.Join(Environment.NewLine, _recoveryCodes ?? []);
+
+    private async Task CopyCodesAsync()
+    {
+        if (await JS.CopyToClipboardAsync(CodesText)) Toast.Success(L["Copiado"]);
+    }
+
+    private async Task CopyKeyAsync()
+    {
+        if (_setup is not null && await JS.CopyToClipboardAsync(_setup.SharedKey.Replace(" ", ""))) Toast.Success(L["Copiado"]);
+    }
+
+    private Task DownloadCodesAsync()
+    {
+        var text = $"{L["Códigos de recuperação"]} - {_email}{Environment.NewLine}{DateTime.Now:g}{Environment.NewLine}{Environment.NewLine}{CodesText}{Environment.NewLine}";
+        return JS.DownloadAsync("codigos-recuperacao.txt", "text/plain", System.Text.Encoding.UTF8.GetBytes(text));
+    }
+
+    // ---------------------------------------------------------------- Util
+
+    private static DateTime Local(DateTime utc) => DateTime.SpecifyKind(utc, DateTimeKind.Utc).ToLocalTime();
+
+    private string Ago(DateTime utc)
+    {
+        var d = DateTime.UtcNow - DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+        if (d.TotalMinutes < 1) return L["agora"];
+        if (d.TotalHours < 1) return L["há {0} min", (int)d.TotalMinutes];
+        if (d.TotalDays < 1) return L["há {0} h", (int)d.TotalHours];
+        return Local(utc).ToString("g");
+    }
+
+    public void Dispose()
+    {
+        Events.Changed -= OnSessionsChanged;
+        _timer?.Dispose();
+    }
+}

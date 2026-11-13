@@ -1,0 +1,18 @@
+@* Status do usuário: ativo/inativo + bloqueado + e-mail pendente *@
+<span class="d-inline-flex flex-wrap gap-1">
+    <span class="status-badge @(User.IsActive ? "on" : "off")">@(User.IsActive ? L["Ativo"] : L["Inativo"])</span>
+    @if (User.IsBlocked)
+    {
+        <span class="status-badge blocked" title="@(BlockState.IsPermanent(User.LockoutEnd) ? L["Por tempo indeterminado"] : L["Até {0}", User.LockoutEnd!.Value.ToLocalTime().ToString("g")])">
+            <i class="bi bi-lock-fill"></i>@L["Bloqueado"]
+        </span>
+    }
+    @if (!User.EmailConfirmed)
+    {
+        <span class="status-badge pending" title="@L["E-mail ainda não confirmado."]">@L["Pendente"]</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public UserListItem User { get; set; } = default!;
+}

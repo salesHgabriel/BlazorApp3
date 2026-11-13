@@ -1,15 +1,12 @@
 @typeparam TItem
-@implements IDisposable
+@implements IAsyncDisposable
+@inject IJSRuntime JS
 
 @*
     Busca lazy: carrega resultados paginados sob demanda conforme o usuário digita (debounce)
     e permite "carregar mais" sem trazer tudo do banco.
 *@
-<div class="ac @(_open ? "open" : "") @Class">
-    @if (_open)
-    {
-        <div class="dropdown-scrim" @onclick="Close"></div>
-    }
+<div class="ac @(_open ? "open" : "") @Class" @ref="_root">
     <div class="ac-input">
         <i class="bi bi-search"></i>
         <input class="form-control" placeholder="@Placeholder" value="@_term" autocomplete="off"
@@ -73,6 +70,13 @@
     private int _highlight = -1;
     private int _requestId;
     private CancellationTokenSource? _cts;
+    private ElementReference _root;
+    private OutsideClickWatcher? _outside;
+
+    protected override void OnInitialized() =>
+        _outside = new OutsideClickWatcher(JS, () => InvokeAsync(() => { _open = false; StateHasChanged(); }));
+
+    protected override Task OnAfterRenderAsync(bool firstRender) => _outside!.SyncAsync(_open, _root);
 
     private async Task OnFocus()
     {
@@ -156,5 +160,9 @@
         _page = 0;
     }
 
-    public void Dispose() => _cts?.Cancel();
+    public ValueTask DisposeAsync()
+    {
+        _cts?.Cancel();
+        return _outside?.DisposeAsync() ?? ValueTask.CompletedTask;
+    }
 }

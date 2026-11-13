@@ -1,0 +1,173 @@
+@using BlazorApp3.Services.Reports
+
+@* Dialog "Gerar relatório": formato (Excel/PDF), título, colunas (seleção + ordem), agrupamento e opções de layout.
+   Reutilizável: a página informa as colunas disponíveis e trata OnGenerate (busca os dados e baixa o arquivo). *@
+<Modal Visible="Visible" VisibleChanged="VisibleChanged" Title="@L["Gerar relatório"]" Subtitle="@Hint" Icon="bi-file-earmark-bar-graph" Size="lg" CloseOnBackdrop="!_busy">
+    <ChildContent>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label">@L["Formato"]</label>
+                <div class="report-formats mb-3">
+                    <button type="button" class="report-format @(_o.Format == ReportFormat.Excel ? "active" : "")" @onclick="() => _o.Format = ReportFormat.Excel">
+                        <i class="bi bi-file-earmark-excel text-success"></i><span>Excel</span><small>.xlsx</small>
+                    </button>
+                    <button type="button" class="report-format @(_o.Format == ReportFormat.Pdf ? "active" : "")" @onclick="() => _o.Format = ReportFormat.Pdf">
+                        <i class="bi bi-file-earmark-pdf text-danger"></i><span>PDF</span><small>.pdf</small>
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">@L["Título"]</label>
+                    <input class="form-control" maxlength="120" @bind="_o.Title" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">@L["Subtítulo (opcional)"]</label>
+                    <input class="form-control" maxlength="200" @bind="_o.Subtitle" />
+                </div>
+
+                @if (Groupable.Count > 0)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">@L["Agrupar por"]</label>
+                        <select class="form-select" @bind="GroupBy">
+                            <option value="">@L["Sem agrupamento"]</option>
+                            @foreach (var key in Groupable)
+                            {
+                                <option value="@key">@Label(key)</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                <div class="d-grid gap-1">
+                    <Toggle @bind-Value="_o.IncludeFilters" Title="@L["Incluir filtros aplicados"]" />
+                    <Toggle @bind-Value="_o.IncludeSummary" Title="@L["Incluir total de registros"]" />
+                    <Toggle @bind-Value="_o.Zebra" Title="@L["Linhas zebradas"]" />
+                    <Toggle @bind-Value="_o.ShowLogo" Title="@L["Logo e cores da marca"]" />
+                </div>
+
+                @if (_o.Format == ReportFormat.Pdf)
+                {
+                    <div class="row g-2 mt-1">
+                        <div class="col-6">
+                            <label class="form-label">@L["Orientação"]</label>
+                            <select class="form-select form-select-sm" @bind="Orientation">
+                                <option value="landscape">@L["Paisagem"]</option>
+                                <option value="portrait">@L["Retrato"]</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">@L["Papel"]</label>
+                            <select class="form-select form-select-sm" @bind="_o.PageSize">
+                                <option value="A4">A4</option>
+                                <option value="Letter">Letter</option>
+                                <option value="Legal">Legal</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="col-md-6">
+                <div class="d-flex align-items-center mb-2">
+                    <label class="form-label mb-0 flex-grow-1">@L["Colunas ({0} de {1})", _o.Columns.Count, Columns.Count]</label>
+                    <button type="button" class="btn btn-link btn-sm p-0 me-2" @onclick="SelectAll">@L["Todas"]</button>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-muted" @onclick="ResetColumns">@L["Padrão"]</button>
+                </div>
+                <div class="report-columns">
+                    @foreach (var col in OrderedColumns)
+                    {
+                        var selected = _o.Columns.Contains(col.Key);
+                        var index = _o.Columns.IndexOf(col.Key);
+                        <div class="report-column @(selected ? "selected" : "")" @key="col.Key">
+                            <input type="checkbox" class="form-check-input" checked="@selected" @onchange="() => ToggleColumn(col.Key)" id="@($"rc-{col.Key}")" />
+                            <label class="flex-grow-1" for="@($"rc-{col.Key}")">@col.Label</label>
+                            @if (selected)
+                            {
+                                <button type="button" class="icon-btn" title="@L["Subir"]" disabled="@(index == 0)" @onclick="() => Move(col.Key, -1)"><i class="bi bi-arrow-up"></i></button>
+                                <button type="button" class="icon-btn" title="@L["Descer"]" disabled="@(index == _o.Columns.Count - 1)" @onclick="() => Move(col.Key, 1)"><i class="bi bi-arrow-down"></i></button>
+                            }
+                        </div>
+                    }
+                </div>
+                @if (_o.Columns.Count == 0)
+                {
+                    <div class="small text-danger mt-1">@L["Selecione ao menos uma coluna."]</div>
+                }
+            </div>
+        </div>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-light" disabled="@_busy" @onclick="() => VisibleChanged.InvokeAsync(false)">@L["Cancelar"]</button>
+        <LoadingButton Icon="bi-download" Loading="_busy" LoadingText="@L["Gerando..."]" Disabled="@(_o.Columns.Count == 0)" OnClick="GenerateAsync">
+            @L["Gerar {0}", _o.Format == ReportFormat.Excel ? "Excel" : "PDF"]
+        </LoadingButton>
+    </Footer>
+</Modal>
+
+@code {
+    public sealed record ColumnOption(string Key, string Label, bool DefaultSelected);
+
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string DefaultTitle { get; set; } = "";
+    [Parameter] public IReadOnlyList<ColumnOption> Columns { get; set; } = [];
+    [Parameter] public IReadOnlyList<string> Groupable { get; set; } = [];
+    /// <summary>Texto auxiliar (ex.: "35 registros com os filtros atuais").</summary>
+    [Parameter] public string? Hint { get; set; }
+    [Parameter, EditorRequired] public Func<ReportOptions, Task<bool>> OnGenerate { get; set; } = default!;
+
+    private ReportOptions _o = new();
+    private bool _initialized;
+    private bool _busy;
+
+    private string GroupBy { get => _o.GroupBy ?? ""; set => _o.GroupBy = string.IsNullOrEmpty(value) ? null : value; }
+    private string Orientation { get => _o.Landscape ? "landscape" : "portrait"; set => _o.Landscape = value == "landscape"; }
+
+    /// <summary>Selecionadas primeiro (na ordem escolhida), depois as demais.</summary>
+    private IEnumerable<ColumnOption> OrderedColumns =>
+        _o.Columns.Select(k => Columns.FirstOrDefault(c => c.Key == k)).OfType<ColumnOption>()
+            .Concat(Columns.Where(c => !_o.Columns.Contains(c.Key)));
+
+    protected override void OnParametersSet()
+    {
+        // Mantém as escolhas entre aberturas; só inicializa na primeira vez
+        if (_initialized || Columns.Count == 0) return;
+        _initialized = true;
+        _o.Title = DefaultTitle;
+        ResetColumns();
+    }
+
+    private string Label(string key) => Columns.FirstOrDefault(c => c.Key == key)?.Label ?? key;
+
+    private void ToggleColumn(string key)
+    {
+        if (!_o.Columns.Remove(key)) _o.Columns.Add(key);
+    }
+
+    private void Move(string key, int delta)
+    {
+        var i = _o.Columns.IndexOf(key);
+        var j = i + delta;
+        if (i < 0 || j < 0 || j >= _o.Columns.Count) return;
+        (_o.Columns[i], _o.Columns[j]) = (_o.Columns[j], _o.Columns[i]);
+    }
+
+    private void SelectAll()
+    {
+        foreach (var c in Columns.Where(c => !_o.Columns.Contains(c.Key))) _o.Columns.Add(c.Key);
+    }
+
+    private void ResetColumns() => _o.Columns = Columns.Where(c => c.DefaultSelected).Select(c => c.Key).ToList();
+
+    private async Task GenerateAsync()
+    {
+        if (_busy || _o.Columns.Count == 0) return;
+        _busy = true;
+        try
+        {
+            if (await OnGenerate(_o.Clone())) await VisibleChanged.InvokeAsync(false);
+        }
+        finally { _busy = false; }
+    }
+}

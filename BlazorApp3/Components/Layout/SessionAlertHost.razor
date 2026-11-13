@@ -1,0 +1,101 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject UiDispatcher Ui
+@inject ToastService Toast
+@inject SessionEvents Events
+
+@* Aviso em tempo real (SignalR "newSession"): a conta acabou de entrar em outro dispositivo.
+   Daqui dá para encerrar o novo acesso, confirmando senha e (se configurado) o código MFA. *@
+<Modal Visible="_current is not null" VisibleChanged="v => { if (!v) Dismiss(); }" Title="@L["Novo acesso à sua conta"]"
+       Icon="bi-shield-exclamation" Size="md" CloseOnBackdrop="false">
+    <ChildContent>
+        @if (_current is { } s)
+        {
+            <p class="text-muted small mb-3">@L["Sua conta acabou de ser acessada em outro navegador ou dispositivo:"]</p>
+            <div class="session-card is-alert">
+                <span class="session-icon"><i class="bi @DeviceInfo.Icon(s.DeviceType, s.Os)"></i></span>
+                <span class="min-w-0">
+                    <span class="d-block fw-semibold">@s.Browser · @s.Os</span>
+                    <span class="d-block small text-muted">@L["IP {0}", s.IpAddress ?? "?"] · @DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc).ToLocalTime().ToString("g")</span>
+                </span>
+            </div>
+            <p class="small mt-3 mb-0">@L["Se foi você, pode ignorar. Se não reconhece este acesso, encerre a sessão agora e troque sua senha."]</p>
+            @if (_queue.Count > 0)
+            {
+                <p class="small text-muted mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>@L["Mais {0} acesso(s) aguardando.", _queue.Count]</p>
+            }
+        }
+    </ChildContent>
+    <Footer>
+        <a href="account/security" class="btn btn-link me-auto" @onclick="Dismiss">@L["Ver sessões"]</a>
+        <button class="btn btn-light" @onclick="Dismiss">@L["Fui eu"]</button>
+        <button class="btn btn-danger" @onclick="AskRevokeAsync"><i class="bi bi-x-octagon me-1"></i>@L["Encerrar esta sessão"]</button>
+    </Footer>
+</Modal>
+
+<ReauthDialog @bind-Visible="_reauthOpen" Danger="true" MfaRequired="_mfa" ConfirmText="@L["Encerrar sessão"]"
+              Message="@L["Para encerrar o acesso no outro dispositivo, confirme sua senha."]" OnConfirm="RevokeAsync" />
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private readonly Queue<SessionInfo> _queue = new();
+    private SessionInfo? _current;
+    private DotNetObjectReference<SessionAlertHost>? _ref;
+    private string? _userId;
+    private string? _sessionId;
+    private bool _reauthOpen;
+    private bool _mfa;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState).User;
+        _userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        _sessionId = user.FindFirstValue(UserSessions.ClaimType);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _userId is null) return;
+        _ref = DotNetObjectReference.Create(this);
+        try { await JS.InvokeVoidAsync("appNotify.onNewSession", _ref); }
+        catch (JSDisconnectedException) { }
+    }
+
+    [JSInvokable]
+    public Task OnNewSession(SessionInfo info) => InvokeAsync(() =>
+    {
+        if (info.Id == _sessionId) return; // não deveria chegar aqui, mas por garantia
+        if (_current is null) _current = info; else _queue.Enqueue(info);
+        Events.RaiseChanged();
+        StateHasChanged();
+    });
+
+    private void Dismiss()
+    {
+        _current = _queue.Count > 0 ? _queue.Dequeue() : null;
+    }
+
+    private async Task AskRevokeAsync()
+    {
+        _mfa = (await Ui.QueryAsync(new GetMfaStatusQuery(_userId!))).Enabled;
+        _reauthOpen = true;
+    }
+
+    private async Task<bool> RevokeAsync(string password, string? code)
+    {
+        if (_current is null || _sessionId is null) return true;
+        var result = await Ui.SendAsync(new RevokeSessionCommand(_userId!, _sessionId, _current.Id, password, code),
+            success: L["Sessão encerrada"], successDetail: L["O outro dispositivo foi desconectado. Recomendamos trocar sua senha."]);
+        if (!result.Succeeded) return false;
+        Dismiss();
+        Events.RaiseChanged();
+        return true;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _ref?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

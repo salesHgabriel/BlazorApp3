@@ -13,6 +13,18 @@ public class AppUser : IdentityUser
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
 
+    // ---- Bloqueio administrativo (o bloqueio em si é o lockout do Identity: LockoutEnd)
+    /// <summary>Quando um administrador bloqueou a conta (null = sem bloqueio administrativo).</summary>
+    public DateTime? BlockedAt { get; set; }
+    [MaxLength(300)] public string? BlockReason { get; set; }
+    [MaxLength(150)] public string? BlockedBy { get; set; }
+
+    /// <summary>Quando o MFA (app autenticador) foi ativado. O flag em si é o TwoFactorEnabled do Identity.</summary>
+    public DateTime? MfaEnabledAt { get; set; }
+
+    public ICollection<UserSession> Sessions { get; set; } = [];
+    public ICollection<EmailConfirmationCode> ConfirmationCodes { get; set; } = [];
+
     /// <summary>Time selecionado pelo usuário (aplica o branding personalizado do time).</summary>
     public int? ActiveTeamId { get; set; }
 

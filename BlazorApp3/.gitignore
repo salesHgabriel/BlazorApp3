@@ -486,3 +486,6 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 /App_Data/uploads/*
+# Hangfire (SQLite) e e-mails gravados em desenvolvimento (provedor Pickup)
+hangfire.db*
+App_Data/emails/
