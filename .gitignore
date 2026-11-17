@@ -485,3 +485,5 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+/BlazorApp3/app.db-shm
+/BlazorApp3/app.db-wal
