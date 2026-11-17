@@ -11,6 +11,9 @@
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />
     <PackageReference Include="Hangfire.Storage.SQLite" Version="0.4.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="11.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.18.7" />
     <!-- Hangfire.Storage.SQLite → sqlite-net-pcl → SQLitePCLRaw.bundle_green 2.1.11 puxava SQLitePCLRaw.lib.e_sqlite3 2.1.11
          (GHSA-2m69-gcr7-jv3q, SQLite nativo vulnerável). Fixa uma versão corrigida e não copia os binários dela:
          o e_sqlite3 nativo usado pelo processo é um só, o do pacote "SQLite" (3.53.x) que vem com o EF Core / SQLitePCLRaw 3.

@@ -47,7 +47,23 @@ public sealed class UserSessions(
     /// <summary>Cria a sessão, faz o login (cookie com session_id) e aplica sessão única / aviso de novo acesso.</summary>
     public async Task<string> SignInAsync(SignInManager<AppUser> signInManager, AppUser user, bool persistent, bool mfa = false)
     {
-        var http = signInManager.Context;
+        var session = await CreateSessionAsync(signInManager.Context, signInManager.UserManager, user, persistent, mfa);
+
+        List<Claim> claims = [new(ClaimType, session.Id)];
+        if (mfa) claims.Add(new(AmrClaimType, "mfa"));
+        await signInManager.SignInWithClaimsAsync(user, persistent, claims);
+
+        await ApplySessionPolicyAsync(session);
+        return session.Id;
+    }
+
+    /// <summary>
+    /// Registra a sessão (sem cookie) e atualiza o último acesso. Usado pelo login do navegador e pela API (JWT).
+    /// Depois de emitir a credencial, chame <see cref="ApplySessionPolicyAsync"/>.
+    /// </summary>
+    public async Task<UserSession> CreateSessionAsync(HttpContext http, UserManager<AppUser> userManager, AppUser user, bool persistent, bool mfa,
+        string? refreshTokenHash = null, DateTime? refreshTokenExpiresAt = null)
+    {
         var ua = http.Request.Headers.UserAgent.ToString();
         var device = DeviceInfo.Parse(ua);
         var now = DateTime.UtcNow;
@@ -55,13 +71,14 @@ public sealed class UserSessions(
         {
             Id = Guid.NewGuid().ToString("N"), UserId = user.Id, CreatedAt = now, LastSeenAt = now,
             Persistent = persistent, Mfa = mfa,
+            RefreshTokenHash = refreshTokenHash, RefreshTokenExpiresAt = refreshTokenExpiresAt,
             IpAddress = http.Connection.RemoteIpAddress?.ToString(),
             UserAgent = ua.Length > 512 ? ua[..512] : ua,
             Browser = device.Browser, Os = device.Os, DeviceType = device.DeviceType
         };
 
         user.LastLoginAt = now;
-        var result = await signInManager.UserManager.UpdateAsync(user);
+        var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded) throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
 
         await using (var scope = scopeFactory.CreateAsyncScope())
@@ -71,18 +88,17 @@ public sealed class UserSessions(
             await db.SaveChangesAsync();
         }
         cache.Set(Key(session.Id), new CachedSession(user.Id, true), CacheTtl);
+        return session;
+    }
 
-        List<Claim> claims = [new(ClaimType, session.Id)];
-        if (mfa) claims.Add(new(AmrClaimType, "mfa"));
-        await signInManager.SignInWithClaimsAsync(user, persistent, claims);
-
+    /// <summary>Sessão única (encerra as outras) ou aviso de novo acesso, conforme a configuração do sistema.</summary>
+    public async Task ApplySessionPolicyAsync(UserSession session)
+    {
         var s = await settings.GetAsync();
         if (s.SingleSessionEnabled)
-            await RevokeAllAsync(user.Id, SessionRevokeReason.Replaced, exceptSessionId: session.Id);
+            await RevokeAllAsync(session.UserId, SessionRevokeReason.Replaced, exceptSessionId: session.Id);
         else if (s.NewLoginAlertsEnabled)
             await AlertOtherSessionsAsync(session);
-
-        return session.Id;
     }
 
     /// <summary>Avisa as outras sessões abertas (tempo real) e registra uma notificação de segurança.</summary>

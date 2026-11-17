@@ -18,6 +18,10 @@ public class UserSession
     /// <summary>Login concluído com segundo fator (MFA).</summary>
     public bool Mfa { get; set; }
 
+    // ---- API (JWT): hash SHA-256 do refresh token atual (rotacionado a cada uso; nulo = sessão de navegador)
+    [MaxLength(64)] public string? RefreshTokenHash { get; set; }
+    public DateTime? RefreshTokenExpiresAt { get; set; }
+
     // ---- Dispositivo (extraído do User-Agent no login)
     [MaxLength(64)] public string? IpAddress { get; set; }
     [MaxLength(512)] public string? UserAgent { get; set; }

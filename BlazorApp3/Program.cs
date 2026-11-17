@@ -1,4 +1,6 @@
 using BlazorApp3;
+using BlazorApp3.Api;
+using BlazorApp3.Api.Auth;
 using BlazorApp3.Application.Cqrs;
 using BlazorApp3.Components;
 using BlazorApp3.Data;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.Localization;
 using BlazorApp3.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -65,7 +68,12 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.ExpireTimeSpan = TimeSpan.FromHours(8);
     o.SlidingExpiration = true;
     o.Events.OnValidatePrincipal = UserSessions.ValidatePrincipalAsync; // security stamp + sessão (tabela UserSessions)
+    // API REST: responde 401/403 em vez de redirecionar para a tela de login
+    o.Events.OnRedirectToLogin = ctx => ApiAwareRedirect(ctx, StatusCodes.Status401Unauthorized);
+    o.Events.OnRedirectToAccessDenied = ctx => ApiAwareRedirect(ctx, StatusCodes.Status403Forbidden);
 });
+// JWT (+ refresh token) para a API; o cookie continua sendo o login do app Blazor
+builder.Services.AddJwtAuthentication(builder.Configuration);
 // O security stamp validator recria o principal: mantém o session_id e o amr (MFA) do login
 builder.Services.Configure<SecurityStampValidatorOptions>(o => o.OnRefreshingPrincipal = UserSessions.CarryOverClaimsAsync);
 
@@ -110,6 +118,9 @@ builder.Services.AddHangfireServer(o =>
     o.WorkerCount = Math.Min(Environment.ProcessorCount, 4);
 });
 
+// ---------------- API REST (/api/*): endpoints em Api/, sobre o mesmo CQRS das telas
+builder.Services.AddRestApi();
+
 // ---------------- Serviços de UI
 builder.Services.AddSingleton<FileStorageService>();
 builder.Services.AddScoped<BrandingState>();
@@ -139,6 +150,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+// A API devolve o status puro (404, 401...) em vez da página "não encontrado"
+app.Use((ctx, next) =>
+{
+    if (ctx.Request.IsApiRequest() && ctx.Features.Get<IStatusCodePagesFeature>() is { } pages) pages.Enabled = false;
+    return next(ctx);
+});
 app.UseHttpsRedirection();
 
 // Guarda a URL pública na primeira requisição (links dos e-mails enviados pelos jobs)
@@ -173,6 +190,8 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapHub<NotificationsHub>(NotificationsHub.Path);
+app.MapRestApi();
+app.MapApiDocumentation(); // Development: /openapi/v1.json + Scalar em /scalar
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
@@ -209,3 +228,10 @@ recurring.AddOrUpdate<AccountMaintenanceJobs>(AccountMaintenanceJobs.PurgeUnconf
 recurring.AddOrUpdate<AccountMaintenanceJobs>(AccountMaintenanceJobs.PurgeCodesId, j => j.PurgeExpiredCodesAsync(), Cron.Hourly());
 
 app.Run();
+
+static Task ApiAwareRedirect(Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions> ctx, int apiStatus)
+{
+    if (ctx.Request.IsApiRequest()) ctx.Response.StatusCode = apiStatus;
+    else ctx.Response.Redirect(ctx.RedirectUri);
+    return Task.CompletedTask;
+}

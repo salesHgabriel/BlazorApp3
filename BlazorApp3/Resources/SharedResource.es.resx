@@ -2222,4 +2222,10 @@
   <data name="{0} · {1} será desconectado na hora." xml:space="preserve">
     <value>{0} · {1} se desconectará al instante.</value>
   </data>
+  <data name="Confirme seu e-mail antes de entrar." xml:space="preserve">
+    <value>Confirme su correo electrónico antes de iniciar sesión.</value>
+  </data>
+  <data name="Sessão expirada. Entre novamente." xml:space="preserve">
+    <value>Sesión expirada. Inicie sesión nuevamente.</value>
+  </data>
 </root>
