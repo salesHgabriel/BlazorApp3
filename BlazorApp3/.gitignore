@@ -489,3 +489,4 @@ $RECYCLE.BIN/
 # Hangfire (SQLite) e e-mails gravados em desenvolvimento (provedor Pickup)
 hangfire.db*
 App_Data/emails/
+App_Data/reports/
