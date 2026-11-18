@@ -4,6 +4,15 @@
    Reutilizável: a página informa as colunas disponíveis e trata OnGenerate (busca os dados e baixa o arquivo). *@
 <Modal Visible="Visible" VisibleChanged="VisibleChanged" Title="@L["Gerar relatório"]" Subtitle="@Hint" Icon="bi-file-earmark-bar-graph" Size="lg" CloseOnBackdrop="!_busy">
     <ChildContent>
+        @if (Background)
+        {
+            <div class="alert alert-info d-flex align-items-start gap-2 py-2" role="status">
+                <i class="bi bi-hourglass-split mt-1"></i>
+                <div class="small">
+                    @L["Mais de {0} registros: o relatório será gerado em segundo plano. Você receberá uma notificação (e um e-mail, se configurado) quando ele estiver pronto, e poderá baixá-lo em Meus relatórios.", BackgroundThreshold]
+                </div>
+            </div>
+        }
         <div class="row g-4">
             <div class="col-md-6">
                 <label class="form-label">@L["Formato"]</label>
@@ -99,8 +108,9 @@
     </ChildContent>
     <Footer>
         <button class="btn btn-light" disabled="@_busy" @onclick="() => VisibleChanged.InvokeAsync(false)">@L["Cancelar"]</button>
-        <LoadingButton Icon="bi-download" Loading="_busy" LoadingText="@L["Gerando..."]" Disabled="@(_o.Columns.Count == 0)" OnClick="GenerateAsync">
-            @L["Gerar {0}", _o.Format == ReportFormat.Excel ? "Excel" : "PDF"]
+        <LoadingButton Icon="@(Background ? "bi-hourglass-split" : "bi-download")" Loading="_busy" LoadingText="@(Background ? L["Enviando..."] : L["Gerando..."])"
+                       Disabled="@(_o.Columns.Count == 0)" OnClick="GenerateAsync">
+            @(Background ? L["Gerar {0} em segundo plano", FormatName] : L["Gerar {0}", FormatName])
         </LoadingButton>
     </Footer>
 </Modal>
@@ -116,6 +126,11 @@
     /// <summary>Texto auxiliar (ex.: "35 registros com os filtros atuais").</summary>
     [Parameter] public string? Hint { get; set; }
     [Parameter, EditorRequired] public Func<ReportOptions, Task<bool>> OnGenerate { get; set; } = default!;
+    /// <summary>O relatório passa do limite e será gerado em segundo plano (muda o aviso e o botão).</summary>
+    [Parameter] public bool Background { get; set; }
+    [Parameter] public int BackgroundThreshold { get; set; }
+
+    private string FormatName => _o.Format == ReportFormat.Excel ? "Excel" : "PDF";
 
     private ReportOptions _o = new();
     private bool _initialized;

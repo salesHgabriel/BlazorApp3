@@ -1,10 +1,10 @@
 # Nexus Admin: aplicação whitelabel em Blazor
 
-Blazor Web App (.NET 11), Interactive Server, EF Core + SQLite, ASP.NET Core Identity, SignalR e Hangfire.
+Blazor Web App (.NET 11), Interactive Server, EF Core + SQLite, ASP.NET Core Identity, SignalR, Hangfire e API REST (JWT + OpenAPI/Scalar).
 
 ![Dashboard com o branding do time "Data & Analytics"](docs/screenshots/02-dashboard.png)
 
-**Sumário:** [Produto](#produto) · [Funcionalidades](#funcionalidades) · [Segurança: sessões e MFA](#segurança-sessões-dispositivos-e-mfa) · [Relatórios](#relatórios-excel-e-pdf) · [Como rodar](#como-rodar) · [Arquitetura](#arquitetura) · [Fluxos de código](#fluxos-de-código) · [Pacotes](#pacotes-usados) · [Prints](#atualizando-os-prints)
+**Sumário:** [Produto](#produto) · [Funcionalidades](#funcionalidades) · [Segurança: sessões e MFA](#segurança-sessões-dispositivos-e-mfa) · [Relatórios](#relatórios-excel-e-pdf) · [Armazenamento](#armazenamento-de-arquivos-local-azure-blob-s3) · [API REST](#api-rest) · [Como rodar](#como-rodar) · [Configuração](#configuração-appsettings) · [Arquitetura](#arquitetura) · [Fluxos de código](#fluxos-de-código) · [Pacotes](#pacotes-usados) · [Prints](#atualizando-os-prints)
 
 ## Produto
 
@@ -14,10 +14,11 @@ Painel administrativo **white label** para gerir pessoas, times e acessos de uma
 |---|---|
 | **Administradores** | Cadastram usuários, papéis (roles) e times; bloqueiam contas; definem as regras de cadastro, sessão e notificação; exportam relatórios. |
 | **Gestores de time** | Mantêm os membros do time e o papel de cada um; o time pode ter nome, logo e cores próprios. |
-| **Usuários** | Entram com senha e, se quiserem, um 2º fator (app autenticador); veem e encerram suas sessões; recebem notificações em tempo real. |
-| **Quem revende / implanta** | Troca nome, logo, cores, fonte e textos pela tela (whitelabel), sem recompilar. Interface em português, inglês e espanhol. |
+| **Usuários** | Entram com senha e, se quiserem, um 2º fator (app autenticador); veem e encerram suas sessões; recebem notificações em tempo real; baixam em **Meus relatórios** os relatórios grandes gerados em segundo plano. |
+| **Quem revende / implanta** | Troca nome, logo, cores, fonte e textos pela tela (whitelabel), sem recompilar. Interface em português, inglês e espanhol. Escolhe onde ficam os arquivos (disco local ou nuvem, como Azure Blob ou S3). |
+| **Sistemas externos / apps** | Usam a **API REST** (`/api`) com JWT + refresh token, sob as mesmas permissões e regras de login da tela. |
 
-Princípios: permissões **fixas no código** e papéis **dinâmicos** na tela; tudo que é lento ou pode falhar (e-mails, entregas, expirações) roda em **jobs com nova tentativa**; eventos de segurança chegam **na hora** pelo SignalR.
+Princípios: permissões **fixas no código** e papéis **dinâmicos** na tela; telas e API usam **o mesmo CQRS**; tudo que é lento ou pode falhar (e-mails, entregas, expirações, relatórios grandes) roda em **jobs com nova tentativa**; eventos de segurança chegam **na hora** pelo SignalR.
 
 ## Funcionalidades
 
@@ -158,7 +159,7 @@ Só a formatação muda, e não há conversão de câmbio.
 
 ### Notificações (sistema + e-mail) em tempo real
 - Sino no topo com badge de não lidas. A notificação nova chega pelo SignalR (`/hubs/notifications`): o sino balança, o badge pulsa e aparece um toast. Dá para marcar como lida, marcar todas e limpar as lidas.
-- Eventos: novo cadastro (para quem tem `Users.Edit`), conta confirmada, entrada em um time, bloqueio/desbloqueio, alerta de excesso de tentativas de senha e **novo acesso à conta**.
+- Eventos: novo cadastro (para quem tem `Users.Edit`), conta confirmada, entrada em um time, bloqueio/desbloqueio, alerta de excesso de tentativas de senha, **novo acesso à conta** e **relatório pronto / falha ao gerar relatório** (com link para *Meus relatórios*).
 - Publicação via `INotifier.Publish(new NotificationRequest { ... })`. A entrega (banco, SignalR e um e-mail por destinatário) roda no Hangfire.
 
 ![Notificações](docs/screenshots/31-notificacoes.png)
@@ -178,7 +179,10 @@ Painel em `/jobs` (permissão `Jobs.View`). O armazenamento é SQLite, em `hangf
 | Código de confirmação, e-mails de notificação, e-mail de teste | fire-and-forget, até 5 novas tentativas |
 | Entrega de notificações (banco + SignalR + e-mails) | fire-and-forget |
 | Fim de bloqueio temporário | agendado |
+| Gerar relatório em segundo plano (`ReportJobs.GenerateAsync`) | fire-and-forget, sem nova tentativa (falha vira notificação) |
+| E-mail do relatório pronto (com anexo ou link) | fire-and-forget, fila `emails`, até 5 novas tentativas |
 | Remover cadastros não confirmados (após 7 dias) | recorrente, diário às 3h UTC |
+| Remover relatórios expirados (arquivo + registro) | recorrente, diário às 4h UTC |
 | Limpar códigos expirados | recorrente, de hora em hora |
 
 ### E-mail com qualquer provedor
@@ -190,6 +194,8 @@ Painel em `/jobs` (permissão `Jobs.View`). O armazenamento é SQLite, em `hangf
 
 Para outro provedor (Postmark, Mailgun, Resend...), implemente `IEmailProvider` (`Name` + `SendAsync`), registre com `services.AddEmailProvider<MeuProvider>()` e configure `Email:Provider` com o nome dele. Guarde as credenciais em user-secrets ou em variáveis de ambiente (ex.: `Email__SendGrid__ApiKey`). Para os links dos e-mails, defina `App:PublicUrl` em produção.
 
+**Anexos:** `EmailMessage.Attachments` (`EmailAttachment(FileName, ContentType, Content)`) e a sobrecarga `IMailSender.SendAsync(..., attachments, ...)` funcionam nos quatro provedores embutidos (SMTP/Pickup via `System.Net.Mail`; SendGrid e Mailtrap em base64). É assim que o relatório pronto vai anexado. Provedores customizados devem ler `message.Attachments`.
+
 `EmailOptions.IsDeliveryConfigured()` diz se há entrega real: `Pickup` ou um provedor sem credenciais conta como "não configurado" (é o que libera o atalho de confirmação em desenvolvimento).
 
 ## Segurança: sessões, dispositivos e MFA
@@ -200,6 +206,8 @@ O id vai no cookie como o claim `session_id`. Cada aba conectada ao SignalR grav
 o que permite derrubar exatamente aquele navegador. As conexões são removidas ao desconectar e zeradas quando o app inicia.
 
 A cada requisição, `OnValidatePrincipal` confere a sessão (com cache de 2 min, limpo na revogação): sessão encerrada ou ausente → cookie rejeitado e redirecionamento ao login.
+
+Logins pela **API** também criam uma linha em `UserSessions`, com o hash do refresh token (`RefreshTokenHash`, `RefreshTokenExpiresAt`). Eles aparecem em *Segurança da conta* como qualquer dispositivo e seguem as mesmas regras de sessão única e aviso de novo acesso. Encerrar a sessão invalida na hora o access token e o refresh token (veja [API REST](#api-rest)).
 
 ### Novo acesso: aviso em tempo real e "encerrar a outra sessão"
 Com **várias sessões permitidas** (padrão) e *Avisar sobre novos acessos* ligado, quando a mesma conta entra em outro navegador:
@@ -258,16 +266,212 @@ Detalhes:
 - **Excel (ClosedXML):** datas e números com tipo de verdade (não texto), cabeçalho na cor da marca, linhas de grupo, zebra, autofiltro, cabeçalho congelado, largura automática e configuração de impressão.
 - **PDF (QuestPDF):** cabeçalho com logo, título, filtros e "gerado por", tabela com cabeçalho repetido em cada página, grupos, zebra e "Página X / Y". A fonte se ajusta ao número de colunas.
 - **Multiplataforma:** ambas as bibliotecas são .NET puro + SkiaSharp/OpenXML, sem Office, sem navegador headless e sem GDI. Funcionam em Windows, Linux (inclusive containers) e macOS.
-- Geração fora da thread do circuito (`Task.Run`), limite de 50.000 linhas, download por `DotNetStreamReference` (`appFiles.download`), sem arquivo temporário no servidor.
+- Até o limite de segundo plano (1000 registros): geração fora da thread do circuito (`Task.Run`) e download imediato por `DotNetStreamReference` (`appFiles.download`), sem arquivo temporário no servidor. Limite absoluto de 50.000 linhas.
 - Para criar o relatório de outra tela: declare as colunas com `ReportColumn<T>` (veja `UsersReport.Columns()`), faça uma query que devolva os itens e chame `ReportService.RenderAsync(items, columns, options)`; o `ReportDialog` é genérico.
 - **Licença do QuestPDF:** configurada como *Community* em `Program.cs` (gratuita para empresas com receita bruta anual abaixo de US$ 1 milhão). Acima disso é preciso uma licença paga.
+
+### Relatórios grandes em segundo plano (notificação + e-mail)
+
+Acima de `Reports:BackgroundThreshold` registros (padrão **1000**), o diálogo mostra um aviso e o botão vira **"Gerar Excel/PDF em segundo plano"**. Ao confirmar:
+
+1. É criada uma linha em **`ReportExports`** (status *Na fila*) e um job do Hangfire (`ReportJobs.GenerateAsync`) é enfileirado. O pedido leva os filtros da tela, as opções do diálogo e os rótulos dos filtros. A **cultura** de quem pediu é capturada pelo Hangfire, então cabeçalhos e datas saem no mesmo idioma.
+2. O job refaz a consulta (`ExportUsersQuery`, mesmos filtros e ordenação), renderiza e grava o arquivo no **armazenamento configurado**, na chave privada `reports/{id}.xlsx|pdf` (no disco local, `App_Data/reports`).
+3. O usuário recebe a **notificação** "Relatório pronto" no sino, em tempo real, com link para **Meus relatórios**.
+4. Se o **e-mail estiver configurado** (cópia por e-mail ligada em *Sistema* e um provedor que entrega de verdade; em `Development` o Pickup também conta), um segundo job envia o e-mail. O arquivo vai **anexado** até `Reports:MaxEmailAttachmentMb` (10 MB); acima disso, o e-mail leva só o botão **Baixar relatório**.
+5. Em caso de erro (ex.: mais de 50.000 linhas), o status vira *Falhou* e a notificação "Falha ao gerar relatório" mostra o motivo.
+
+**Meus relatórios** (`/reports`, no menu do usuário): lista os pedidos com status (*Na fila*, *Gerando...*, *Pronto*, *Falhou*, *Expirado*), registros, tamanho, data do pedido e validade. A lista se atualiza sozinha enquanto há relatório em andamento. Dá para baixar e excluir.
+
+**Download:** `GET /reports/{id}/download` exige login (cookie) e só atende o **dono** do relatório. Sem login, vai para a tela de entrar e volta. Com armazenamento em nuvem, o endpoint redireciona para uma URL assinada de 5 minutos. Os arquivos expiram em `Reports:RetentionDays` (7 dias), e um job diário apaga os vencidos e as falhas antigas.
+
+**Outra tela em segundo plano:** implemente `IBackgroundReportSource` (`Key` + `RenderAsync`; veja `UsersReportSource`), registre em `AddReports` (`Features/Reports/ReportsServiceCollectionExtensions.cs`) e, na página, use `BackgroundReports.ShouldRunInBackground(total)` e `BackgroundReports.EnqueueAsync(chave, filtros, opções, ...)`. No `ReportDialog`, passe `Background` e `BackgroundThreshold`.
+
+## Armazenamento de arquivos (local, Azure Blob, S3)
+
+Uploads (logos, avatares, anexos) e relatórios gerados em segundo plano passam pelo `IFileStorage` (`Services/Files/Storage`). O padrão é o **disco local** (`LocalFileStorageProvider`, em `App_Data`). Para usar nuvem, basta implementar `IFileStorageProvider` e registrar; **nenhum pacote de nuvem vem instalado**.
+
+| Chave | Conteúdo | Visibilidade | Como sai |
+|---|---|---|---|
+| `uploads/{pasta}/{guid}.{ext}` | logos, avatares, anexos | `Public` | `/uploads/...` (sem login) |
+| `reports/{guid}.{ext}` | relatórios em segundo plano | `Private` | `/reports/{id}/download` (só o dono) |
+
+- **Escolha do provedor:** `Storage:Provider` com o `Name` do provedor. Vazio: se houver **exatamente um** provedor de nuvem registrado, ele é usado; se não houver nenhum, usa o `Local`. O provedor ativo aparece no log ao iniciar (`Armazenamento de arquivos: ...`).
+- **URLs estáveis:** o banco guarda sempre `/uploads/...`. No disco local, a URL é servida como arquivo estático. Na nuvem, o app redireciona para a URL que o provedor devolver em `GetDownloadUrlAsync` (blob público, SAS, URL pré-assinada) ou, se ele devolver `null`, repassa o conteúdo lido por `OpenReadAsync`.
+- **Downloads privados:** o endpoint confere o dono antes de pedir a URL ao provedor, com validade de 5 minutos.
+- **Trocar de provedor não copia os arquivos já existentes:** migre `App_Data/uploads` e `App_Data/reports` para o container/bucket mantendo as mesmas chaves.
+
+Exemplo com **Azure Blob Storage** (`dotnet add package Azure.Storage.Blobs`):
+
+```csharp
+public sealed class AzureBlobStorageProvider(IConfiguration config) : IFileStorageProvider
+{
+    private readonly BlobContainerClient _container = new(config["Storage:Azure:ConnectionString"], config["Storage:Azure:Container"]);
+    public string Name => "AzureBlob";
+
+    public async Task<long> SaveAsync(string key, Stream content, string contentType, StorageVisibility visibility, CancellationToken ct = default)
+    {
+        var blob = _container.GetBlobClient(key);
+        await blob.UploadAsync(content, new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = contentType } }, ct);
+        return (await blob.GetPropertiesAsync(cancellationToken: ct)).Value.ContentLength;
+    }
+
+    public async Task<StoredFileStream?> OpenReadAsync(string key, CancellationToken ct = default)
+    {
+        var blob = _container.GetBlobClient(key);
+        if (!await blob.ExistsAsync(ct)) return null;
+        var r = (await blob.DownloadStreamingAsync(cancellationToken: ct)).Value;
+        return new StoredFileStream(r.Content, r.Details.ContentType, r.Details.ContentLength);
+    }
+
+    public async Task<bool> ExistsAsync(string key, CancellationToken ct = default) => await _container.GetBlobClient(key).ExistsAsync(ct);
+    public Task DeleteAsync(string key, CancellationToken ct = default) => _container.GetBlobClient(key).DeleteIfExistsAsync(cancellationToken: ct);
+
+    public Task<string?> GetDownloadUrlAsync(string key, TimeSpan expiresIn, string? downloadFileName = null, CancellationToken ct = default)
+    {
+        var sas = new BlobSasBuilder(BlobSasPermissions.Read, DateTimeOffset.UtcNow.Add(expiresIn))
+        {
+            BlobContainerName = _container.Name, BlobName = key,
+            ContentDisposition = downloadFileName is null ? null : $"attachment; filename=\"{downloadFileName}\""
+        };
+        return Task.FromResult<string?>(_container.GetBlobClient(key).GenerateSasUri(sas).ToString());
+    }
+}
+```
+
+Exemplo com **Amazon S3** (`dotnet add package AWSSDK.S3`); também serve para MinIO, Cloudflare R2 e similares:
+
+```csharp
+public sealed class S3StorageProvider(IAmazonS3 s3, IConfiguration config) : IFileStorageProvider
+{
+    private readonly string _bucket = config["Storage:S3:Bucket"]!;
+    public string Name => "S3";
+
+    public async Task<long> SaveAsync(string key, Stream content, string contentType, StorageVisibility visibility, CancellationToken ct = default)
+    {
+        using var ms = new MemoryStream(); // o SDK precisa do tamanho; para arquivos grandes use TransferUtility
+        await content.CopyToAsync(ms, ct);
+        ms.Position = 0;
+        await s3.PutObjectAsync(new PutObjectRequest { BucketName = _bucket, Key = key, InputStream = ms, ContentType = contentType }, ct);
+        return ms.Length;
+    }
+
+    public async Task<StoredFileStream?> OpenReadAsync(string key, CancellationToken ct = default)
+    {
+        try
+        {
+            var r = await s3.GetObjectAsync(_bucket, key, ct);
+            return new StoredFileStream(r.ResponseStream, r.Headers.ContentType, r.ContentLength);
+        }
+        catch (AmazonS3Exception e) when (e.StatusCode == HttpStatusCode.NotFound) { return null; }
+    }
+
+    public async Task<bool> ExistsAsync(string key, CancellationToken ct = default)
+    {
+        try { await s3.GetObjectMetadataAsync(_bucket, key, ct); return true; }
+        catch (AmazonS3Exception e) when (e.StatusCode == HttpStatusCode.NotFound) { return false; }
+    }
+    public Task DeleteAsync(string key, CancellationToken ct = default) => s3.DeleteObjectAsync(_bucket, key, ct);
+
+    public async Task<string?> GetDownloadUrlAsync(string key, TimeSpan expiresIn, string? downloadFileName = null, CancellationToken ct = default) =>
+        await s3.GetPreSignedURLAsync(new GetPreSignedUrlRequest
+        {
+            BucketName = _bucket, Key = key, Verb = HttpVerb.GET, Expires = DateTime.UtcNow.Add(expiresIn),
+            ResponseHeaderOverrides = { ContentDisposition = downloadFileName is null ? null : $"attachment; filename=\"{downloadFileName}\"" }
+        });
+}
+```
+
+Registro em `Program.cs` (depois de `AddFileStorage`):
+
+```csharp
+builder.Services.AddFileStorageProvider<AzureBlobStorageProvider>();   // ou S3StorageProvider (+ AddAWSService<IAmazonS3>())
+```
+
+## API REST
+
+API em **`/api`** (`Api/`) sobre **o mesmo CQRS das telas**: cada endpoint só traduz HTTP ⇄ query/command, então validação, regras de negócio e permissões são as mesmas.
+
+- **Autenticação:** JWT no header `Authorization: Bearer <accessToken>`. O cookie do app também é aceito, o que serve para chamadas feitas do próprio navegador logado. O esquema `CookieOrBearer` usa o Bearer só quando a rota é `/api` **e** o header vem preenchido. Nas rotas `/api`, falta de login ou de permissão devolve **401/403** em vez de redirecionar para a tela de login.
+- **Autorização:** as mesmas permissões fixas (`Perm.*`) via `.RequirePermission(...)` (basta **uma** das permissões listadas).
+- **Erros:** `ProblemDetails`. Regra de negócio ou validação (`AppException`) → **400**; 404 e 401 vêm com o status puro (sem a página "não encontrado").
+- **JSON:** enums como texto (ex.: `"role": "Manager"`). Paginação com `page` e `pageSize` (máx. **100**).
+- **Documentação (só em Development):** OpenAPI em `/openapi/v1.json` e **Scalar** em `/scalar`. O perfil `api` do `launchSettings.json` já abre o Scalar. Para testar, chame `POST /api/auth/token`, copie o `accessToken` e cole em *Authentication* (Bearer).
+
+### Login, refresh e logout (`/api/auth`)
+
+```bash
+# 1) login (com MFA ativo, envie também "code": código do app autenticador ou de recuperação)
+curl -X POST https://localhost:7146/api/auth/token -H "Content-Type: application/json" \
+     -d '{"email":"admin@demo.com","password":"Admin@123"}'
+# → { "accessToken": "...", "accessTokenExpiresAt": "...", "refreshToken": "{sessionId}.{segredo}", "refreshTokenExpiresAt": "...", "tokenType": "Bearer" }
+
+# 2) chamadas
+curl https://localhost:7146/api/users?status=active&pageSize=50 -H "Authorization: Bearer <accessToken>"
+
+# 3) access token expirou (15 min): troque o refresh token por um par novo
+curl -X POST https://localhost:7146/api/auth/refresh -H "Content-Type: application/json" -d '{"refreshToken":"<refreshToken>"}'
+
+# 4) logout: encerra a sessão (access e refresh token deixam de valer na hora)
+curl -X POST https://localhost:7146/api/auth/logout -H "Authorization: Bearer <accessToken>"
+```
+
+O login segue **as mesmas regras da tela** (conta inativa, bloqueio com motivo, e-mail não confirmado, lockout por tentativas, MFA). Os erros trazem a extensão `code` para o cliente decidir o que fazer:
+
+| `code` | Status | Quando |
+|---|---|---|
+| `invalid_credentials` | 401 | E-mail ou senha inválidos |
+| `mfa_required` | 401 | A conta tem MFA e o `code` não foi enviado |
+| `invalid_mfa_code` | 401 | Código do MFA inválido (conta para o lockout) |
+| `invalid_refresh_token` | 401 | Refresh token inválido, expirado, reutilizado ou sessão encerrada |
+| `account_inactive` | 403 | Conta inativa |
+| `account_blocked` | 403 | Bloqueio administrativo (o motivo só aparece com a senha correta) |
+| `account_locked` | 403 | Bloqueio temporário por excesso de tentativas (dispara o alerta de segurança) |
+| `email_not_confirmed` | 403 | Confirmação de e-mail exigida e pendente |
+
+**Tokens e sessões:**
+- **Access token:** JWT HMAC-SHA256 com os mesmos claims do cookie (sem o security stamp), mais `session_id` e `amr=mfa`. Validade `Jwt:AccessTokenMinutes` (15).
+- **Refresh token:** opaco (`{sessionId}.{segredo}`); só o hash SHA-256 fica no banco. Validade `Jwt:RefreshTokenDays` (14). É **rotacionado a cada uso** com uma atualização atômica: se duas renovações chegam juntas, só uma vence.
+- **Reuso detectado:** apresentar um refresh token já trocado encerra a sessão (motivo *security*), porque é sinal de que o token vazou.
+- **Validação a cada requisição:** `OnTokenValidated` confere a sessão. Logout, sessão única, bloqueio, inativação ou "encerrar sessão" na tela invalidam o token na hora, sem esperar ele expirar.
+
+### Endpoints
+
+| Recurso | Rotas | Permissão |
+|---|---|---|
+| **Auth** | `POST /auth/token`, `POST /auth/refresh` (anônimos), `POST /auth/logout` | login |
+| **Me** | `GET /me` (perfil, time ativo, permissões efetivas), `GET /me/teams`, `PUT /me/active-team`, `GET /me/notifications?take=`, `POST /me/notifications/read`, `POST /me/notifications/{id}/read`, `DELETE /me/notifications/read` | login |
+| **Dashboard** | `GET /dashboard` | `Dashboard.View` |
+| **Users** | `GET /users` (filtros: `search`, `roleIds`, `teamIds`, `departments`, `status`, `createdFrom`, `createdTo`, `sortBy`, `sortDesc`, `page`, `pageSize`), `GET /users/departments`, `GET /users/{id}` | `Users.View` |
+| | `GET /users/lookup?term=&excludeTeamId=` | `Users.View` ou `Teams.ManageMembers` |
+| | `POST /users` (senha obrigatória) · `PUT /users/{id}` · `POST /users/{id}/resend-confirmation` | `Users.Create` · `Users.Edit` · `Users.Edit` |
+| | `DELETE /users/{id}` · `POST /users/batch/delete` | `Users.Delete` |
+| | `POST /users/batch/activate` · `POST /users/batch/deactivate` | `Users.Edit` |
+| | `POST /users/batch/block` (`ids`, `reason`, `hours`; sem `hours` = indeterminado) · `POST /users/batch/unblock` | `Users.Block` |
+| **Roles** | `GET /roles`, `GET /roles/{id}` · `GET /roles/options` | `Roles.View` · `Roles.View` ou `Users.View` |
+| | `POST /roles` · `PUT /roles/{id}` · `DELETE /roles/{id}` | `Roles.Create` · `Roles.Edit` · `Roles.Delete` |
+| **Permissions** | `GET /permissions` (catálogo + papéis que concedem cada uma) | `Permissions.View` ou `Roles.View` |
+| **Teams** | `GET /teams`, `GET /teams/{id}`, `GET /teams/{id}/summary` · `GET /teams/options` | `Teams.View` · `Teams.View` ou `Users.View` |
+| | `POST /teams` · `PUT /teams/{id}` · `DELETE /teams/{id}` | `Teams.Create` · `Teams.Edit` · `Teams.Delete` |
+| | `GET /teams/{id}/members`, `GET /teams/{id}/members/role-counts` | `Teams.View` |
+| | `POST /teams/{id}/members` · `PUT /teams/{id}/members/{userId}` · `DELETE /teams/{id}/members/{userId}` | `Teams.ManageMembers` |
+| **Branding** | `GET /branding` · `PUT /branding`, `POST /branding/reset` | `Branding.View` · `Branding.Edit` |
+| **Settings** | `GET /settings`, `PUT /settings`, `POST /settings/test-email` | `Settings.System` |
+
+Respostas: criação → **201** com `Location`; alteração, exclusão e ações em lote → **204**; envio de e-mail (`resend-confirmation`, `test-email`) → **202** (vai para a fila). A senha nunca volta na resposta. Como na tela, ninguém pode **excluir, inativar ou bloquear a própria conta** (`DELETE /users/{id}` e rotas de lote devolvem 400).
+
+Os relatórios e o download `/reports/{id}/download` ainda **não** têm rota na API: o download usa o cookie do navegador (é o link enviado por e-mail).
+
+**Endpoint novo:** crie o arquivo em `Api/Platform` (recursos globais) ou `Api/Tenant` (recursos do usuário/time) com um `Map<Recurso>Endpoints(this RouteGroupBuilder api)`, use `IDispatcher` com as queries/commands existentes, proteja com `.RequirePermission(Perm.X)` e registre em `ApiEndpoints.MapRestApi`.
 
 ## Como rodar
 
 ```bash
 cd BlazorApp3
-dotnet run --launch-profile https
+dotnet run --launch-profile https   # app em https://localhost:7146
+dotnet run --launch-profile api     # mesmo app, abrindo a documentação da API (Scalar) em /scalar
 ```
+
+A API exige `Jwt:SigningKey` com **pelo menos 32 bytes**: o app não inicia sem ela (`ValidateOnStart`). Em `Development` ela vem de `appsettings.Development.json`, uma chave só para desenvolvimento. Em produção, defina por user-secrets ou pela variável `Jwt__SigningKey`, nunca no repositório.
 
 Na inicialização as migrations pendentes são aplicadas (`Database.MigrateAsync()`) e, se o banco estiver vazio, o seed é executado. Para recriar do zero, apague `app.db` e rode novamente.
 
@@ -281,6 +485,15 @@ dotnet ef migrations add NomeDaMudanca -o Data/Migrations   # após alterar enti
 dotnet ef database update                                    # opcional: a app já aplica ao iniciar
 dotnet ef migrations remove                                  # desfaz a última (se ainda não aplicada)
 ```
+
+| Migration | O que cria |
+|---|---|
+| `InitialCreate` | Identity, `Permissions`/`RolePermissions`, `Teams`/`TeamMembers`, `BrandingSettings` |
+| `Start` | Vazia (marco inicial) |
+| `AccountSecurityNotifications` | `EmailConfirmationCodes`, `SystemSettings`, `Notifications` e os campos de bloqueio do usuário (motivo, quando, por quem) |
+| `SessionsAndMfa` | `UserSessions`, `UserConnections`, `MfaEnabledAt` e a opção "avisar sobre novos acessos" |
+| `ApiRefreshTokens` | Hash e validade do refresh token da API em `UserSessions` |
+| `BackgroundReports` | `ReportExports` (relatórios gerados em segundo plano) |
 
 ### Contas de demonstração (também listadas na tela de login, clique para preencher)
 
@@ -296,6 +509,22 @@ dotnet ef migrations remove                                  # desfaz a última 
 
 Os 180 usuários gerados pelo seed usam a senha `Demo@123`. Nenhuma conta vem com MFA ativo.
 
+Para ver o relatório em segundo plano com os dados do seed (menos de 1000 usuários), baixe o limite: `Reports__BackgroundThreshold=10 dotnet run --launch-profile https`. Depois gere o relatório em **Usuários** e acompanhe o sino, **Meus relatórios** e o `.eml` em `App_Data/emails`.
+
+## Configuração (appsettings)
+
+| Seção | Chaves (padrão) | Para quê |
+|---|---|---|
+| `ConnectionStrings` | `DefaultConnection` (`app.db`), `Hangfire` (`hangfire.db`) | Bancos SQLite do app e dos jobs |
+| `App` | `PublicUrl` (vazio = primeira requisição) | Links absolutos nos e-mails enviados por jobs |
+| `Jwt` | `Issuer`, `Audience`, `SigningKey` (≥ 32 bytes, obrigatória), `AccessTokenMinutes` (15), `RefreshTokenDays` (14) | Tokens da API |
+| `Account` | `DefaultRole`, `CodeLength` (6), `CodeLifetimeMinutes` (15), `MaxCodeAttempts` (5), `ResendCooldownSeconds` (60), `UnconfirmedAccountRetentionDays` (7) | Cadastro e confirmação de e-mail |
+| `Reports` | `BackgroundThreshold` (1000), `RetentionDays` (7), `MaxEmailAttachmentMb` (10) | Relatórios em segundo plano |
+| `Storage` | `Provider` (vazio = automático), `Local:RootPath` (`App_Data`) | Onde ficam uploads e relatórios |
+| `Email` | `Provider` (`Pickup`), `FromAddress`, `FromName`, `Pickup:Directory`, `Smtp:*`, `SendGrid:*`, `Mailtrap:*` | Envio de e-mails |
+
+Qualquer chave pode vir de variável de ambiente com `__` no lugar de `:` (ex.: `Storage__Provider=AzureBlob`, `Email__Smtp__Password=...`). Segredos ficam em user-secrets ou variáveis, não no `appsettings.json`.
+
 ## Arquitetura
 
 ### Visão geral
@@ -307,36 +536,47 @@ flowchart LR
         UI["Páginas interativas<br/>(Blazor Server via circuito)"]
         JS["app.js<br/>appNotify · appDropdown · appFiles"]
     end
+    EXT["Cliente da API<br/>(apps, integrações)"]
 
     subgraph Servidor["ASP.NET Core (.NET 11)"]
         ID["Identity + cookie<br/>OnValidatePrincipal"]
+        JWT["JWT Bearer<br/>OnTokenValidated"]
+        API["Minimal APIs /api<br/>RequirePermission"]
         COMP["Componentes Razor<br/>UiDispatcher"]
         CQRS["IDispatcher<br/>Logging → Validation → PermissionCache"]
         H["Handlers<br/>(Features/*)"]
         SVC["Serviços<br/>UserSessions · ReportService · Branding · Notifier"]
+        FS["IFileStorage<br/>uploads · reports"]
         HUB["NotificationsHub<br/>/hubs/notifications"]
-        HF["Hangfire<br/>e-mails · entregas · expirações"]
+        HF["Hangfire<br/>e-mails · entregas · expirações · relatórios"]
     end
 
     DB[("app.db<br/>SQLite / EF Core")]
     HDB[("hangfire.db")]
     MAIL["Provedor de e-mail<br/>Pickup · SMTP · SendGrid · Mailtrap"]
+    STO[("Disco local (App_Data)<br/>ou nuvem: Azure Blob · S3")]
 
     SSR -- "POST form" --> ID
     UI <-- "SignalR (circuito)" --> COMP
     JS <-- "SignalR (hub)" --> HUB
+    EXT -- "HTTPS + Bearer" --> JWT --> API
+    API --> CQRS
     COMP --> CQRS --> H --> DB
     H --> SVC
     SVC --> HUB
     SVC --> HF --> HDB
     HF --> MAIL
+    HF --> FS
+    COMP --> FS --> STO
     ID --> SVC
+    JWT --> SVC
     HUB --> DB
 ```
 
 - **Dois canais SignalR:** o circuito do Blazor (interface) e o hub `/hubs/notifications` (eventos: `notification`, `newSession`, `sessionRevoked`). O hub é que sabe qual aba pertence a qual sessão.
 - **Páginas de conta em SSR estático** (`[ExcludeFromInteractiveRouting]`, `AuthLayout`): precisam do `HttpContext` para gravar cookies.
 - **Uma linha de execução por mensagem**: o `IDispatcher` cria um escopo de DI (e um `DbContext`) para cada query/command.
+- **Telas, API e jobs usam o mesmo CQRS**: o relatório em segundo plano roda `ExportUsersQuery` dentro do job, e a API chama as mesmas queries/commands das páginas.
 
 ### Pastas
 
@@ -344,7 +584,10 @@ Cada arquivo `.cs` contém, em regra, **um único tipo** (classe, record, enum o
 
 | Pasta | Conteúdo |
 |---|---|
-| `Data/Entities/` | Uma entidade por arquivo (`AppUser`, `AppRole`, `Team`, `TeamMember`, `BrandingSettings`, `SystemSettings`, `UserSession` + `UserConnection`...) |
+| `Api/Common/` | `ApiEndpoints` (grupo `/api`, `RequirePermission`, filtro de `AppException` → 400), `ApiDocumentation` (OpenAPI + Scalar) |
+| `Api/Common/Auth/` | `AuthEndpoints` (token, refresh, logout), `JwtTokenService` (emissão e rotação), `JwtAuthentication` (esquema `CookieOrBearer`, `JwtOptions`) |
+| `Api/Platform/`, `Api/Tenant/` | Endpoints por recurso: `Users`, `Roles`/`Permissions`, `System` (dashboard, branding, settings) · `Me`, `Teams` |
+| `Data/Entities/` | Uma entidade por arquivo (`AppUser`, `AppRole`, `Team`, `TeamMember`, `BrandingSettings`, `SystemSettings`, `UserSession` + `UserConnection`, `ReportExport`...) |
 | `Data/` | `AppDbContext` (Identity), `DbSeeder`, `Migrations/` |
 | `Security/` | `Perm` (catálogo fixo) e `PermissionDefinition` |
 | `Security/Authorization/` | `HasPermissionAttribute`, `PermissionRequirement`, `PermissionPolicyProvider`, `PermissionHandler`, `PermissionService` (cache) |
@@ -352,13 +595,15 @@ Cada arquivo `.cs` contém, em regra, **um único tipo** (classe, record, enum o
 | `Application/Cqrs/` | CQRS próprio (sem pacotes, só DI): `Abstractions/`, `Behaviors/`, `Dispatching/` |
 | `Features/<Feature>/` | Fatias verticais: `Models/`, `Shared/`, `Queries/<Caso>/` e `Commands/<Caso>/` |
 | `Features/Account/Security/` | `MfaFeature` (status, configurar, ativar, desativar, regenerar, resetar), `SessionsFeature` (listar, encerrar), `ReauthVerifier` |
-| `Services/` | `Common/`, `Ui/` (`UiDispatcher`, `PagedQueryState`), `Toasts/`, `Loading/`, `Confirm/`, `Branding/`, `Files/` (`JsFileExtensions`), `Email/`, `Reports/` |
-| `Services/Reports/` | `ReportModels` (colunas, opções, `ReportBuilder`), `ExcelReportWriter`, `PdfReportWriter`, `ReportService` |
+| `Features/Reports/` | Relatórios em segundo plano: `BackgroundReports` (decide e enfileira), `IBackgroundReportSource`, `ReportStorage`, `Jobs/ReportJobs` (gerar, e-mail, limpeza), `MyReportsQuery`/`DeleteReportCommand`, endpoint de download |
+| `Services/` | `Common/`, `Ui/` (`UiDispatcher`, `PagedQueryState`), `Toasts/`, `Loading/`, `Confirm/`, `Branding/`, `Files/`, `Email/`, `Reports/` |
+| `Services/Files/` | `FileStorageService` (uploads públicos), `JsFileExtensions` (download/cópia) e `Storage/` (`IFileStorageProvider`, `IFileStorage`, `LocalFileStorageProvider`, `StorageKey`, `UseUploads`) |
+| `Services/Reports/` | `ReportModels` (colunas, opções, `ReportBuilder`), `ExcelReportWriter`, `PdfReportWriter`, `ReportService`, `ReportsOptions` |
 | `Localization/` | `SharedResource`, `AppCultures`, `AppText`, `ValidationMessages`, `Money` |
 | `Resources/` | `SharedResource.resx` (pt-BR), `.en.resx`, `.es.resx` |
 | `Components/UI/` | Componentes reutilizáveis (`EditorBase<T>`, `PagedPager`, `MultiSelect`, `LazyAutocomplete`, `OutsideClickWatcher`, `ReauthDialog`, `ReportDialog`...) |
 | `Components/Layout/` | `MainLayout`, `NavMenu`, `UserMenu`, `NotificationBell`, `SessionAlertHost` |
-| `Components/Pages/` | Dashboard, Usuários, Papéis, Permissões, Times, Whitelabel, Sistema, Segurança da conta, Componentes |
+| `Components/Pages/` | Dashboard, Usuários, Papéis, Permissões, Times, Whitelabel, Sistema, Segurança da conta, Meus relatórios, Componentes |
 | `Components/Account/` | Login, LoginWith2fa, Register, ConfirmEmail, SessionEnded (SSR estático) |
 | `wwwroot/js/app.js` | Ponte JS: hub de notificações, dropdowns, download/cópia, efeitos |
 
@@ -418,7 +663,7 @@ Para criar uma funcionalidade nova: crie a pasta do caso de uso, declare o `reco
 ### Componentes
 Toasts, loading global, spinner, skeleton, botão com loading, Modal (central), Drawer (lateral), confirmação de exclusão (simples ou exigindo digitar o nome), confirmação com senha + MFA (`ReauthDialog`), diálogo de relatório (`ReportDialog`), upload (drag & drop, vários arquivos, progresso), upload de imagem com preview, paginação, busca com debounce, autocomplete lazy paginado, lista virtualizada, multi-select, ordenação por coluna, chips de filtros e transições de página. A maioria pode ser testada em **/components**.
 
-Os uploads ficam em `App_Data/uploads` e são servidos em `/uploads`.
+Os uploads passam pelo `IFileStorage` (chave `uploads/...`; no disco local, `App_Data/uploads`) e são servidos em `/uploads`, seja qual for o provedor. Veja [Armazenamento](#armazenamento-de-arquivos-local-azure-blob-s3).
 
 ## Fluxos de código
 
@@ -510,16 +755,69 @@ sequenceDiagram
     participant W as Excel/PdfReportWriter
     participant JS as appFiles.download
 
-    P->>RD: abre com colunas e agrupamentos
+    P->>RD: abre com colunas e agrupamentos (+ aviso se total > limite)
     RD-->>P: ReportOptions (formato, colunas, grupo...)
     P->>Q: filtros atuais da tela
     Q-->>P: itens (mesmos filtros/ordenação, máx. 50.000)
     P->>RS: RenderAsync(itens, colunas, opções)
-    RS->>RS: branding + logo
+    RS->>RS: branding + logo (lido do IFileStorage)
     RS->>W: ReportBuilder.Build → Render (Task.Run)
     W-->>RS: bytes .xlsx / .pdf
     RS-->>P: arquivo
     P->>JS: DotNetStreamReference → download no navegador
+```
+
+Acima do limite (`Reports:BackgroundThreshold`), o mesmo `ReportService` roda dentro de um job:
+
+```mermaid
+sequenceDiagram
+    participant P as Users.razor
+    participant BR as BackgroundReports
+    participant DB as ReportExports
+    participant J as ReportJobs (Hangfire)
+    participant SRC as UsersReportSource
+    participant FS as IFileStorage
+    participant N as INotifier (sino)
+    participant M as E-mail
+
+    P->>BR: EnqueueAsync(filtros, opções, usuário)
+    BR->>DB: insere (Na fila)
+    BR->>J: Enqueue GenerateAsync (cultura capturada)
+    P-->>P: toast "Relatório em processamento"
+    J->>DB: Gerando...
+    J->>SRC: ExportUsersQuery + ReportService.RenderAsync
+    SRC-->>J: arquivo
+    J->>FS: SaveAsync("reports/{id}.xlsx", Private)
+    J->>DB: Pronto (tamanho, registros, expira em 7 dias)
+    J->>N: "Relatório pronto" → link /reports
+    opt e-mail configurado
+        J->>M: SendEmailAsync (anexo até 10 MB ou só o link)
+    end
+    Note over J,N: em erro: status Falhou + notificação com o motivo
+```
+
+### Login da API e renovação do token
+
+```mermaid
+sequenceDiagram
+    actor C as Cliente
+    participant A as /api/auth
+    participant T as JwtTokenService
+    participant S as UserSessions
+    participant API as /api/*
+
+    C->>A: POST /token (e-mail, senha, code?)
+    A->>A: mesmas regras da tela (inativo, bloqueio, e-mail, lockout, MFA)
+    A->>T: IssueAsync
+    T->>S: cria sessão (hash do refresh token) + política de sessão
+    T-->>C: accessToken (15 min) + refreshToken (14 dias)
+    C->>API: Authorization: Bearer
+    API->>S: OnTokenValidated → sessão ainda vale?
+    API-->>C: 200 / 401 / 403 / 400 ProblemDetails
+    C->>A: POST /refresh
+    A->>T: confere hash → rotação atômica
+    T-->>C: novo par (o refresh antigo deixa de valer)
+    Note over T,S: refresh antigo reapresentado → sessão encerrada (security)
 ```
 
 ### Implementação: decisões importantes
@@ -529,6 +827,11 @@ sequenceDiagram
 - **Reautenticação centralizada:** `ReauthVerifier` é usado por encerrar sessão, desativar MFA e regenerar códigos; respeita o lockout do Identity.
 - **Dropdowns sem camada invisível:** o "clique fora" é detectado em JS (pointerdown em captura), o que devolve a rolagem por roda/toque dentro de drawers e modais.
 - **Relatório reaproveita a busca:** `ExportUsersQuery` chama os mesmos `Filter`/`Sort`/`LoadBadges` do `SearchUsersHandler`, então o arquivo bate com a tela.
+- **Relatório grande fora do circuito:** acima do limite, gerar e baixar pelo circuito prenderia o usuário na tela e usaria muita memória por conexão. O job grava o arquivo e avisa depois. O job **não tem nova tentativa automática** (uma consulta grande repetida em loop pesaria no banco); a falha vira notificação para a pessoa pedir de novo.
+- **Arquivos privados fora de `/uploads`:** relatórios ficam na chave `reports/...` com visibilidade privada e só saem pelo endpoint que confere o dono. Na nuvem, saem por URL assinada curta, gerada depois dessa conferência.
+- **Armazenamento trocável sem mudar o banco:** o banco guarda `/uploads/...` e o nome do arquivo do relatório, nunca o endereço do provedor. Trocar de disco local para Azure/S3 é configuração (mais a cópia dos arquivos).
+- **API sobre o CQRS existente:** os endpoints não têm regra de negócio própria. O login da API repete as checagens da tela de login, e o token é preso a uma `UserSession`, então encerrar a sessão derruba o token na hora, sem lista de revogação separada.
+- **Refresh token com rotação e detecção de reuso:** só o hash fica no banco, e a troca é um `UPDATE ... WHERE hash = antigo` (atômico). Um token antigo reapresentado indica vazamento e encerra a sessão.
 
 ## Pacotes usados
 
@@ -546,8 +849,12 @@ sequenceDiagram
 | `ClosedXML` | 0.105.1 | Relatórios Excel (`.xlsx`) |
 | `QuestPDF` | 2026.9.2 | Relatórios PDF (licença Community) |
 | `QRCoder` | 1.8.1 | QR code do MFA, gerado no servidor |
+| `Microsoft.AspNetCore.Authentication.JwtBearer` | 11.0.0 | Autenticação da API por JWT |
+| `Microsoft.AspNetCore.OpenApi` | 11.0.0 | Documento OpenAPI da API (`/openapi/v1.json`) |
+| `Scalar.AspNetCore` | 2.18.7 | Interface da documentação da API (`/scalar`, só em Development) |
 
-Também do framework (sem pacote extra): ASP.NET Core SignalR, localização (`IStringLocalizer`), Data Protection e `System.Net.Mail` (provedor SMTP).
+Também do framework (sem pacote extra): ASP.NET Core SignalR, Minimal APIs, `ProblemDetails`, localização (`IStringLocalizer`), Data Protection e `System.Net.Mail` (provedor SMTP, com anexos).
+**Armazenamento em nuvem:** nenhum SDK vem instalado. Os pacotes `Azure.Storage.Blobs` ou `AWSSDK.S3` só entram se você implementar o provedor (veja [Armazenamento](#armazenamento-de-arquivos-local-azure-blob-s3)).
 Ferramenta local: `dotnet-ef` 11 (`dotnet-tools.json`).
 
 **Correção do SQLite nativo:** o `Hangfire.Storage.SQLite` → `sqlite-net-pcl` → `SQLitePCLRaw.bundle_green` 2.1.11 trazia o `SQLitePCLRaw.lib.e_sqlite3` 2.1.11 (GHSA-2m69-gcr7-jv3q).

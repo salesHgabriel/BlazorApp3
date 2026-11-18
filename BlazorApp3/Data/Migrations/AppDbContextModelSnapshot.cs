@@ -15,7 +15,7 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261117201928_ApiRefreshTokens";
+    public override string LastMigrationId => "20261118150319_BackgroundReports";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -367,6 +367,80 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("Permissions");
             });
 
+        modelBuilder.Entity("BlazorApp3.Data.ReportExport", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime?>("CompletedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("ContentType")
+                    .HasMaxLength(100)
+                    .HasColumnType("TEXT");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Error")
+                    .HasMaxLength(500)
+                    .HasColumnType("TEXT");
+
+                b.Property<int>("EstimatedRows")
+                    .HasColumnType("INTEGER");
+
+                b.Property<DateTime?>("ExpiresAt")
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("FileName")
+                    .HasMaxLength(200)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Format")
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .HasColumnType("TEXT");
+
+                b.Property<int?>("RowCount")
+                    .HasColumnType("INTEGER");
+
+                b.Property<long?>("SizeBytes")
+                    .HasColumnType("INTEGER");
+
+                b.Property<string>("Source")
+                    .IsRequired()
+                    .HasMaxLength(40)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("StorageName")
+                    .HasMaxLength(100)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("Title")
+                    .IsRequired()
+                    .HasMaxLength(120)
+                    .HasColumnType("TEXT");
+
+                b.Property<string>("UserId")
+                    .IsRequired()
+                    .HasMaxLength(450)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("ExpiresAt");
+
+                b.HasIndex("UserId", "CreatedAt");
+
+                b.ToTable("ReportExports");
+            });
+
         modelBuilder.Entity("BlazorApp3.Data.RolePermission", b =>
             {
                 b.Property<string>("RoleId")
@@ -713,6 +787,17 @@ partial class AppDbContextModelSnapshot : ModelSnapshot
             });
 
         modelBuilder.Entity("BlazorApp3.Data.Notification", b =>
+            {
+                b.HasOne("BlazorApp3.Data.AppUser", "User")
+                    .WithMany()
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("User");
+            });
+
+        modelBuilder.Entity("BlazorApp3.Data.ReportExport", b =>
             {
                 b.HasOne("BlazorApp3.Data.AppUser", "User")
                     .WithMany()

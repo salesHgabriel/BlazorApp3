@@ -1,0 +1,145 @@
+@page "/reports"
+@attribute [Authorize]
+@implements IDisposable
+@using BlazorApp3.Features.Reports
+@inject UiDispatcher Ui
+@inject ConfirmService Confirm
+
+<AppPageTitle Title="@L["Meus relatórios"]" />
+
+<PageHeader Title="@L["Meus relatórios"]" Subtitle="@L["Relatórios grandes gerados em segundo plano. Os arquivos ficam disponíveis por alguns dias."]" Icon="bi-file-earmark-arrow-down">
+    <Actions>
+        <button class="btn btn-outline-secondary" @onclick="LoadAsync"><i class="bi bi-arrow-clockwise me-1"></i>@L["Atualizar"]</button>
+    </Actions>
+</PageHeader>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table">
+            <thead>
+                <tr>
+                    <th>@L["Relatório"]</th>
+                    <th>@L["Status"]</th>
+                    <th class="text-end">@L["Registros"]</th>
+                    <th class="d-none d-md-table-cell">@L["Solicitado em"]</th>
+                    <th class="d-none d-lg-table-cell">@L["Disponível até"]</th>
+                    <th style="width:120px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (_items is null)
+                {
+                    <TableSkeleton Rows="4" Columns="6" />
+                }
+                else if (_items.Count == 0)
+                {
+                    <tr><td colspan="6"><EmptyState Icon="bi-file-earmark-arrow-down" Title="@L["Nenhum relatório gerado em segundo plano"]"
+                                                    Message="@L["Relatórios acima do limite de registros aparecem aqui quando ficam prontos."]" /></td></tr>
+                }
+                else
+                {
+                    @foreach (var r in _items)
+                    {
+                        <tr @key="r.Id">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi @(r.Format == "Pdf" ? "bi-file-earmark-pdf text-danger" : "bi-file-earmark-excel text-success") fs-4"></i>
+                                    <div>
+                                        <div class="fw-semibold">@r.Title</div>
+                                        <div class="small text-muted">
+                                            @(r.FileName ?? (r.Format == "Pdf" ? "PDF" : "Excel"))
+                                            @if (r.SizeBytes is { } size) { <span> · @FormatSize(size)</span> }
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @switch (r.Status)
+                                {
+                                    case ReportExportStatus.Pending:
+                                        <span class="badge text-bg-secondary"><i class="bi bi-clock me-1"></i>@L["Na fila"]</span>
+                                        break;
+                                    case ReportExportStatus.Processing:
+                                        <span class="badge text-bg-info"><Spinner Size="sm" Class="me-1" />@L["Gerando..."]</span>
+                                        break;
+                                    case ReportExportStatus.Completed when !r.Downloadable:
+                                        <span class="badge text-bg-light">@L["Expirado"]</span>
+                                        break;
+                                    case ReportExportStatus.Completed:
+                                        <span class="badge text-bg-success"><i class="bi bi-check2 me-1"></i>@L["Pronto"]</span>
+                                        break;
+                                    case ReportExportStatus.Failed:
+                                        <span class="badge text-bg-danger" title="@r.Error"><i class="bi bi-x-circle me-1"></i>@L["Falhou"]</span>
+                                        <div class="small text-danger mt-1">@r.Error</div>
+                                        break;
+                                }
+                            </td>
+                            <td class="text-end">@((r.RowCount ?? r.EstimatedRows).ToString("N0"))</td>
+                            <td class="d-none d-md-table-cell small">@r.CreatedAt.ToLocalTime().ToString("g")</td>
+                            <td class="d-none d-lg-table-cell small">@(r.ExpiresAt?.ToLocalTime().ToString("g") ?? "—")</td>
+                            <td class="text-end text-nowrap">
+                                @if (r.Downloadable)
+                                {
+                                    <a class="btn btn-sm btn-primary" href="@ReportJobs.DownloadPath(r.Id)" download target="_blank" title="@L["Baixar"]"><i class="bi bi-download"></i></a>
+                                }
+                                @if (!r.InProgress)
+                                {
+                                    <button class="icon-btn ms-1" title="@L["Excluir"]" @onclick="() => DeleteAsync(r)"><i class="bi bi-trash"></i></button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; } = default!;
+
+    private string? _userId;
+    private List<ReportExportItem>? _items;
+    private Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _userId = (await AuthState).User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await LoadAsync();
+        // Enquanto houver relatório na fila/gerando, atualiza a cada 4 s (a notificação também avisa quando fica pronto)
+        _timer = new Timer(_ => InvokeAsync(async () =>
+        {
+            if (_items?.Any(i => i.InProgress) != true) return;
+            await LoadAsync();
+            StateHasChanged();
+        }), null, TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(4));
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_userId is null) return;
+        _items = await Ui.QueryAsync(new MyReportsQuery(_userId));
+    }
+
+    private async Task DeleteAsync(ReportExportItem r)
+    {
+        var ok = await Confirm.ShowAsync(new ConfirmOptions
+        {
+            Title = L["Excluir relatório"],
+            Message = new MarkupString(L["Excluir <strong>{0}</strong>? O arquivo será apagado.", System.Net.WebUtility.HtmlEncode(r.Title)]),
+            ConfirmText = L["Excluir"], Icon = "bi-trash", Danger = true
+        });
+        if (!ok) return;
+        var result = await Ui.SendAsync(new DeleteReportCommand(_userId!, r.Id), L["Relatório excluído"]);
+        if (result.Succeeded) await LoadAsync();
+    }
+
+    private static string FormatSize(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024d:0.#} KB",
+        _ => $"{bytes / 1024d / 1024d:0.#} MB"
+    };
+
+    public void Dispose() => _timer?.Dispose();
+}

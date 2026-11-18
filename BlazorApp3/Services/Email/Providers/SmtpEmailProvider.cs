@@ -54,6 +54,9 @@ internal static class MailMessageFactory
             IsBodyHtml = true
         };
         mail.To.Add(new MailAddress(m.To, m.ToName ?? m.To, Encoding.UTF8));
+        // O MailMessage descarta os streams dos anexos no Dispose
+        foreach (var a in m.Attachments)
+            mail.Attachments.Add(new Attachment(new MemoryStream(a.Content), a.FileName, a.ContentType) { NameEncoding = Encoding.UTF8 });
         return mail;
     }
 }

@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<UserConnection> UserConnections => Set<UserConnection>();
+    public DbSet<ReportExport> ReportExports => Set<ReportExport>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -85,6 +86,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             e.HasKey(c => c.ConnectionId);
             e.HasIndex(c => c.SessionId);
             e.HasOne(c => c.Session).WithMany(s => s.Connections).HasForeignKey(c => c.SessionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ReportExport>(e =>
+        {
+            e.HasIndex(r => new { r.UserId, r.CreatedAt });
+            e.HasIndex(r => r.ExpiresAt);
+            e.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
+            e.HasOne(r => r.User).WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

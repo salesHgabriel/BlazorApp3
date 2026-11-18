@@ -1,5 +1,6 @@
 using BlazorApp3.Application.Cqrs;
 using BlazorApp3.Features.Branding;
+using BlazorApp3.Services.Files.Storage;
 
 namespace BlazorApp3.Services.Reports;
 
@@ -7,7 +8,7 @@ namespace BlazorApp3.Services.Reports;
 /// Gera relatórios Excel/PDF. A geração roda fora do thread do circuito (CPU) e usa a marca configurada (nome, cor, logo).
 /// Para um relatório novo: defina as colunas (<see cref="ReportColumn{T}"/>), busque os itens e chame <see cref="RenderAsync{T}"/>.
 /// </summary>
-public sealed class ReportService(IDispatcher dispatcher, FileStorageService files, ILogger<ReportService> logger)
+public sealed class ReportService(IDispatcher dispatcher, IFileStorage files, ILogger<ReportService> logger)
 {
     public const int MaxRows = 50_000;
 
@@ -27,15 +28,24 @@ public sealed class ReportService(IDispatcher dispatcher, FileStorageService fil
     /// <summary>Logo enviado no whitelabel (/uploads/...). Só PNG/JPG/WEBP (formatos aceitos nos dois motores).</summary>
     private async Task<byte[]?> LoadLogoAsync(string? url, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(url) || !url.StartsWith(FileStorageService.RequestPath + "/", StringComparison.OrdinalIgnoreCase)) return null;
-        var ext = Path.GetExtension(url).ToLowerInvariant();
+        if (FileStorageService.KeyFromUrl(url) is not { } key) return null;
+        var ext = Path.GetExtension(key).ToLowerInvariant();
         if (ext is not (".png" or ".jpg" or ".jpeg" or ".webp")) return null;
 
-        var relative = url[(FileStorageService.RequestPath.Length + 1)..].Split('?')[0].Replace('/', Path.DirectorySeparatorChar);
-        var root = Path.GetFullPath(files.RootPath);
-        var path = Path.GetFullPath(Path.Combine(root, relative));
-        if (!path.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !File.Exists(path)) return null;
-        try { return await File.ReadAllBytesAsync(path, ct); }
-        catch (IOException ex) { logger.LogWarning(ex, "Logo do relatório não pôde ser lido ({Path}).", path); return null; }
+        try
+        {
+            var file = await files.OpenReadAsync(key, ct);
+            if (file is null) return null;
+            await using var content = file.Content;
+            using var ms = new MemoryStream();
+            await content.CopyToAsync(ms, ct);
+            return ms.ToArray();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Sem logo o relatório sai do mesmo jeito
+            logger.LogWarning(ex, "Logo do relatório não pôde ser lido ({Key}).", key);
+            return null;
+        }
     }
 }

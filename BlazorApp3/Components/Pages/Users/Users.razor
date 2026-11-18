@@ -4,6 +4,7 @@
 @inject ToastService Toast
 @inject ConfirmService Confirm
 @inject BlazorApp3.Services.Reports.ReportService Reports
+@inject BlazorApp3.Features.Reports.BackgroundReports BackgroundReports
 @inject IJSRuntime JS
 
 <AppPageTitle Title="@L["Usuários"]" />
@@ -289,7 +290,8 @@
 
 @* ---------------- Relatório Excel/PDF com os filtros atuais *@
 <ReportDialog @bind-Visible="_reportOpen" DefaultTitle="@L["Relatório de usuários"]" Columns="_reportColumns" Groupable="UsersReport.Groupable"
-              Hint="@L["{0} registro(s) com os filtros atuais", _list.Result.TotalCount]" OnGenerate="GenerateReportAsync" />
+              Hint="@L["{0} registro(s) com os filtros atuais", _list.Result.TotalCount]" OnGenerate="GenerateReportAsync"
+              Background="BackgroundReports.ShouldRunInBackground(_list.Result.TotalCount)" BackgroundThreshold="BackgroundReports.Threshold" />
 
 @* ---------------- Dialog central: bloquear usuário(s) *@
 <Modal @bind-Visible="_blockOpen" Title="@(_blockIds.Count == 1 ? L["Bloquear usuário"] : L["Bloquear {0} usuários", _blockIds.Count])" Icon="bi-lock" Size="md">
@@ -571,6 +573,15 @@
         };
         try
         {
+            // Muitos registros: gera em segundo plano e avisa por notificação (e e-mail, se configurado)
+            var total = _list.Result.TotalCount;
+            if (BackgroundReports.ShouldRunInBackground(total))
+            {
+                await BackgroundReports.EnqueueAsync(UsersReportSource.SourceKey, filters, options, _currentUserId!, _currentUserName ?? "", FilterSummary(), total);
+                Toast.Info(L["Relatório em processamento"], L["{0} registro(s): você será avisado quando o arquivo estiver pronto.", total]);
+                return true;
+            }
+
             var items = await Ui.QueryAsync(new ExportUsersQuery(filters));
             var (name, type, content) = await Reports.RenderAsync(items, UsersReport.Columns(), options, _currentUserName ?? "", FilterSummary());
             await JS.DownloadAsync(name, type, content);

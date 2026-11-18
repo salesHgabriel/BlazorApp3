@@ -7,7 +7,12 @@ public sealed record EmailMessage(string To, string? ToName, string Subject, str
     public string? FromName { get; init; }
     /// <summary>Versão texto puro (opcional; os provedores geram a partir do HTML se vazio).</summary>
     public string? TextBody { get; init; }
+    /// <summary>Anexos (ex.: relatório gerado em segundo plano).</summary>
+    public IReadOnlyList<EmailAttachment> Attachments { get; init; } = [];
 }
+
+/// <summary>Arquivo anexado ao e-mail.</summary>
+public sealed record EmailAttachment(string FileName, string ContentType, byte[] Content);
 
 /// <summary>
 /// Provedor de envio de e-mail. Para suportar um provedor novo (Amazon SES, Postmark, Mailgun, Resend...):
@@ -30,4 +35,8 @@ public interface IMailSender
     string ProviderName { get; }
 
     Task SendAsync(string to, string? toName, string subject, string htmlBody, string? fromName = null, CancellationToken ct = default);
+
+    /// <summary>Envio com anexos.</summary>
+    Task SendAsync(string to, string? toName, string subject, string htmlBody, IReadOnlyList<EmailAttachment> attachments,
+        string? fromName = null, CancellationToken ct = default);
 }

@@ -6,8 +6,10 @@ using BlazorApp3.Components;
 using BlazorApp3.Data;
 using BlazorApp3.Features.Account;
 using BlazorApp3.Features.Notifications;
+using BlazorApp3.Features.Reports;
 using BlazorApp3.Features.Settings;
 using BlazorApp3.Services.Email;
+using BlazorApp3.Services.Files.Storage;
 using Hangfire;
 using Hangfire.Storage.SQLite;
 using BlazorApp3.Localization;
@@ -122,13 +124,15 @@ builder.Services.AddHangfireServer(o =>
 builder.Services.AddRestApi();
 
 // ---------------- Serviços de UI
-builder.Services.AddSingleton<FileStorageService>();
+// Arquivos (uploads e relatórios): disco local por padrão; um IFileStorageProvider de nuvem registrado (Azure Blob, S3...) é usado no lugar
+builder.Services.AddFileStorage(builder.Configuration);
 builder.Services.AddScoped<BrandingState>();
 builder.Services.AddScoped<ToastService>();
 builder.Services.AddScoped<LoadingService>();
 builder.Services.AddScoped<ConfirmService>();
 builder.Services.AddScoped<UiDispatcher>();
-builder.Services.AddScoped<BlazorApp3.Services.Reports.ReportService>();
+// Relatórios Excel/PDF; acima de Reports:BackgroundThreshold registros, gerados em segundo plano (notificação + e-mail)
+builder.Services.AddReports(builder.Configuration);
 
 // QuestPDF (relatórios PDF): licença Community, gratuita para empresas com receita anual bruta abaixo de US$ 1 mi.
 // Acima disso é preciso uma licença comercial: https://www.questpdf.com/license/
@@ -162,12 +166,8 @@ app.UseHttpsRedirection();
 var appUrls = app.Services.GetRequiredService<AppUrls>();
 app.Use((ctx, next) => { appUrls.Capture(ctx.Request); return next(ctx); });
 
-// Arquivos enviados pelos usuários (logos, avatares, anexos)
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(app.Services.GetRequiredService<FileStorageService>().RootPath),
-    RequestPath = FileStorageService.RequestPath
-});
+// Arquivos enviados pelos usuários (logos, avatares, anexos) em /uploads: estáticos no disco local ou via provedor de nuvem
+app.UseUploads();
 
 // Define CurrentCulture/CurrentUICulture da requisição (cookie → Accept-Language → padrão).
 // O circuito Blazor herda a cultura da conexão, então tudo que roda nele usa o idioma escolhido.
@@ -191,6 +191,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapHub<NotificationsHub>(NotificationsHub.Path);
 app.MapRestApi();
+app.MapReportDownloads(); // GET /reports/{id}/download (relatórios gerados em segundo plano, só o dono)
 app.MapApiDocumentation(); // Development: /openapi/v1.json + Scalar em /scalar
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
@@ -226,6 +227,7 @@ app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext htt
 var recurring = app.Services.GetRequiredService<IRecurringJobManager>();
 recurring.AddOrUpdate<AccountMaintenanceJobs>(AccountMaintenanceJobs.PurgeUnconfirmedId, j => j.PurgeUnconfirmedAccountsAsync(), Cron.Daily(3));
 recurring.AddOrUpdate<AccountMaintenanceJobs>(AccountMaintenanceJobs.PurgeCodesId, j => j.PurgeExpiredCodesAsync(), Cron.Hourly());
+recurring.AddOrUpdate<ReportJobs>(ReportJobs.PurgeExpiredId, j => j.PurgeExpiredAsync(), Cron.Daily(4));
 
 app.Run();
 

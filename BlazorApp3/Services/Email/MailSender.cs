@@ -18,13 +18,18 @@ public sealed class MailSender(IEnumerable<IEmailProvider> providers, IOptions<E
         }
     }
 
-    public Task SendAsync(string to, string? toName, string subject, string htmlBody, string? fromName = null, CancellationToken ct = default)
+    public Task SendAsync(string to, string? toName, string subject, string htmlBody, string? fromName = null, CancellationToken ct = default) =>
+        SendAsync(to, toName, subject, htmlBody, [], fromName, ct);
+
+    public Task SendAsync(string to, string? toName, string subject, string htmlBody, IReadOnlyList<EmailAttachment> attachments,
+        string? fromName = null, CancellationToken ct = default)
     {
         var o = options.Value;
         var message = new EmailMessage(to, toName, subject, htmlBody)
         {
             From = o.FromAddress,
-            FromName = fromName ?? o.FromName
+            FromName = fromName ?? o.FromName,
+            Attachments = attachments
         };
         return Provider.SendAsync(message, ct);
     }

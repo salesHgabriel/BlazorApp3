@@ -24,9 +24,12 @@ public sealed class SendGridEmailProvider(HttpClient http, IOptions<EmailOptions
             {
                 new { type = "text/plain", value = m.TextBody ?? HtmlText.ToPlain(m.HtmlBody) },
                 new { type = "text/html", value = m.HtmlBody }
-            }
+            },
+            attachments = m.Attachments.Count == 0 ? null : m.Attachments
+                .Select(a => new { content = Convert.ToBase64String(a.Content), filename = a.FileName, type = a.ContentType, disposition = "attachment" })
+                .ToArray()
         };
-        using var request = new HttpRequestMessage(HttpMethod.Post, o.Endpoint) { Content = JsonContent.Create(payload) };
+        using var request = new HttpRequestMessage(HttpMethod.Post, o.Endpoint) { Content = JsonContent.Create(payload, options: HttpEmail.Json) };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", o.ApiKey);
         await HttpEmail.SendAsync(http, request, Name, ct);
     }
@@ -49,9 +52,12 @@ public sealed class MailtrapEmailProvider(HttpClient http, IOptions<EmailOptions
             subject = m.Subject,
             html = m.HtmlBody,
             text = m.TextBody ?? HtmlText.ToPlain(m.HtmlBody),
-            category = "app"
+            category = "app",
+            attachments = m.Attachments.Count == 0 ? null : m.Attachments
+                .Select(a => new { content = Convert.ToBase64String(a.Content), filename = a.FileName, type = a.ContentType, disposition = "attachment" })
+                .ToArray()
         };
-        using var request = new HttpRequestMessage(HttpMethod.Post, o.Endpoint) { Content = JsonContent.Create(payload) };
+        using var request = new HttpRequestMessage(HttpMethod.Post, o.Endpoint) { Content = JsonContent.Create(payload, options: HttpEmail.Json) };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", o.ApiToken);
         await HttpEmail.SendAsync(http, request, Name, ct);
     }
@@ -59,6 +65,12 @@ public sealed class MailtrapEmailProvider(HttpClient http, IOptions<EmailOptions
 
 internal static class HttpEmail
 {
+    /// <summary>Omite campos nulos (ex.: "attachments" quando não há anexos; as APIs recusam null).</summary>
+    public static readonly System.Text.Json.JsonSerializerOptions Json = new(System.Text.Json.JsonSerializerDefaults.Web)
+    {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
     public static async Task SendAsync(HttpClient http, HttpRequestMessage request, string provider, CancellationToken ct)
     {
         using var response = await http.SendAsync(request, ct);

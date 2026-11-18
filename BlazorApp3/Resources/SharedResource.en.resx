@@ -2228,4 +2228,94 @@
   <data name="Sessão expirada. Entre novamente." xml:space="preserve">
     <value>Session expired. Please sign in again.</value>
   </data>
+  <data name="Relatório em processamento" xml:space="preserve">
+    <value>Report in progress</value>
+  </data>
+  <data name="{0} registro(s): você será avisado quando o arquivo estiver pronto." xml:space="preserve">
+    <value>{0} record(s): you will be notified when the file is ready.</value>
+  </data>
+  <data name="Mais de {0} registros: o relatório será gerado em segundo plano. Você receberá uma notificação (e um e-mail, se configurado) quando ele estiver pronto, e poderá baixá-lo em Meus relatórios." xml:space="preserve">
+    <value>More than {0} records: the report will be generated in the background. You will get a notification (and an email, if configured) when it is ready, and can download it from My reports.</value>
+  </data>
+  <data name="Enviando..." xml:space="preserve">
+    <value>Sending...</value>
+  </data>
+  <data name="Gerar {0} em segundo plano" xml:space="preserve">
+    <value>Generate {0} in background</value>
+  </data>
+  <data name="Meus relatórios" xml:space="preserve">
+    <value>My reports</value>
+  </data>
+  <data name="Relatórios grandes gerados em segundo plano. Os arquivos ficam disponíveis por alguns dias." xml:space="preserve">
+    <value>Large reports generated in the background. Files stay available for a few days.</value>
+  </data>
+  <data name="Registros" xml:space="preserve">
+    <value>Records</value>
+  </data>
+  <data name="Solicitado em" xml:space="preserve">
+    <value>Requested at</value>
+  </data>
+  <data name="Disponível até" xml:space="preserve">
+    <value>Available until</value>
+  </data>
+  <data name="Nenhum relatório gerado em segundo plano" xml:space="preserve">
+    <value>No background reports yet</value>
+  </data>
+  <data name="Relatórios acima do limite de registros aparecem aqui quando ficam prontos." xml:space="preserve">
+    <value>Reports above the record limit show up here when they are ready.</value>
+  </data>
+  <data name="Na fila" xml:space="preserve">
+    <value>Queued</value>
+  </data>
+  <data name="Expirado" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="Pronto" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="Falhou" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Baixar" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Excluir relatório" xml:space="preserve">
+    <value>Delete report</value>
+  </data>
+  <data name="Excluir &lt;strong&gt;{0}&lt;/strong&gt;? O arquivo será apagado." xml:space="preserve">
+    <value>Delete &lt;strong&gt;{0}&lt;/strong&gt;? The file will be removed.</value>
+  </data>
+  <data name="Relatório excluído" xml:space="preserve">
+    <value>Report deleted</value>
+  </data>
+  <data name="Erro inesperado ao gerar o arquivo." xml:space="preserve">
+    <value>Unexpected error while generating the file.</value>
+  </data>
+  <data name="Falha ao gerar relatório" xml:space="preserve">
+    <value>Report generation failed</value>
+  </data>
+  <data name="Relatório pronto" xml:space="preserve">
+    <value>Report ready</value>
+  </data>
+  <data name="{0}: {1} registro(s). Disponível para download até {2}." xml:space="preserve">
+    <value>{0}: {1} record(s). Available for download until {2}.</value>
+  </data>
+  <data name="O relatório &quot;{0}&quot; ficou pronto: {1} registro(s)." xml:space="preserve">
+    <value>The report &quot;{0}&quot; is ready: {1} record(s).</value>
+  </data>
+  <data name="O arquivo está anexado a este e-mail. Você também pode baixá-lo pelo sistema." xml:space="preserve">
+    <value>The file is attached to this email. You can also download it from the system.</value>
+  </data>
+  <data name="O arquivo é grande demais para ir anexado. Baixe-o pelo botão abaixo." xml:space="preserve">
+    <value>The file is too large to attach. Download it using the button below.</value>
+  </data>
+  <data name="Baixar relatório" xml:space="preserve">
+    <value>Download report</value>
+  </data>
+  <data name="O link fica disponível até {0}." xml:space="preserve">
+    <value>The link is available until {0}.</value>
+  </data>
+  <data name="Relatório pronto: {0}" xml:space="preserve">
+    <value>Report ready: {0}</value>
+  </data>
 </root>
